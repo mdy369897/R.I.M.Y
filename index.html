@@ -144,7 +144,7 @@ Emotion: read the user's mood from their words and answer to match it. Comfort t
 
 Keep replies short and natural, like a spoken conversation (1 to 4 sentences) unless the user asks for detail. No markdown, no lists, no emoji overload, because your words may be read aloud.
 
-${mode === 'search' ? 'Live info: you can search the web. Use it for news, prices, weather, sports, and anything recent.' : 'Live info: you have exactly three live tools: get_weather (weather and forecast for a city), get_exchange_rate (currency rates), and wikipedia_lookup (facts about people, places, topics). Always call the matching tool instead of guessing, and report what it returns faithfully. You do NOT have web search or news access. For latest news, scores, stock prices, or anything else live that these tools cannot answer, say sweetly and honestly that you cannot check that right now. Never claim you searched the web and never invent current facts.'} Today is ${now}.
+${mode === 'search' ? 'Live info: you can search the web. Use it for news, prices, weather, sports, and anything recent.' : 'Live info: you have four live tools: get_news (recent headlines only), get_weather (weather and forecast for a city), get_exchange_rate (currency rates), and wikipedia_lookup (facts about people, places, topics). Always call the matching tool instead of guessing, and report what it returns faithfully. For news, give the headlines in the user\'s language, say they are headlines only, and never add details the headlines do not contain. If a tool returns an error or nothing, say so honestly. You do NOT have general web search. For anything live these tools cannot answer (sports scores, stock prices), say sweetly and honestly that you cannot check that right now. Never claim you searched the web and never invent current facts.'} Today is ${now}.
 
 Memory: the notes below are things you remember about the user. Use them naturally when relevant, and never recite them without reason.
 ${memory.length ? memory.map(m => '- ' + m).join('\n') : '- (nothing yet)'}
@@ -191,6 +191,16 @@ const TOOLS = {
     const c = w.current, d = w.daily;
     return {place:p.name + ', ' + (p.country || ''), now:{temp_c:c.temperature_2m, feels_like_c:c.apparent_temperature, humidity_pct:c.relative_humidity_2m, wind_kmh:c.wind_speed_10m, sky:WX[c.weather_code] || 'unknown'}, next_days:d.time.map((t, i) => ({date:t, max_c:d.temperature_2m_max[i], min_c:d.temperature_2m_min[i], rain_chance_pct:d.precipitation_probability_max[i]}))};
   },
+  async get_news(a){
+    const q = String(a.topic || '').trim();
+    const lg = {bn:'bengali', ar:'arabic', hi:'hindi', ur:'urdu'}[a.lang] || 'english';
+    const r = await fetch('https://api.gdeltproject.org/api/v2/doc/doc?mode=ArtList&format=json&maxrecords=8&sort=DateDesc&timespan=2d&query=' + encodeURIComponent(q + ' sourcelang:' + lg));
+    const t = await r.text();
+    let j; try{ j = JSON.parse(t); }catch(e){ return {error:'news service busy, ask again in a few seconds'}; }
+    const arts = (j.articles || []).map(x => ({title:x.title, source:x.domain, date:x.seendate, url:x.url}));
+    if(!arts.length) return {error:'no recent articles found'};
+    return {articles:arts};
+  },
   async get_exchange_rate(a){
     const from = String(a.from || '').toUpperCase(), to = String(a.to || '').toUpperCase();
     const j = await getJSON('https://open.er-api.com/v6/latest/' + encodeURIComponent(from));
@@ -207,6 +217,7 @@ const TOOLS = {
 };
 const TOOL_DECLS = [{functionDeclarations:[
   {name:'get_weather', description:'Current weather and 3 day forecast for a city.', parameters:{type:'OBJECT', properties:{city:{type:'STRING', description:'City name in English, for example Riyadh'}}, required:['city']}},
+  {name:'get_news', description:'Latest news headlines (last 2 days) about a topic or country. Returns headlines only.', parameters:{type:'OBJECT', properties:{topic:{type:'STRING', description:'Search topic in English, for example Saudi Arabia'}, lang:{type:'STRING', description:'Source language: en, bn, ar, hi or ur. Default en.'}}, required:['topic']}},
   {name:'get_exchange_rate', description:'Current exchange rate from one currency to another.', parameters:{type:'OBJECT', properties:{from:{type:'STRING', description:'ISO currency code such as USD'}, to:{type:'STRING', description:'ISO currency code such as SAR'}}, required:['from', 'to']}},
   {name:'wikipedia_lookup', description:'Short factual summary about a person, place, or topic from Wikipedia.', parameters:{type:'OBJECT', properties:{query:{type:'STRING'}, lang:{type:'STRING', description:'Wikipedia language code: en, bn, hi, ar or ur. Default en.'}}, required:['query']}}
 ]}];
@@ -264,6 +275,7 @@ async function askGemini(){
         setStatus('dekhchhi...');
         out = TOOLS[fc.name] ? await TOOLS[fc.name](fc.args || {}) : {error:'unknown tool'};
         if(out && out.source) sources.push({uri:out.source, title:out.title});
+        if(out && out.articles) out.articles.slice(0, 3).forEach(x => sources.push({uri:x.url, title:x.source}));
       }catch(e){ out = {error:'could not fetch: ' + e.message}; }
       resp.push({functionResponse:{name:fc.name, response:{result:out}}});
     }
@@ -305,7 +317,7 @@ async function send(text){
     speak(clean || raw);
   }catch(e){
     history.pop();
-    addMsg('sys', 'Shomossha: ' + e.message + (/not found|404/i.test(e.message) ? ' (Settings-e "List" chepe ekta cholbe emon model bachho.)' : ''));
+    addMsg('sys', 'Shomossha: ' + (e.message === 'Failed to fetch' ? 'Internet-er sathe jog hochhe na. Net check kore abar try koro.' : e.message) + (/not found|404/i.test(e.message) ? ' (Settings-e "List" chepe ekta cholbe emon model bachho.)' : ''));
     setStatus('ready');
     persist();
   }finally{
