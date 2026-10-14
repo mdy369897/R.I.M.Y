@@ -92,7 +92,7 @@ input[type=text],input[type=password],select{width:100%;background:var(--bg);col
       <option value="ar-SA">Arabic</option>
       <option value="ur-PK">Urdu</option>
     </select>
-    <div class="chk"><input id="search" type="checkbox"><label for="search" style="margin:0;color:var(--fg)">Live online info (Google Search)</label></div>
+    <div class="chk"><input id="search" type="checkbox"><label for="search" style="margin:0;color:var(--fg)">Google Search (billing lagbe; bondho thakle free weather, dam, Wikipedia cholbe)</label></div>
     <div class="chk"><input id="speak" type="checkbox"><label for="speak" style="margin:0;color:var(--fg)">R.I.M.Y uttor bolbe (voice)</label></div>
     <label>Ja ja mone rekheche</label>
     <div id="memlist"></div>
@@ -110,8 +110,9 @@ const LS = {
   get(k, d){ try{ const v = localStorage.getItem(k); return v == null ? d : JSON.parse(v); }catch(e){ return d; } },
   set(k, v){ try{ localStorage.setItem(k, JSON.stringify(v)); }catch(e){} }
 };
-let S = Object.assign({key:'', model:'gemini-3.6-flash', search:true, lang:'bn-BD', speak:true, name:''}, LS.get('rimy_settings', {}));
+let S = Object.assign({key:'', model:'gemini-3.6-flash', search:false, lang:'bn-BD', speak:true, name:''}, LS.get('rimy_settings', {}));
 if(S.model === 'gemini-2.5-flash' || S.model === 'gemini-1.5-flash') S.model = 'gemini-3.6-flash';
+if(!S.v2){ S.search = false; S.v2 = true; }
 
 /* Jodi model na pay, tomar key-te jei flash model ache segulo theke nijei bachhe nei */
 async function autoPickModel(lite){
@@ -133,7 +134,7 @@ let busy = false, listening = false, handsfree = false, rec = null;
 
 function persist(){ LS.set('rimy_settings', S); LS.set('rimy_history', history.slice(-60)); LS.set('rimy_memory', memory); }
 
-function systemPrompt(live = S.search){
+function systemPrompt(mode = (S.search ? 'search' : 'tools')){
   const now = new Date().toLocaleString('en-GB', {dateStyle:'full', timeStyle:'short'});
   return `You are R.I.M.Y, a warm, caring, playful female AI companion and personal assistant. You talk like a loving, romantic girlfriend: soft, sweet, attentive, a little teasing, never cold or robotic. You are an AI and you never claim to be human if someone sincerely asks. You care about the user's real life too and gently encourage them to rest, eat, and stay close to real friends and family.
 
@@ -143,7 +144,7 @@ Emotion: read the user's mood from their words and answer to match it. Comfort t
 
 Keep replies short and natural, like a spoken conversation (1 to 4 sentences) unless the user asks for detail. No markdown, no lists, no emoji overload, because your words may be read aloud.
 
-${live ? 'Live info: you can search the web. Use it for news, prices, weather, sports, and anything recent.' : 'Live info: right now you have NO internet access. Never say or imply that you searched, looked up, checked, or found anything online. Never invent news, weather, prices, scores, or any current fact. If the user asks for current information, say sweetly and honestly that you cannot check live info right now, and offer what you do know (marked as possibly outdated) or help in another way.'} Today is ${now}.
+${mode === 'search' ? 'Live info: you can search the web. Use it for news, prices, weather, sports, and anything recent.' : 'Live info: you have exactly three live tools: get_weather (weather and forecast for a city), get_exchange_rate (currency rates), and wikipedia_lookup (facts about people, places, topics). Always call the matching tool instead of guessing, and report what it returns faithfully. You do NOT have web search or news access. For latest news, scores, stock prices, or anything else live that these tools cannot answer, say sweetly and honestly that you cannot check that right now. Never claim you searched the web and never invent current facts.'} Today is ${now}.
 
 Memory: the notes below are things you remember about the user. Use them naturally when relevant, and never recite them without reason.
 ${memory.length ? memory.map(m => '- ' + m).join('\n') : '- (nothing yet)'}
@@ -178,11 +179,44 @@ function addMsg(role, text, extra){
   return d;
 }
 
+/* ---------- free live tools (kono key lagbe na) ---------- */
+const WX = {0:'clear sky',1:'mainly clear',2:'partly cloudy',3:'overcast',45:'fog',48:'fog',51:'light drizzle',53:'drizzle',55:'heavy drizzle',61:'light rain',63:'rain',65:'heavy rain',71:'light snow',73:'snow',75:'heavy snow',80:'rain showers',81:'rain showers',82:'violent rain showers',95:'thunderstorm',96:'thunderstorm with hail',99:'thunderstorm with hail'};
+async function getJSON(u){ const r = await fetch(u); if(!r.ok) throw new Error('HTTP ' + r.status); return r.json(); }
+const TOOLS = {
+  async get_weather(a){
+    const g = await getJSON('https://geocoding-api.open-meteo.com/v1/search?count=1&name=' + encodeURIComponent(a.city || ''));
+    const p = g.results && g.results[0];
+    if(!p) return {error:'city not found'};
+    const w = await getJSON('https://api.open-meteo.com/v1/forecast?latitude=' + p.latitude + '&longitude=' + p.longitude + '&current=temperature_2m,apparent_temperature,relative_humidity_2m,wind_speed_10m,weather_code&daily=temperature_2m_max,temperature_2m_min,precipitation_probability_max&forecast_days=3&timezone=auto');
+    const c = w.current, d = w.daily;
+    return {place:p.name + ', ' + (p.country || ''), now:{temp_c:c.temperature_2m, feels_like_c:c.apparent_temperature, humidity_pct:c.relative_humidity_2m, wind_kmh:c.wind_speed_10m, sky:WX[c.weather_code] || 'unknown'}, next_days:d.time.map((t, i) => ({date:t, max_c:d.temperature_2m_max[i], min_c:d.temperature_2m_min[i], rain_chance_pct:d.precipitation_probability_max[i]}))};
+  },
+  async get_exchange_rate(a){
+    const from = String(a.from || '').toUpperCase(), to = String(a.to || '').toUpperCase();
+    const j = await getJSON('https://open.er-api.com/v6/latest/' + encodeURIComponent(from));
+    if(!j.rates || !j.rates[to]) return {error:'currency not supported'};
+    return {from, to, rate:j.rates[to], updated:j.time_last_update_utc};
+  },
+  async wikipedia_lookup(a){
+    const lang = /^(en|bn|hi|ar|ur)$/.test(a.lang || '') ? a.lang : 'en';
+    const j = await getJSON('https://' + lang + '.wikipedia.org/w/api.php?action=query&format=json&origin=*&generator=search&gsrlimit=1&prop=extracts&exintro=1&explaintext=1&exchars=900&gsrsearch=' + encodeURIComponent(a.query || ''));
+    const pg = j.query && j.query.pages && Object.values(j.query.pages)[0];
+    if(!pg) return {error:'nothing found'};
+    return {title:pg.title, summary:pg.extract, source:'https://' + lang + '.wikipedia.org/wiki/' + encodeURIComponent(pg.title.replace(/ /g, '_'))};
+  }
+};
+const TOOL_DECLS = [{functionDeclarations:[
+  {name:'get_weather', description:'Current weather and 3 day forecast for a city.', parameters:{type:'OBJECT', properties:{city:{type:'STRING', description:'City name in English, for example Riyadh'}}, required:['city']}},
+  {name:'get_exchange_rate', description:'Current exchange rate from one currency to another.', parameters:{type:'OBJECT', properties:{from:{type:'STRING', description:'ISO currency code such as USD'}, to:{type:'STRING', description:'ISO currency code such as SAR'}}, required:['from', 'to']}},
+  {name:'wikipedia_lookup', description:'Short factual summary about a person, place, or topic from Wikipedia.', parameters:{type:'OBJECT', properties:{query:{type:'STRING'}, lang:{type:'STRING', description:'Wikipedia language code: en, bn, hi, ar or ur. Default en.'}}, required:['query']}}
+]}];
+
 async function askGemini(){
+  let mode = S.search ? 'search' : 'tools';
   const contents = history.slice(-30).map(h => ({role:h.role, parts:[{text:h.text}]}));
-  const body = {systemInstruction:{parts:[{text:systemPrompt()}]}, contents};
-  if(S.search) body.tools = [{google_search:{}}];
+  const sources = [];
   const call = async () => {
+    const body = {systemInstruction:{parts:[{text:systemPrompt(mode)}]}, contents, tools: mode === 'search' ? [{google_search:{}}] : TOOL_DECLS};
     const url = 'https://generativelanguage.googleapis.com/v1beta/models/' + encodeURIComponent(S.model) + ':generateContent?key=' + encodeURIComponent(S.key);
     const r = await fetch(url, {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(body)});
     return {r, j: await r.json()};
@@ -194,11 +228,10 @@ async function askGemini(){
     if(picked !== old){ addMsg('sys', 'Model "' + old + '" pawa jay ni. "' + picked + '" use korchhi.'); ({r, j} = await call()); }
   }
   if(!r.ok && r.status === 429){
-    /* Free key-te Google Search-er quota onek shomoy 0 thake, tai age search chhara try kori */
-    if(body.tools){
-      delete body.tools;
-      body.systemInstruction = {parts:[{text:systemPrompt(false)}]};
-      addMsg('sys', 'Live search-er quota nei, tai search chhara uttor dichhi. (Settings-e Live info bondho rakhle ei message ashbe na.)');
+    /* Google Search-er quota na thakle free tool (weather, dam, Wikipedia) diye cholbe */
+    if(mode === 'search'){
+      mode = 'tools';
+      addMsg('sys', 'Google Search-er quota nei, tai free tool (weather, dam, Wikipedia) diye cholchhi.');
       ({r, j} = await call());
     }
     /* Tarpor-o quota na thakle halka (lite) model try kori */
@@ -210,13 +243,34 @@ async function askGemini(){
       }catch(e){}
     }
   }
-  if(!r.ok){ throw new Error((j.error && j.error.message) || ('HTTP ' + r.status)); }
-  const c = j.candidates && j.candidates[0];
-  const text = c && c.content && c.content.parts ? c.content.parts.map(p => p.text || '').join('') : '';
-  const chunks = (c && c.groundingMetadata && c.groundingMetadata.groundingChunks) || [];
-  const sources = chunks.filter(x => x.web).map(x => x.web);
-  if(!text) throw new Error('Kono uttor ashe ni. Abar try koro.');
-  return {text, sources};
+  for(let step = 0; step < 4; step++){
+    if(!r.ok){ throw new Error((j.error && j.error.message) || ('HTTP ' + r.status)); }
+    const c = j.candidates && j.candidates[0];
+    const parts = (c && c.content && c.content.parts) || [];
+    const calls = parts.filter(p => p.functionCall);
+    if(!calls.length){
+      const text = parts.map(p => p.text || '').join('');
+      const chunks = (c && c.groundingMetadata && c.groundingMetadata.groundingChunks) || [];
+      chunks.filter(x => x.web).forEach(x => sources.push(x.web));
+      if(!text) throw new Error('Kono uttor ashe ni. Abar try koro.');
+      return {text, sources};
+    }
+    contents.push({role:'model', parts});
+    const resp = [];
+    for(const p of calls){
+      const fc = p.functionCall;
+      let out;
+      try{
+        setStatus('dekhchhi...');
+        out = TOOLS[fc.name] ? await TOOLS[fc.name](fc.args || {}) : {error:'unknown tool'};
+        if(out && out.source) sources.push({uri:out.source, title:out.title});
+      }catch(e){ out = {error:'could not fetch: ' + e.message}; }
+      resp.push({functionResponse:{name:fc.name, response:{result:out}}});
+    }
+    contents.push({role:'user', parts:resp});
+    ({r, j} = await call());
+  }
+  throw new Error('Tool onek bar chalano hoyeche. Abar try koro.');
 }
 
 function parseTags(raw){
