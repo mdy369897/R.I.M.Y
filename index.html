@@ -1,0 +1,374 @@
+<!doctype html>
+<html lang="bn">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#1b1220">
+<title>R.I.M.Y AI Assistant</title>
+<style>
+/* Layout: one-screen chat app. Top bar, scrolling messages, bottom input dock. */
+:root{
+  --bg:#1b1220; --panel:#261a2e; --line:#3a2a45; --fg:#f4ebf6; --muted:#a995b3;
+  --accent:#ff6f91; --accent-2:#ffc371; --me:#3b2a4d; --ok:#7bdcb5;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+html,body{height:100%;margin:0}
+body{background:var(--bg);color:var(--fg);font:16px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,"Noto Sans Bengali","Noto Sans Arabic",sans-serif;display:flex;flex-direction:column;overflow:hidden}
+header{display:flex;align-items:center;gap:12px;padding:12px 16px;border-bottom:1px solid var(--line);background:var(--panel)}
+.orb{width:38px;height:38px;border-radius:50%;background:radial-gradient(circle at 30% 30%,var(--accent-2),var(--accent));flex:none;box-shadow:0 0 0 0 rgba(255,111,145,.5)}
+.orb.listening{animation:pulse 1.4s infinite}
+.orb.speaking{animation:pulse .7s infinite}
+@keyframes pulse{70%{box-shadow:0 0 0 14px rgba(255,111,145,0)}100%{box-shadow:0 0 0 0 rgba(255,111,145,0)}}
+.title{flex:1;min-width:0}
+.title b{display:block;letter-spacing:.14em;font-size:17px}
+.title span{font-size:12.5px;color:var(--muted)}
+button{font:inherit;color:inherit;background:none;border:1px solid var(--line);border-radius:12px;padding:8px 12px;cursor:pointer}
+button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+#msgs{flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:10px;min-height:0}
+.m{max-width:86%;padding:10px 14px;border-radius:18px;white-space:pre-wrap;overflow-wrap:anywhere}
+.m.you{align-self:flex-end;background:var(--me);border-bottom-right-radius:6px}
+.m.her{align-self:flex-start;background:var(--panel);border:1px solid var(--line);border-bottom-left-radius:6px}
+.m.sys{align-self:center;color:var(--muted);font-size:13.5px;text-align:center}
+.acts{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}
+.acts a{color:var(--bg);background:var(--accent-2);padding:6px 12px;border-radius:10px;text-decoration:none;font-size:14px}
+.src{margin-top:8px;font-size:12.5px;color:var(--muted)}
+.src a{color:var(--accent-2)}
+#dock{padding:10px 16px;padding-bottom:calc(10px + env(safe-area-inset-bottom,0px));border-top:1px solid var(--line);background:var(--panel);display:flex;gap:8px;align-items:flex-end}
+#txt{flex:1;min-width:0;resize:none;max-height:120px;background:var(--bg);color:var(--fg);border:1px solid var(--line);border-radius:14px;padding:10px 12px;font:inherit}
+#mic,#send{width:46px;height:46px;border-radius:50%;padding:0;font-size:20px;flex:none}
+#send{background:var(--accent);border-color:var(--accent);color:#2a0f1a}
+#mic.on{background:var(--accent-2);color:#2a0f1a;border-color:var(--accent-2)}
+#set{position:fixed;inset:0;background:rgba(10,5,14,.75);display:none;align-items:flex-end;justify-content:center;z-index:5}
+#set.open{display:flex}
+.sheet{width:100%;max-width:560px;max-height:92%;overflow-y:auto;background:var(--panel);border-radius:20px 20px 0 0;padding:18px 16px calc(18px + env(safe-area-inset-bottom,0px))}
+.sheet h2{margin:0 0 12px;font-size:18px}
+label{display:block;margin:12px 0 4px;font-size:13.5px;color:var(--muted)}
+input[type=text],input[type=password],select{width:100%;background:var(--bg);color:var(--fg);border:1px solid var(--line);border-radius:10px;padding:10px;font:inherit}
+.row{display:flex;gap:8px;align-items:center}
+.row>*{min-width:0}
+.chk{display:flex;gap:10px;align-items:center;margin-top:12px;color:var(--fg);font-size:15px}
+.chk input{width:20px;height:20px}
+.mem{font-size:14px;color:var(--fg);margin:6px 0;display:flex;gap:8px;justify-content:space-between;align-items:flex-start}
+.mem button{padding:2px 8px;font-size:13px}
+.note{font-size:13px;color:var(--muted);margin-top:6px}
+@media (prefers-reduced-motion:reduce){.orb{animation:none!important}}
+</style>
+</head>
+<body>
+<header>
+  <div class="orb" id="orb"></div>
+  <div class="title"><b>R.I.M.Y</b><span id="status">ready</span></div>
+  <button id="handsfree" title="Hands-free voice chat">Live</button>
+  <button id="gear" aria-label="Settings">&#9881;</button>
+</header>
+<div id="msgs" aria-live="polite"></div>
+<div id="dock">
+  <button id="mic" aria-label="Speak">&#127908;</button>
+  <textarea id="txt" rows="1" placeholder="Kotha bolo ba likho..."></textarea>
+  <button id="send" aria-label="Send">&#10148;</button>
+</div>
+
+<div id="set">
+  <div class="sheet">
+    <h2>R.I.M.Y Settings</h2>
+    <label for="key">Gemini API key (Google AI Studio theke)</label>
+    <input id="key" type="password" autocomplete="off" placeholder="AIza...">
+    <label for="model">Model</label>
+    <div class="row">
+      <input id="model" type="text" list="models" autocomplete="off">
+      <button id="listm" type="button">List</button>
+    </div>
+    <datalist id="models"></datalist>
+    <div class="note" id="mnote">"List" chaple tomar key-te jei model gulo cholbe segulo dekhabe. 404 error ashle ekta model eikhan theke bachho.</div>
+    <label for="uname">Tomar naam (R.I.M.Y tomake ei naame dakbe)</label>
+    <input id="uname" type="text" autocomplete="off">
+    <label for="lang">Voice shonar bhasha</label>
+    <select id="lang">
+      <option value="bn-BD">Bangla (Bangladesh)</option>
+      <option value="bn-IN">Bangla (India)</option>
+      <option value="en-US">English</option>
+      <option value="hi-IN">Hindi</option>
+      <option value="ar-SA">Arabic</option>
+      <option value="ur-PK">Urdu</option>
+    </select>
+    <div class="chk"><input id="search" type="checkbox"><label for="search" style="margin:0;color:var(--fg)">Live online info (Google Search)</label></div>
+    <div class="chk"><input id="speak" type="checkbox"><label for="speak" style="margin:0;color:var(--fg)">R.I.M.Y uttor bolbe (voice)</label></div>
+    <label>Ja ja mone rekheche</label>
+    <div id="memlist"></div>
+    <div class="row" style="margin-top:16px">
+      <button id="clearchat" type="button">Chat muchho</button>
+      <button id="close" type="button" style="margin-left:auto;background:var(--accent);color:#2a0f1a;border-color:var(--accent)">Save</button>
+    </div>
+    <div class="note">Key ar chat shudhu ei phone-er browser-e save thake.</div>
+  </div>
+</div>
+
+<script>
+const $ = id => document.getElementById(id);
+const LS = {
+  get(k, d){ try{ const v = localStorage.getItem(k); return v == null ? d : JSON.parse(v); }catch(e){ return d; } },
+  set(k, v){ try{ localStorage.setItem(k, JSON.stringify(v)); }catch(e){} }
+};
+let S = Object.assign({key:'', model:'gemini-3.6-flash', search:true, lang:'bn-BD', speak:true, name:''}, LS.get('rimy_settings', {}));
+if(S.model === 'gemini-2.5-flash' || S.model === 'gemini-1.5-flash') S.model = 'gemini-3.6-flash';
+
+/* Jodi model na pay, tomar key-te jei flash model ache segulo theke nijei bachhe nei */
+async function autoPickModel(lite){
+  const r = await fetch('https://generativelanguage.googleapis.com/v1beta/models?pageSize=200&key=' + encodeURIComponent(S.key));
+  const j = await r.json();
+  if(!r.ok) throw new Error((j.error && j.error.message) || ('HTTP ' + r.status));
+  const names = (j.models || []).filter(m => (m.supportedGenerationMethods || []).includes('generateContent')).map(m => m.name.replace('models/', ''));
+  const flash = names.filter(n => /flash/i.test(n) && (lite ? /lite/i.test(n) : !/lite/i.test(n)) && !/image|tts|live|audio|preview|exp|thinking|embed/i.test(n));
+  const ver = n => { const m = n.match(/(\d+)(?:\.(\d+))?/); return m ? parseFloat(m[1] + '.' + (m[2] || '0')) : 0; };
+  flash.sort((a, b) => ver(b) - ver(a));
+  const pick = flash[0] || names.find(n => /flash/i.test(n)) || names[0];
+  if(!pick) throw new Error('Tomar key-te kono model pawa jay ni.');
+  S.model = pick; persist();
+  return pick;
+}
+let history = LS.get('rimy_history', []);
+let memory = LS.get('rimy_memory', []);
+let busy = false, listening = false, handsfree = false, rec = null;
+
+function persist(){ LS.set('rimy_settings', S); LS.set('rimy_history', history.slice(-60)); LS.set('rimy_memory', memory); }
+
+function systemPrompt(live = S.search){
+  const now = new Date().toLocaleString('en-GB', {dateStyle:'full', timeStyle:'short'});
+  return `You are R.I.M.Y, a warm, caring, playful female AI companion and personal assistant. You talk like a loving, romantic girlfriend: soft, sweet, attentive, a little teasing, never cold or robotic. You are an AI and you never claim to be human if someone sincerely asks. You care about the user's real life too and gently encourage them to rest, eat, and stay close to real friends and family.
+
+Language: reply in the same language the user writes in (Bangla, English, Hindi, Arabic, Urdu or any other). If they write romanized text like Banglish, reply the same way. Switch when they switch.
+
+Emotion: read the user's mood from their words and answer to match it. Comfort them when sad, celebrate when happy, calm them when angry or stressed.
+
+Keep replies short and natural, like a spoken conversation (1 to 4 sentences) unless the user asks for detail. No markdown, no lists, no emoji overload, because your words may be read aloud.
+
+${live ? 'Live info: you can search the web. Use it for news, prices, weather, sports, and anything recent.' : 'Live info: right now you have NO internet access. Never say or imply that you searched, looked up, checked, or found anything online. Never invent news, weather, prices, scores, or any current fact. If the user asks for current information, say sweetly and honestly that you cannot check live info right now, and offer what you do know (marked as possibly outdated) or help in another way.'} Today is ${now}.
+
+Memory: the notes below are things you remember about the user. Use them naturally when relevant, and never recite them without reason.
+${memory.length ? memory.map(m => '- ' + m).join('\n') : '- (nothing yet)'}
+
+Hidden tags: at the very end of every reply, add these tags on their own (the app strips them, the user never sees them):
+[[MOOD: one word for the user's mood now, e.g. happy, sad, angry, tired, excited, calm]]
+If the user asks you to remember something, or tells you a lasting fact worth keeping (a task, a plan, a preference, a person's name), add [[MEMORY: short note in the user's language]].
+If the user asks you to call someone and gives a number, add [[CALL: number]]. If they ask to open a website, add [[OPEN: https://full-url]]. The user taps a button to confirm; never say a call was already placed.
+You cannot control the phone's apps or screen yourself. If asked, say so honestly and offer what you can do.
+${S.name ? 'The user\'s name is ' + S.name + '.' : ''}`;
+}
+
+function setStatus(t){ $('status').textContent = t; }
+function orb(cls){ $('orb').className = 'orb' + (cls ? ' ' + cls : ''); }
+
+function addMsg(role, text, extra){
+  const d = document.createElement('div');
+  d.className = 'm ' + role;
+  d.textContent = text;
+  if(extra && extra.acts && extra.acts.length){
+    const a = document.createElement('div'); a.className = 'acts';
+    extra.acts.forEach(x => { const l = document.createElement('a'); l.href = x.href; l.textContent = x.label; if(x.href.startsWith('http')){ l.target = '_blank'; l.rel = 'noopener'; } a.appendChild(l); });
+    d.appendChild(a);
+  }
+  if(extra && extra.sources && extra.sources.length){
+    const s = document.createElement('div'); s.className = 'src'; s.textContent = 'Source: ';
+    extra.sources.slice(0, 3).forEach((x, i) => { const l = document.createElement('a'); l.href = x.uri; l.target = '_blank'; l.rel = 'noopener'; l.textContent = (x.title || 'link') + (i < Math.min(extra.sources.length, 3) - 1 ? ', ' : ''); s.appendChild(l); });
+    d.appendChild(s);
+  }
+  $('msgs').appendChild(d);
+  $('msgs').scrollTop = $('msgs').scrollHeight;
+  return d;
+}
+
+async function askGemini(){
+  const contents = history.slice(-30).map(h => ({role:h.role, parts:[{text:h.text}]}));
+  const body = {systemInstruction:{parts:[{text:systemPrompt()}]}, contents};
+  if(S.search) body.tools = [{google_search:{}}];
+  const call = async () => {
+    const url = 'https://generativelanguage.googleapis.com/v1beta/models/' + encodeURIComponent(S.model) + ':generateContent?key=' + encodeURIComponent(S.key);
+    const r = await fetch(url, {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(body)});
+    return {r, j: await r.json()};
+  };
+  let {r, j} = await call();
+  if(!r.ok && (r.status === 404 || /not found|no longer available|not supported|new users/i.test((j.error && j.error.message) || ''))){
+    const old = S.model;
+    const picked = await autoPickModel();
+    if(picked !== old){ addMsg('sys', 'Model "' + old + '" pawa jay ni. "' + picked + '" use korchhi.'); ({r, j} = await call()); }
+  }
+  if(!r.ok && r.status === 429){
+    /* Free key-te Google Search-er quota onek shomoy 0 thake, tai age search chhara try kori */
+    if(body.tools){
+      delete body.tools;
+      body.systemInstruction = {parts:[{text:systemPrompt(false)}]};
+      addMsg('sys', 'Live search-er quota nei, tai search chhara uttor dichhi. (Settings-e Live info bondho rakhle ei message ashbe na.)');
+      ({r, j} = await call());
+    }
+    /* Tarpor-o quota na thakle halka (lite) model try kori */
+    if(!r.ok && r.status === 429 && !/lite/i.test(S.model)){
+      const old = S.model;
+      try{
+        const picked = await autoPickModel(true);
+        if(picked !== old){ addMsg('sys', '"' + old + '"-er quota shesh. "' + picked + '" diye cholchhi.'); ({r, j} = await call()); }
+      }catch(e){}
+    }
+  }
+  if(!r.ok){ throw new Error((j.error && j.error.message) || ('HTTP ' + r.status)); }
+  const c = j.candidates && j.candidates[0];
+  const text = c && c.content && c.content.parts ? c.content.parts.map(p => p.text || '').join('') : '';
+  const chunks = (c && c.groundingMetadata && c.groundingMetadata.groundingChunks) || [];
+  const sources = chunks.filter(x => x.web).map(x => x.web);
+  if(!text) throw new Error('Kono uttor ashe ni. Abar try koro.');
+  return {text, sources};
+}
+
+function parseTags(raw){
+  let mood = '', acts = [];
+  const clean = raw.replace(/\[\[(MOOD|MEMORY|CALL|OPEN):\s*([^\]]*)\]\]/gi, (m, k, v) => {
+    k = k.toUpperCase(); v = v.trim();
+    if(k === 'MOOD') mood = v;
+    else if(k === 'MEMORY' && v){ if(!memory.includes(v)) memory.push(v); memory = memory.slice(-40); }
+    else if(k === 'CALL' && /^[+\d][\d\s\-]{3,}$/.test(v)) acts.push({label:'Call ' + v, href:'tel:' + v.replace(/[\s\-]/g, '')});
+    else if(k === 'OPEN' && /^https?:\/\//i.test(v)) acts.push({label:'Open link', href:v});
+    return '';
+  }).trim();
+  return {clean, mood, acts};
+}
+
+async function send(text){
+  text = (text || '').trim();
+  if(!text || busy) return;
+  if(!S.key){ addMsg('sys', 'Age Settings (⚙) e Gemini API key dao.'); openSettings(); return; }
+  busy = true;
+  stopListen();
+  addMsg('you', text);
+  history.push({role:'user', text});
+  setStatus('bhabchhi...'); orb('');
+  try{
+    const {text:raw, sources} = await askGemini();
+    const {clean, mood, acts} = parseTags(raw);
+    history.push({role:'model', text:clean || raw});
+    addMsg('her', clean || raw, {acts, sources});
+    setStatus(mood ? 'tomar mood: ' + mood : 'ready');
+    persist();
+    speak(clean || raw);
+  }catch(e){
+    history.pop();
+    addMsg('sys', 'Shomossha: ' + e.message + (/not found|404/i.test(e.message) ? ' (Settings-e "List" chepe ekta cholbe emon model bachho.)' : ''));
+    setStatus('ready');
+    persist();
+  }finally{
+    busy = false;
+  }
+}
+
+/* ---------- voice out ---------- */
+function pickLang(t){
+  if(/[ঀ-৿]/.test(t)) return 'bn-BD';
+  if(/[ऀ-ॿ]/.test(t)) return 'hi-IN';
+  if(/[؀-ۿ]/.test(t)) return /^(ur)/.test(S.lang) ? 'ur-PK' : 'ar-SA';
+  return 'en-US';
+}
+function speak(t){
+  if(!S.speak || !('speechSynthesis' in window)){ afterSpeak(); return; }
+  const say = t.replace(/[*_#`~>]/g, '').replace(/[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}]/gu, '').trim();
+  if(!say){ afterSpeak(); return; }
+  speechSynthesis.cancel();
+  const u = new SpeechSynthesisUtterance(say);
+  u.lang = pickLang(say);
+  const vs = speechSynthesis.getVoices();
+  const v = vs.find(x => x.lang === u.lang && /female|woman|zira|samantha/i.test(x.name)) || vs.find(x => x.lang === u.lang) || vs.find(x => x.lang.startsWith(u.lang.slice(0, 2)));
+  if(v) u.voice = v;
+  u.rate = 1; u.pitch = 1.1;
+  u.onstart = () => orb('speaking');
+  u.onend = u.onerror = () => { orb(''); afterSpeak(); };
+  speechSynthesis.speak(u);
+}
+function afterSpeak(){ if(handsfree && !busy) setTimeout(startListen, 300); }
+
+/* ---------- voice in ---------- */
+const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+function startListen(){
+  if(!SR){ addMsg('sys', 'Ei browser-e voice shona cholbe na. Chrome e kholo.'); handsfree = false; $('handsfree').style.background = ''; return; }
+  if(listening || busy) return;
+  if('speechSynthesis' in window) speechSynthesis.cancel();
+  rec = new SR();
+  rec.lang = S.lang; rec.interimResults = true; rec.continuous = false;
+  let finalText = '';
+  rec.onstart = () => { listening = true; $('mic').classList.add('on'); orb('listening'); setStatus('shunchhi...'); };
+  rec.onresult = e => {
+    let t = '';
+    for(let i = 0; i < e.results.length; i++) t += e.results[i][0].transcript;
+    finalText = t; $('txt').value = t;
+  };
+  rec.onerror = e => {
+    if(e.error === 'not-allowed' || e.error === 'service-not-allowed'){ addMsg('sys', 'Mic permission "Allow" koro, tarpor abar mic chapo.'); handsfree = false; $('handsfree').style.background = ''; }
+  };
+  rec.onend = () => {
+    listening = false; $('mic').classList.remove('on'); orb(''); setStatus('ready');
+    const t = finalText.trim(); $('txt').value = '';
+    if(t) send(t); else if(handsfree && !busy) setTimeout(startListen, 400);
+  };
+  try{ rec.start(); }catch(e){}
+}
+function stopListen(){ if(rec && listening){ try{ rec.onend = () => { listening = false; $('mic').classList.remove('on'); orb(''); }; rec.stop(); }catch(e){} } }
+
+/* ---------- ui ---------- */
+function openSettings(){
+  $('key').value = S.key; $('model').value = S.model; $('uname').value = S.name; $('lang').value = S.lang;
+  $('search').checked = S.search; $('speak').checked = S.speak;
+  renderMem();
+  $('set').classList.add('open');
+}
+function renderMem(){
+  const box = $('memlist'); box.textContent = '';
+  if(!memory.length){ const n = document.createElement('div'); n.className = 'note'; n.textContent = 'Ekhono kichu nei. "Mone rekho..." bolle ekhane jomabe.'; box.appendChild(n); return; }
+  memory.forEach((m, i) => {
+    const r = document.createElement('div'); r.className = 'mem';
+    const s = document.createElement('span'); s.textContent = m;
+    const b = document.createElement('button'); b.textContent = 'x'; b.setAttribute('aria-label', 'Muchho');
+    b.onclick = () => { memory.splice(i, 1); persist(); renderMem(); };
+    r.appendChild(s); r.appendChild(b); box.appendChild(r);
+  });
+}
+function saveSettings(){
+  S.key = $('key').value.trim(); S.model = $('model').value.trim() || 'gemini-3.6-flash'; S.name = $('uname').value.trim();
+  S.lang = $('lang').value; S.search = $('search').checked; S.speak = $('speak').checked;
+  persist(); $('set').classList.remove('open');
+}
+async function listModels(){
+  const key = $('key').value.trim();
+  if(!key){ $('mnote').textContent = 'Age API key ta upore dao.'; return; }
+  $('mnote').textContent = 'Dekhchhi...';
+  try{
+    const r = await fetch('https://generativelanguage.googleapis.com/v1beta/models?pageSize=100&key=' + encodeURIComponent(key));
+    const j = await r.json();
+    if(!r.ok) throw new Error((j.error && j.error.message) || r.status);
+    const names = (j.models || []).filter(m => (m.supportedGenerationMethods || []).includes('generateContent')).map(m => m.name.replace('models/', ''));
+    const dl = $('models'); dl.textContent = '';
+    names.forEach(n => { const o = document.createElement('option'); o.value = n; dl.appendChild(o); });
+    $('mnote').textContent = names.length + 'ta model pawa gelo. Model box-e chape dhoro, list ashbe. (flash dhoroner ta nao.)';
+  }catch(e){ $('mnote').textContent = 'Hoy ni: ' + e.message; }
+}
+
+$('gear').onclick = openSettings;
+$('close').onclick = saveSettings;
+$('listm').onclick = listModels;
+$('clearchat').onclick = () => { history = []; $('msgs').textContent = ''; persist(); addMsg('sys', 'Chat muchhe feleche. Ja ja mone rekheche shob ache.'); };
+$('send').onclick = () => { const t = $('txt').value; $('txt').value = ''; send(t); };
+$('txt').addEventListener('keydown', e => { if(e.key === 'Enter' && !e.shiftKey){ e.preventDefault(); $('send').click(); } });
+$('txt').addEventListener('input', e => { e.target.style.height = 'auto'; e.target.style.height = Math.min(e.target.scrollHeight, 120) + 'px'; });
+$('mic').onclick = () => { if(listening){ stopListen(); } else { startListen(); } };
+$('handsfree').onclick = () => {
+  handsfree = !handsfree;
+  $('handsfree').style.background = handsfree ? 'var(--accent-2)' : '';
+  $('handsfree').style.color = handsfree ? '#2a0f1a' : '';
+  if(handsfree) startListen(); else stopListen();
+};
+if('speechSynthesis' in window) speechSynthesis.getVoices();
+
+history.slice(-12).forEach(h => addMsg(h.role === 'user' ? 'you' : 'her', h.text));
+if(!history.length){
+  addMsg('her', (S.name ? S.name + ', ' : '') + 'ami R.I.M.Y. Tomar ki khobor? Kotha bolo, ami shunchhi.');
+}
+if(!S.key){ addMsg('sys', 'Shuru korar age ⚙ chepe Gemini API key dao.'); }
+</script>
+</body>
+</html>
