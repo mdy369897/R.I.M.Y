@@ -92,7 +92,7 @@ input[type=text],input[type=password],select{width:100%;background:var(--bg);col
       <option value="ar-SA">Arabic</option>
       <option value="ur-PK">Urdu</option>
     </select>
-    <div class="chk"><input id="search" type="checkbox"><label for="search" style="margin:0;color:var(--fg)">Google Search (billing lagbe; bondho thakle free weather, dam, Wikipedia cholbe)</label></div>
+    <div class="chk"><input id="search" type="checkbox"><label for="search" style="margin:0;color:var(--fg)">Google Search (billing lagbe; bondho thakle free weather, dam, Wikipedia, news cholbe)</label></div>
     <div class="chk"><input id="speak" type="checkbox"><label for="speak" style="margin:0;color:var(--fg)">R.I.M.Y uttor bolbe (voice)</label></div>
     <label>Ja ja mone rekheche</label>
     <div id="memlist"></div>
@@ -207,6 +207,14 @@ const TOOLS = {
     if(!j.rates || !j.rates[to]) return {error:'currency not supported'};
     return {from, to, rate:j.rates[to], updated:j.time_last_update_utc};
   },
+  async get_news(a){
+    const lang = /^(en|bn|hi|ar|ur)$/.test(a.lang || '') ? a.lang : 'en';
+    const cc = String(a.country || 'US').toUpperCase().slice(0, 2);
+    const rss = 'https://news.google.com/rss/search?q=' + encodeURIComponent((a.query || 'top news') + ' when:2d') + '&hl=' + lang + '&gl=' + cc + '&ceid=' + cc + ':' + lang;
+    const j = await getJSON('https://api.rss2json.com/v1/api.json?rss_url=' + encodeURIComponent(rss));
+    if(!j.items || !j.items.length) return {error:'no news found'};
+    return {query:a.query, headlines:j.items.slice(0, 6).map(i => ({title:i.title, published:i.pubDate, link:i.link}))};
+  },
   async wikipedia_lookup(a){
     const lang = /^(en|bn|hi|ar|ur)$/.test(a.lang || '') ? a.lang : 'en';
     const j = await getJSON('https://' + lang + '.wikipedia.org/w/api.php?action=query&format=json&origin=*&generator=search&gsrlimit=1&prop=extracts&exintro=1&explaintext=1&exchars=900&gsrsearch=' + encodeURIComponent(a.query || ''));
@@ -219,6 +227,7 @@ const TOOL_DECLS = [{functionDeclarations:[
   {name:'get_weather', description:'Current weather and 3 day forecast for a city.', parameters:{type:'OBJECT', properties:{city:{type:'STRING', description:'City name in English, for example Riyadh'}}, required:['city']}},
   {name:'get_news', description:'Latest news headlines (last 2 days) about a topic or country. Returns headlines only.', parameters:{type:'OBJECT', properties:{topic:{type:'STRING', description:'Search topic in English, for example Saudi Arabia'}, lang:{type:'STRING', description:'Source language: en, bn, ar, hi or ur. Default en.'}}, required:['topic']}},
   {name:'get_exchange_rate', description:'Current exchange rate from one currency to another.', parameters:{type:'OBJECT', properties:{from:{type:'STRING', description:'ISO currency code such as USD'}, to:{type:'STRING', description:'ISO currency code such as SAR'}}, required:['from', 'to']}},
+  {name:'get_news', description:'Latest news headlines about a topic, country or city.', parameters:{type:'OBJECT', properties:{query:{type:'STRING', description:'Topic, for example Saudi Arabia, cricket, economy'}, lang:{type:'STRING', description:'Headline language: en, bn, hi, ar or ur. Default en.'}, country:{type:'STRING', description:'Two letter country code such as SA, BD, IN, US'}}, required:['query']}},
   {name:'wikipedia_lookup', description:'Short factual summary about a person, place, or topic from Wikipedia.', parameters:{type:'OBJECT', properties:{query:{type:'STRING'}, lang:{type:'STRING', description:'Wikipedia language code: en, bn, hi, ar or ur. Default en.'}}, required:['query']}}
 ]}];
 
@@ -239,10 +248,10 @@ async function askGemini(){
     if(picked !== old){ addMsg('sys', 'Model "' + old + '" pawa jay ni. "' + picked + '" use korchhi.'); ({r, j} = await call()); }
   }
   if(!r.ok && r.status === 429){
-    /* Google Search-er quota na thakle free tool (weather, dam, Wikipedia) diye cholbe */
+    /* Google Search-er quota na thakle free tool (weather, dam, Wikipedia, news) diye cholbe */
     if(mode === 'search'){
       mode = 'tools';
-      addMsg('sys', 'Google Search-er quota nei, tai free tool (weather, dam, Wikipedia) diye cholchhi.');
+      addMsg('sys', 'Google Search-er quota nei, tai free tool (weather, dam, Wikipedia, news) diye cholchhi.');
       ({r, j} = await call());
     }
     /* Tarpor-o quota na thakle halka (lite) model try kori */
@@ -275,6 +284,7 @@ async function askGemini(){
         setStatus('dekhchhi...');
         out = TOOLS[fc.name] ? await TOOLS[fc.name](fc.args || {}) : {error:'unknown tool'};
         if(out && out.source) sources.push({uri:out.source, title:out.title});
+        if(out && out.headlines) out.headlines.slice(0, 2).forEach(h => sources.push({uri:h.link, title:h.title.slice(0, 40)}));
         if(out && out.articles) out.articles.slice(0, 3).forEach(x => sources.push({uri:x.url, title:x.source}));
       }catch(e){ out = {error:'could not fetch: ' + e.message}; }
       resp.push({functionResponse:{name:fc.name, response:{result:out}}});
