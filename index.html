@@ -182,6 +182,13 @@ function addMsg(role, text, extra){
 /* ---------- free live tools (kono key lagbe na) ---------- */
 const WX = {0:'clear sky',1:'mainly clear',2:'partly cloudy',3:'overcast',45:'fog',48:'fog',51:'light drizzle',53:'drizzle',55:'heavy drizzle',61:'light rain',63:'rain',65:'heavy rain',71:'light snow',73:'snow',75:'heavy snow',80:'rain showers',81:'rain showers',82:'violent rain showers',95:'thunderstorm',96:'thunderstorm with hail',99:'thunderstorm with hail'};
 async function getJSON(u){ const r = await fetch(u); if(!r.ok) throw new Error('HTTP ' + r.status); return r.json(); }
+async function newsFallback(q, l){
+  const lang = /^(en|bn|hi|ar|ur)$/.test(l || '') ? l : 'en';
+  const cc = {bn:'BD', hi:'IN', ar:'SA', ur:'PK'}[lang] || 'US';
+  const rss = 'https://news.google.com/rss/search?q=' + encodeURIComponent(q + ' when:2d') + '&hl=' + lang + '&gl=' + cc + '&ceid=' + cc + ':' + lang;
+  const j = await getJSON('https://api.rss2json.com/v1/api.json?rss_url=' + encodeURIComponent(rss));
+  return (j.items || []).slice(0, 6).map(i => ({title:i.title, source:'Google News', date:i.pubDate, url:i.link}));
+}
 const TOOLS = {
   async get_weather(a){
     const g = await getJSON('https://geocoding-api.open-meteo.com/v1/search?count=1&name=' + encodeURIComponent(a.city || ''));
@@ -192,13 +199,16 @@ const TOOLS = {
     return {place:p.name + ', ' + (p.country || ''), now:{temp_c:c.temperature_2m, feels_like_c:c.apparent_temperature, humidity_pct:c.relative_humidity_2m, wind_kmh:c.wind_speed_10m, sky:WX[c.weather_code] || 'unknown'}, next_days:d.time.map((t, i) => ({date:t, max_c:d.temperature_2m_max[i], min_c:d.temperature_2m_min[i], rain_chance_pct:d.precipitation_probability_max[i]}))};
   },
   async get_news(a){
-    const q = String(a.topic || '').trim();
+    const q = String(a.topic || a.query || '').trim();
     const lg = {bn:'bengali', ar:'arabic', hi:'hindi', ur:'urdu'}[a.lang] || 'english';
-    const r = await fetch('https://api.gdeltproject.org/api/v2/doc/doc?mode=ArtList&format=json&maxrecords=8&sort=DateDesc&timespan=2d&query=' + encodeURIComponent(q + ' sourcelang:' + lg));
-    const t = await r.text();
-    let j; try{ j = JSON.parse(t); }catch(e){ return {error:'news service busy, ask again in a few seconds'}; }
-    const arts = (j.articles || []).map(x => ({title:x.title, source:x.domain, date:x.seendate, url:x.url}));
-    if(!arts.length) return {error:'no recent articles found'};
+    let arts = [];
+    try{
+      const r = await fetch('https://api.gdeltproject.org/api/v2/doc/doc?mode=ArtList&format=json&maxrecords=8&sort=DateDesc&timespan=2d&query=' + encodeURIComponent(q + ' sourcelang:' + lg));
+      const j = JSON.parse(await r.text());
+      arts = (j.articles || []).map(x => ({title:x.title, source:x.domain, date:x.seendate, url:x.url}));
+    }catch(e){}
+    if(!arts.length){ try{ arts = await newsFallback(q, a.lang); }catch(e){} }
+    if(!arts.length) return {error:'could not get news right now, ask again in a few seconds'};
     return {articles:arts};
   },
   async get_exchange_rate(a){
@@ -206,14 +216,6 @@ const TOOLS = {
     const j = await getJSON('https://open.er-api.com/v6/latest/' + encodeURIComponent(from));
     if(!j.rates || !j.rates[to]) return {error:'currency not supported'};
     return {from, to, rate:j.rates[to], updated:j.time_last_update_utc};
-  },
-  async get_news(a){
-    const lang = /^(en|bn|hi|ar|ur)$/.test(a.lang || '') ? a.lang : 'en';
-    const cc = String(a.country || 'US').toUpperCase().slice(0, 2);
-    const rss = 'https://news.google.com/rss/search?q=' + encodeURIComponent((a.query || 'top news') + ' when:2d') + '&hl=' + lang + '&gl=' + cc + '&ceid=' + cc + ':' + lang;
-    const j = await getJSON('https://api.rss2json.com/v1/api.json?rss_url=' + encodeURIComponent(rss));
-    if(!j.items || !j.items.length) return {error:'no news found'};
-    return {query:a.query, headlines:j.items.slice(0, 6).map(i => ({title:i.title, published:i.pubDate, link:i.link}))};
   },
   async wikipedia_lookup(a){
     const lang = /^(en|bn|hi|ar|ur)$/.test(a.lang || '') ? a.lang : 'en';
@@ -227,7 +229,6 @@ const TOOL_DECLS = [{functionDeclarations:[
   {name:'get_weather', description:'Current weather and 3 day forecast for a city.', parameters:{type:'OBJECT', properties:{city:{type:'STRING', description:'City name in English, for example Riyadh'}}, required:['city']}},
   {name:'get_news', description:'Latest news headlines (last 2 days) about a topic or country. Returns headlines only.', parameters:{type:'OBJECT', properties:{topic:{type:'STRING', description:'Search topic in English, for example Saudi Arabia'}, lang:{type:'STRING', description:'Source language: en, bn, ar, hi or ur. Default en.'}}, required:['topic']}},
   {name:'get_exchange_rate', description:'Current exchange rate from one currency to another.', parameters:{type:'OBJECT', properties:{from:{type:'STRING', description:'ISO currency code such as USD'}, to:{type:'STRING', description:'ISO currency code such as SAR'}}, required:['from', 'to']}},
-  {name:'get_news', description:'Latest news headlines about a topic, country or city.', parameters:{type:'OBJECT', properties:{query:{type:'STRING', description:'Topic, for example Saudi Arabia, cricket, economy'}, lang:{type:'STRING', description:'Headline language: en, bn, hi, ar or ur. Default en.'}, country:{type:'STRING', description:'Two letter country code such as SA, BD, IN, US'}}, required:['query']}},
   {name:'wikipedia_lookup', description:'Short factual summary about a person, place, or topic from Wikipedia.', parameters:{type:'OBJECT', properties:{query:{type:'STRING'}, lang:{type:'STRING', description:'Wikipedia language code: en, bn, hi, ar or ur. Default en.'}}, required:['query']}}
 ]}];
 
@@ -284,7 +285,7 @@ async function askGemini(){
         setStatus('dekhchhi...');
         out = TOOLS[fc.name] ? await TOOLS[fc.name](fc.args || {}) : {error:'unknown tool'};
         if(out && out.source) sources.push({uri:out.source, title:out.title});
-        if(out && out.headlines) out.headlines.slice(0, 2).forEach(h => sources.push({uri:h.link, title:h.title.slice(0, 40)}));
+        if(out && out.articles) out.articles.slice(0, 2).forEach(h => sources.push({uri:h.url, title:(h.source || 'news')}));
         if(out && out.articles) out.articles.slice(0, 3).forEach(x => sources.push({uri:x.url, title:x.source}));
       }catch(e){ out = {error:'could not fetch: ' + e.message}; }
       resp.push({functionResponse:{name:fc.name, response:{result:out}}});
