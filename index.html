@@ -182,12 +182,22 @@ function addMsg(role, text, extra){
 /* ---------- free live tools (kono key lagbe na) ---------- */
 const WX = {0:'clear sky',1:'mainly clear',2:'partly cloudy',3:'overcast',45:'fog',48:'fog',51:'light drizzle',53:'drizzle',55:'heavy drizzle',61:'light rain',63:'rain',65:'heavy rain',71:'light snow',73:'snow',75:'heavy snow',80:'rain showers',81:'rain showers',82:'violent rain showers',95:'thunderstorm',96:'thunderstorm with hail',99:'thunderstorm with hail'};
 async function getJSON(u){ const r = await fetch(u); if(!r.ok) throw new Error('HTTP ' + r.status); return r.json(); }
-async function newsFallback(q, l){
+function newsUrl(q, l){
   const lang = /^(en|bn|hi|ar|ur)$/.test(l || '') ? l : 'en';
   const cc = {bn:'BD', hi:'IN', ar:'SA', ur:'PK'}[lang] || 'US';
-  const rss = 'https://news.google.com/rss/search?q=' + encodeURIComponent(q + ' when:2d') + '&hl=' + lang + '&gl=' + cc + '&ceid=' + cc + ':' + lang;
-  const j = await getJSON('https://api.rss2json.com/v1/api.json?rss_url=' + encodeURIComponent(rss));
+  return 'https://news.google.com/rss/search?q=' + encodeURIComponent(q + ' when:2d') + '&hl=' + lang + '&gl=' + cc + '&ceid=' + cc + ':' + lang;
+}
+async function newsViaRss2json(q, l){
+  const j = await getJSON('https://api.rss2json.com/v1/api.json?rss_url=' + encodeURIComponent(newsUrl(q, l)));
+  if(j.status && j.status !== 'ok') throw new Error(j.message || j.status);
   return (j.items || []).slice(0, 6).map(i => ({title:i.title, source:'Google News', date:i.pubDate, url:i.link}));
+}
+async function newsViaProxy(q, l){
+  const r = await fetch('https://api.allorigins.win/raw?url=' + encodeURIComponent(newsUrl(q, l)));
+  if(!r.ok) throw new Error('HTTP ' + r.status);
+  const doc = new DOMParser().parseFromString(await r.text(), 'text/xml');
+  const tx = (el, sel) => { const n = el.querySelector(sel); return n ? n.textContent : ''; };
+  return Array.from(doc.querySelectorAll('item')).slice(0, 6).map(i => ({title:tx(i, 'title'), source:tx(i, 'source') || 'Google News', date:tx(i, 'pubDate'), url:tx(i, 'link')}));
 }
 const TOOLS = {
   async get_weather(a){
@@ -201,14 +211,22 @@ const TOOLS = {
   async get_news(a){
     const q = String(a.topic || a.query || '').trim();
     const lg = {bn:'bengali', ar:'arabic', hi:'hindi', ur:'urdu'}[a.lang] || 'english';
+    const why = [];
     let arts = [];
     try{
       const r = await fetch('https://api.gdeltproject.org/api/v2/doc/doc?mode=ArtList&format=json&maxrecords=8&sort=DateDesc&timespan=2d&query=' + encodeURIComponent(q + ' sourcelang:' + lg));
-      const j = JSON.parse(await r.text());
-      arts = (j.articles || []).map(x => ({title:x.title, source:x.domain, date:x.seendate, url:x.url}));
-    }catch(e){}
-    if(!arts.length){ try{ arts = await newsFallback(q, a.lang); }catch(e){} }
-    if(!arts.length) return {error:'could not get news right now, ask again in a few seconds'};
+      const t = await r.text();
+      try{ arts = (JSON.parse(t).articles || []).map(x => ({title:x.title, source:x.domain, date:x.seendate, url:x.url})); }
+      catch(e){ why.push('GDELT: HTTP ' + r.status + ' ' + t.slice(0, 40)); }
+      if(!arts.length && !why.length) why.push('GDELT: kono article nai');
+    }catch(e){ why.push('GDELT: ' + e.message); }
+    const alts = [['Google News (rss2json)', newsViaRss2json], ['Google News (proxy)', newsViaProxy]];
+    for(const [name, fn] of alts){
+      if(arts.length) break;
+      try{ arts = await fn(q, a.lang); if(!arts.length) why.push(name + ': kono article nai'); }
+      catch(e){ why.push(name + ': ' + e.message); }
+    }
+    if(!arts.length) return {error:'could not get news right now, ask again in a few seconds', debug:why.join(' | ')};
     return {articles:arts};
   },
   async get_exchange_rate(a){
@@ -284,6 +302,7 @@ async function askGemini(){
       try{
         setStatus('dekhchhi...');
         out = TOOLS[fc.name] ? await TOOLS[fc.name](fc.args || {}) : {error:'unknown tool'};
+        if(out && out.debug) addMsg('sys', 'News error: ' + out.debug);
         if(out && out.source) sources.push({uri:out.source, title:out.title});
         if(out && out.articles) out.articles.slice(0, 2).forEach(h => sources.push({uri:h.url, title:(h.source || 'news')}));
         if(out && out.articles) out.articles.slice(0, 3).forEach(x => sources.push({uri:x.url, title:x.source}));
