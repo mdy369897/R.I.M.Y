@@ -52,6 +52,7 @@ input[type=text],input[type=password],select{width:100%;background:var(--bg);col
 .mem{font-size:14px;color:var(--fg);margin:6px 0;display:flex;gap:8px;justify-content:space-between;align-items:flex-start}
 .mem button{padding:2px 8px;font-size:13px}
 .note{font-size:13px;color:var(--muted);margin-top:6px}
+input[type=range]{width:100%;accent-color:var(--accent)}
 @media (prefers-reduced-motion:reduce){.orb{animation:none!important}}
 </style>
 </head>
@@ -94,6 +95,11 @@ input[type=text],input[type=password],select{width:100%;background:var(--bg);col
     </select>
     <div class="chk"><input id="search" type="checkbox"><label for="search" style="margin:0;color:var(--fg)">Google Search (billing lagbe; bondho thakle free weather, dam, Wikipedia, news cholbe)</label></div>
     <div class="chk"><input id="speak" type="checkbox"><label for="speak" style="margin:0;color:var(--fg)">R.I.M.Y uttor bolbe (voice)</label></div>
+    <label for="voice">R.I.M.Y-er golar voice (shunao chepe meye-r golar ta bachho)</label>
+    <div class="row"><select id="voice"></select><button id="vtest" type="button">Shunao</button></div>
+    <label for="pitch">Golar sur (barale meye-r moto mishti hoy)</label>
+    <input id="pitch" type="range" min="0.8" max="1.8" step="0.05">
+    <div class="note" id="vnote">Voice-er list tomar phone-er installed voice theke ashe. Upore je bhasha bachho, sei bhashar voice dekhabe.</div>
     <label>Ja ja mone rekheche</label>
     <div id="memlist"></div>
     <div class="row" style="margin-top:16px">
@@ -110,7 +116,7 @@ const LS = {
   get(k, d){ try{ const v = localStorage.getItem(k); return v == null ? d : JSON.parse(v); }catch(e){ return d; } },
   set(k, v){ try{ localStorage.setItem(k, JSON.stringify(v)); }catch(e){} }
 };
-let S = Object.assign({key:'', model:'gemini-3.6-flash', search:false, lang:'bn-BD', speak:true, name:''}, LS.get('rimy_settings', {}));
+let S = Object.assign({key:'', model:'gemini-3.6-flash', search:false, lang:'bn-BD', speak:true, name:'', pitch:1.25, vmap:{}}, LS.get('rimy_settings', {}));
 if(S.model === 'gemini-2.5-flash' || S.model === 'gemini-1.5-flash') S.model = 'gemini-3.6-flash';
 if(!S.v2){ S.search = false; S.v2 = true; }
 
@@ -370,9 +376,12 @@ function speak(t){
   const u = new SpeechSynthesisUtterance(say);
   u.lang = pickLang(say);
   const vs = speechSynthesis.getVoices();
-  const v = vs.find(x => x.lang === u.lang && /female|woman|zira|samantha/i.test(x.name)) || vs.find(x => x.lang === u.lang) || vs.find(x => x.lang.startsWith(u.lang.slice(0, 2)));
-  if(v) u.voice = v;
-  u.rate = 1; u.pitch = 1.1;
+  const pre = u.lang.slice(0, 2);
+  const norm = x => x.lang.replace('_', '-');
+  const mapped = S.vmap && S.vmap[pre] && vs.find(x => x.name === S.vmap[pre]);
+  const v = mapped || vs.find(x => norm(x) === u.lang && /female|woman|zira|samantha|hazel|susan|aria|jenny/i.test(x.name)) || vs.find(x => norm(x) === u.lang) || vs.find(x => x.lang.slice(0, 2) === pre);
+  if(v){ u.voice = v; u.lang = norm(v); }
+  u.rate = 1; u.pitch = S.pitch || 1.25;
   u.onstart = () => orb('speaking');
   u.onend = u.onerror = () => { orb(''); afterSpeak(); };
   speechSynthesis.speak(u);
@@ -411,6 +420,8 @@ function openSettings(){
   $('key').value = S.key; $('model').value = S.model; $('uname').value = S.name; $('lang').value = S.lang;
   $('search').checked = S.search; $('speak').checked = S.speak;
   renderMem();
+  $('pitch').value = S.pitch || 1.25;
+  fillVoices();
   $('set').classList.add('open');
 }
 function renderMem(){
@@ -427,6 +438,9 @@ function renderMem(){
 function saveSettings(){
   S.key = $('key').value.trim(); S.model = $('model').value.trim() || 'gemini-3.6-flash'; S.name = $('uname').value.trim();
   S.lang = $('lang').value; S.search = $('search').checked; S.speak = $('speak').checked;
+  S.pitch = parseFloat($('pitch').value) || 1.25;
+  S.vmap = S.vmap || {};
+  { const pre = S.lang.slice(0, 2); if($('voice').value) S.vmap[pre] = $('voice').value; else delete S.vmap[pre]; }
   persist(); $('set').classList.remove('open');
 }
 async function listModels(){
@@ -458,7 +472,33 @@ $('handsfree').onclick = () => {
   $('handsfree').style.color = handsfree ? '#2a0f1a' : '';
   if(handsfree) startListen(); else stopListen();
 };
-if('speechSynthesis' in window) speechSynthesis.getVoices();
+let VOICES = [];
+function fillVoices(){
+  const sel = $('voice'); if(!sel) return;
+  const pre = $('lang').value.slice(0, 2);
+  sel.textContent = '';
+  const auto = document.createElement('option'); auto.value = ''; auto.textContent = 'Auto'; sel.appendChild(auto);
+  VOICES.filter(v => v.lang.replace('_', '-').slice(0, 2) === pre).sort((a, b) => a.name.localeCompare(b.name)).forEach(v => {
+    const o = document.createElement('option'); o.value = v.name; o.textContent = v.name + ' (' + v.lang + ')'; sel.appendChild(o);
+  });
+  sel.value = (S.vmap && S.vmap[pre]) || '';
+  if(sel.value !== ((S.vmap && S.vmap[pre]) || '')) sel.value = '';
+  $('vnote').textContent = VOICES.length ? ('Ei bhashay ' + (sel.options.length - 1) + 'ta voice pawa gelo. Meye-r golar ta na pele phone-er Settings > Text-to-speech e giye aro voice install koro.') : 'Voice list ekhono load hoy ni. Settings bondho kore abar kholo.';
+}
+function loadVoices(){ if('speechSynthesis' in window){ VOICES = speechSynthesis.getVoices(); fillVoices(); } }
+if('speechSynthesis' in window){ speechSynthesis.onvoiceschanged = loadVoices; loadVoices(); }
+$('lang').onchange = fillVoices;
+$('vtest').onclick = () => {
+  if(!('speechSynthesis' in window)) return;
+  const pre = $('lang').value.slice(0, 2);
+  const sample = {bn:'হাই, আমি রিমি। তুমি কেমন আছো?', en:"Hi, I'm Rimy. How are you today?", hi:'हाय, मैं रिमी हूँ। आप कैसे हैं?', ar:'مرحبا، أنا ريمي. كيف حالك؟', ur:'ہائے، میں ریمی ہوں۔ آپ کیسے ہیں؟'}[pre] || 'Hi, I am Rimy.';
+  speechSynthesis.cancel();
+  const u = new SpeechSynthesisUtterance(sample);
+  const v = VOICES.find(x => x.name === $('voice').value);
+  if(v){ u.voice = v; u.lang = v.lang.replace('_', '-'); } else { u.lang = $('lang').value; }
+  u.pitch = parseFloat($('pitch').value) || 1.25;
+  speechSynthesis.speak(u);
+};
 
 history.slice(-12).forEach(h => addMsg(h.role === 'user' ? 'you' : 'her', h.text));
 if(!history.length){
