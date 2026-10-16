@@ -107,6 +107,7 @@ input[type=range]{width:100%;accent-color:var(--accent)}
       <button id="close" type="button" style="margin-left:auto;background:var(--accent);color:#2a0f1a;border-color:var(--accent)">Save</button>
     </div>
     <div class="note">Key ar chat shudhu ei phone-er browser-e save thake.</div>
+    <div class="note" id="ver">R.I.M.Y Version 12</div>
   </div>
 </div>
 
@@ -121,17 +122,18 @@ if(S.model === 'gemini-2.5-flash' || S.model === 'gemini-1.5-flash') S.model = '
 if(!S.v2){ S.search = false; S.v2 = true; }
 
 /* Jodi model na pay, tomar key-te jei flash model ache segulo theke nijei bachhe nei */
-async function autoPickModel(lite){
+async function autoPickModel(lite, opts){
+  opts = opts || {};
   const r = await fetch('https://generativelanguage.googleapis.com/v1beta/models?pageSize=200&key=' + encodeURIComponent(S.key));
   const j = await r.json();
   if(!r.ok) throw new Error((j.error && j.error.message) || ('HTTP ' + r.status));
-  const names = (j.models || []).filter(m => (m.supportedGenerationMethods || []).includes('generateContent')).map(m => m.name.replace('models/', ''));
+  const names = (j.models || []).filter(m => (m.supportedGenerationMethods || []).includes('generateContent')).map(m => m.name.replace('models/', '')).filter(n => !(opts.exclude || []).includes(n));
   const flash = names.filter(n => /flash/i.test(n) && (lite ? /lite/i.test(n) : !/lite/i.test(n)) && !/image|tts|live|audio|preview|exp|thinking|embed/i.test(n));
   const ver = n => { const m = n.match(/(\d+)(?:\.(\d+))?/); return m ? parseFloat(m[1] + '.' + (m[2] || '0')) : 0; };
   flash.sort((a, b) => ver(b) - ver(a));
   const pick = flash[0] || names.find(n => /flash/i.test(n)) || names[0];
   if(!pick) throw new Error('Tomar key-te kono model pawa jay ni.');
-  S.model = pick; persist();
+  if(!opts.temp){ S.model = pick; persist(); }
   return pick;
 }
 let history = LS.get('rimy_history', []);
@@ -260,17 +262,18 @@ async function askGemini(){
   let mode = S.search ? 'search' : 'tools';
   const contents = history.slice(-30).map(h => ({role:h.role, parts:[{text:h.text}]}));
   const sources = [];
+  let model = S.model;
   const call = async () => {
     const body = {systemInstruction:{parts:[{text:systemPrompt(mode)}]}, contents, tools: mode === 'search' ? [{google_search:{}}] : TOOL_DECLS};
-    const url = 'https://generativelanguage.googleapis.com/v1beta/models/' + encodeURIComponent(S.model) + ':generateContent?key=' + encodeURIComponent(S.key);
+    const url = 'https://generativelanguage.googleapis.com/v1beta/models/' + encodeURIComponent(model) + ':generateContent?key=' + encodeURIComponent(S.key);
     const r = await fetch(url, {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(body)});
     return {r, j: await r.json()};
   };
   let {r, j} = await call();
   if(!r.ok && (r.status === 404 || /not found|no longer available|not supported|new users/i.test((j.error && j.error.message) || ''))){
-    const old = S.model;
+    const old = model;
     const picked = await autoPickModel();
-    if(picked !== old){ addMsg('sys', 'Model "' + old + '" pawa jay ni. "' + picked + '" use korchhi.'); ({r, j} = await call()); }
+    if(picked !== old){ model = picked; addMsg('sys', 'Model "' + old + '" pawa jay ni. "' + picked + '" use korchhi.'); ({r, j} = await call()); }
   }
   if(!r.ok && r.status === 429){
     /* Google Search-er quota na thakle free tool (weather, dam, Wikipedia, news) diye cholbe */
@@ -280,16 +283,46 @@ async function askGemini(){
       ({r, j} = await call());
     }
     /* Tarpor-o quota na thakle halka (lite) model try kori */
-    if(!r.ok && r.status === 429 && !/lite/i.test(S.model)){
-      const old = S.model;
+    if(!r.ok && r.status === 429 && !/lite/i.test(model)){
+      const old = model;
       try{
-        const picked = await autoPickModel(true);
-        if(picked !== old){ addMsg('sys', '"' + old + '"-er quota shesh. "' + picked + '" diye cholchhi.'); ({r, j} = await call()); }
+        const picked = await autoPickModel(true, {temp:true});
+        if(picked !== old){ model = picked; addMsg('sys', '"' + old + '"-er quota shesh. "' + picked + '" diye cholchhi.'); ({r, j} = await call()); }
+      }catch(e){}
+    }
+  }
+  /* Gemini-te chap (503 / high demand) hole: abar try, tarpor onno model */
+  const busy = () => !r.ok && (r.status === 503 || r.status === 500 || /high demand|overloaded|unavailable|try again later/i.test((j.error && j.error.message) || ''));
+  const callSafe = async () => {
+    let res = await call();
+    for(let n = 0; n < 2; n++){
+      if(res.r.ok || !(res.r.status === 503 || res.r.status === 500 || /high demand|overloaded|unavailable|try again later/i.test((res.j.error && res.j.error.message) || ''))) break;
+      setStatus('abar try korchhi...');
+      await new Promise(z => setTimeout(z, 1500 * (n + 1)));
+      res = await call();
+    }
+    return res;
+  };
+  for(let n = 0; n < 2 && busy(); n++){
+    setStatus('abar try korchhi...');
+    await new Promise(z => setTimeout(z, 1500 * (n + 1)));
+    ({r, j} = await call());
+  }
+  if(busy()){
+    const tried = [model];
+    for(const lite of [false, true]){
+      if(!busy()) break;
+      try{
+        const alt = await autoPickModel(lite, {temp:true, exclude:tried});
+        tried.push(alt);
+        addMsg('sys', '"' + model + '"-e ekhon onek chap, tai "' + alt + '" diye cholchhi.');
+        model = alt;
+        ({r, j} = await call());
       }catch(e){}
     }
   }
   for(let step = 0; step < 4; step++){
-    if(!r.ok){ throw new Error((j.error && j.error.message) || ('HTTP ' + r.status)); }
+    if(!r.ok){ throw new Error(busy() ? 'Gemini-te ekhon onek chap, onno user-ra beshi use korche. Ek minute por abar try koro.' : ((j.error && j.error.message) || ('HTTP ' + r.status))); }
     const c = j.candidates && j.candidates[0];
     const parts = (c && c.content && c.content.parts) || [];
     const calls = parts.filter(p => p.functionCall);
@@ -316,7 +349,7 @@ async function askGemini(){
       resp.push({functionResponse:{name:fc.name, response:{result:out}}});
     }
     contents.push({role:'user', parts:resp});
-    ({r, j} = await call());
+    ({r, j} = await callSafe());
   }
   throw new Error('Tool onek bar chalano hoyeche. Abar try koro.');
 }
