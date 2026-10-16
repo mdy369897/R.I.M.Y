@@ -95,6 +95,16 @@ input[type=range]{width:100%;accent-color:var(--accent)}
     </select>
     <div class="chk"><input id="search" type="checkbox"><label for="search" style="margin:0;color:var(--fg)">Google Search (billing lagbe; bondho thakle free weather, dam, Wikipedia, news cholbe)</label></div>
     <div class="chk"><input id="speak" type="checkbox"><label for="speak" style="margin:0;color:var(--fg)">R.I.M.Y uttor bolbe (voice)</label></div>
+    <div class="chk"><input id="tts" type="checkbox"><label for="tts" style="margin:0;color:var(--fg)">Gemini-r prakritik meye-r voice (quota lage)</label></div>
+    <label for="ttsvoice">Gemini voice</label>
+    <div class="row"><select id="ttsvoice">
+      <option value="Aoede">Aoede (halka, mishti)</option>
+      <option value="Kore">Kore (shanto, dhir)</option>
+      <option value="Leda">Leda (tarun)</option>
+      <option value="Zephyr">Zephyr (ujjol)</option>
+      <option value="Achernar">Achernar (nromo)</option>
+      <option value="Callirrhoe">Callirrhoe (shohoj)</option>
+    </select><button id="ttest" type="button">Shunao</button></div>
     <label for="voice">R.I.M.Y-er golar voice (shunao chepe meye-r golar ta bachho)</label>
     <div class="row"><select id="voice"></select><button id="vtest" type="button">Shunao</button></div>
     <label for="pitch">Golar sur (barale meye-r moto mishti hoy)</label>
@@ -107,7 +117,7 @@ input[type=range]{width:100%;accent-color:var(--accent)}
       <button id="close" type="button" style="margin-left:auto;background:var(--accent);color:#2a0f1a;border-color:var(--accent)">Save</button>
     </div>
     <div class="note">Key ar chat shudhu ei phone-er browser-e save thake.</div>
-    <div class="note" id="ver">R.I.M.Y Version 12</div>
+    <div class="note" id="ver">R.I.M.Y Version 13</div>
   </div>
 </div>
 
@@ -117,7 +127,7 @@ const LS = {
   get(k, d){ try{ const v = localStorage.getItem(k); return v == null ? d : JSON.parse(v); }catch(e){ return d; } },
   set(k, v){ try{ localStorage.setItem(k, JSON.stringify(v)); }catch(e){} }
 };
-let S = Object.assign({key:'', model:'gemini-3.6-flash', search:false, lang:'bn-BD', speak:true, name:'', pitch:1.25, vmap:{}}, LS.get('rimy_settings', {}));
+let S = Object.assign({key:'', model:'gemini-3.6-flash', search:false, lang:'bn-BD', speak:true, name:'', pitch:1.25, vmap:{}, tts:true, ttsVoice:'Aoede', ttsModel:''}, LS.get('rimy_settings', {}));
 if(S.model === 'gemini-2.5-flash' || S.model === 'gemini-1.5-flash') S.model = 'gemini-3.6-flash';
 if(!S.v2){ S.search = false; S.v2 = true; }
 
@@ -368,6 +378,7 @@ function parseTags(raw){
 }
 
 async function send(text){
+  unlockAudio();
   text = (text || '').trim();
   if(!text || busy) return;
   if(!S.key){ addMsg('sys', 'Age Settings (⚙) e Gemini API key dao.'); openSettings(); return; }
@@ -401,7 +412,73 @@ function pickLang(t){
   if(/[؀-ۿ]/.test(t)) return /^(ur)/.test(S.lang) ? 'ur-PK' : 'ar-SA';
   return 'en-US';
 }
+/* ---------- Gemini voice (prakritik meye-r golar) ---------- */
+let audioCtx = null, curSrc = null, ttsPausedUntil = 0;
+function unlockAudio(){
+  try{
+    if(!audioCtx){ const AC = window.AudioContext || window.webkitAudioContext; if(AC) audioCtx = new AC(); }
+    if(audioCtx && audioCtx.state === 'suspended') audioCtx.resume();
+  }catch(e){}
+}
+function stopAudio(){ if(curSrc){ try{ curSrc.onended = null; curSrc.stop(); }catch(e){} curSrc = null; } }
+async function pickTtsModel(){
+  if(S.ttsModel) return S.ttsModel;
+  const r = await fetch('https://generativelanguage.googleapis.com/v1beta/models?pageSize=200&key=' + encodeURIComponent(S.key));
+  const j = await r.json();
+  if(!r.ok) throw new Error((j.error && j.error.message) || ('HTTP ' + r.status));
+  const ver = n => { const m = n.match(/(\d+)(?:\.(\d+))?/); return m ? parseFloat(m[1] + '.' + (m[2] || '0')) : 0; };
+  const list = (j.models || []).map(m => m.name.replace('models/', '')).filter(n => /tts/i.test(n));
+  list.sort((a, b) => (/flash/i.test(b) - /flash/i.test(a)) || (ver(b) - ver(a)));
+  if(!list.length) throw new Error('Tomar key-te Gemini voice model nei');
+  S.ttsModel = list[0]; persist();
+  return S.ttsModel;
+}
+function playPcm(b64, rate){
+  return new Promise(resolve => {
+    const bin = atob(b64), n = bin.length >> 1;
+    const buf = audioCtx.createBuffer(1, n, rate);
+    const ch = buf.getChannelData(0);
+    for(let i = 0; i < n; i++){ let v = bin.charCodeAt(2 * i) | (bin.charCodeAt(2 * i + 1) << 8); if(v >= 32768) v -= 65536; ch[i] = v / 32768; }
+    stopAudio();
+    const src = audioCtx.createBufferSource();
+    src.buffer = buf; src.connect(audioCtx.destination);
+    src.onended = () => { curSrc = null; resolve(); };
+    curSrc = src; src.start();
+  });
+}
+async function geminiSpeak(text, voice){
+  unlockAudio();
+  if(!audioCtx) throw new Error('Ei browser-e audio cholbe na');
+  const model = await pickTtsModel();
+  const body = {contents:[{parts:[{text:'Say in a warm, soft, affectionate, natural voice: ' + text}]}], generationConfig:{responseModalities:['AUDIO'], speechConfig:{voiceConfig:{prebuiltVoiceConfig:{voiceName:voice || S.ttsVoice || 'Aoede'}}}}};
+  const r = await fetch('https://generativelanguage.googleapis.com/v1beta/models/' + encodeURIComponent(model) + ':generateContent?key=' + encodeURIComponent(S.key), {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(body)});
+  const j = await r.json();
+  if(!r.ok){ if(r.status === 404){ S.ttsModel = ''; persist(); } const e = new Error((j.error && j.error.message) || ('HTTP ' + r.status)); e.status = r.status; throw e; }
+  const parts = (j.candidates && j.candidates[0] && j.candidates[0].content && j.candidates[0].content.parts) || [];
+  const part = parts.find(x => x.inlineData && x.inlineData.data);
+  if(!part) throw new Error('Gemini voice ashe ni');
+  const rate = parseInt(((part.inlineData.mimeType || '').match(/rate=(\d+)/) || [])[1], 10) || 24000;
+  orb('speaking'); setStatus('bolchhi...');
+  await playPcm(part.inlineData.data, rate);
+  orb(''); setStatus('ready');
+}
 function speak(t){
+  if(!S.speak){ afterSpeak(); return; }
+  const say = t.replace(/[*_#`~>]/g, '').replace(/[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}]/gu, '').trim().slice(0, 500);
+  if(!say){ afterSpeak(); return; }
+  if(S.tts && S.key && audioCtx && Date.now() >= ttsPausedUntil){
+    setStatus('golaa toiri korchhi...');
+    geminiSpeak(say).then(() => { orb(''); afterSpeak(); }).catch(e => {
+      ttsPausedUntil = Date.now() + ((e.status === 429 || /quota/i.test(e.message)) ? 10 * 60000 : 60000);
+      addMsg('sys', 'Gemini voice ekhon pabo na (' + String(e.message).slice(0, 90) + '), tai built-in voice diye bolchhi.');
+      setStatus('ready'); orb('');
+      speakBrowser(t);
+    });
+    return;
+  }
+  speakBrowser(t);
+}
+function speakBrowser(t){
   if(!S.speak || !('speechSynthesis' in window)){ afterSpeak(); return; }
   const say = t.replace(/[*_#`~>]/g, '').replace(/[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}]/gu, '').trim();
   if(!say){ afterSpeak(); return; }
@@ -426,6 +503,7 @@ const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
 function startListen(){
   if(!SR){ addMsg('sys', 'Ei browser-e voice shona cholbe na. Chrome e kholo.'); handsfree = false; $('handsfree').style.background = ''; return; }
   if(listening || busy) return;
+  stopAudio();
   if('speechSynthesis' in window) speechSynthesis.cancel();
   rec = new SR();
   rec.lang = S.lang; rec.interimResults = true; rec.continuous = false;
@@ -454,6 +532,7 @@ function openSettings(){
   $('search').checked = S.search; $('speak').checked = S.speak;
   renderMem();
   $('pitch').value = S.pitch || 1.25;
+  $('tts').checked = S.tts !== false; $('ttsvoice').value = S.ttsVoice || 'Aoede';
   fillVoices();
   $('set').classList.add('open');
 }
@@ -472,6 +551,7 @@ function saveSettings(){
   S.key = $('key').value.trim(); S.model = $('model').value.trim() || 'gemini-3.6-flash'; S.name = $('uname').value.trim();
   S.lang = $('lang').value; S.search = $('search').checked; S.speak = $('speak').checked;
   S.pitch = parseFloat($('pitch').value) || 1.25;
+  S.tts = $('tts').checked; S.ttsVoice = $('ttsvoice').value;
   S.vmap = S.vmap || {};
   { const pre = S.lang.slice(0, 2); if($('voice').value) S.vmap[pre] = $('voice').value; else delete S.vmap[pre]; }
   persist(); $('set').classList.remove('open');
@@ -498,8 +578,9 @@ $('clearchat').onclick = () => { history = []; $('msgs').textContent = ''; persi
 $('send').onclick = () => { const t = $('txt').value; $('txt').value = ''; send(t); };
 $('txt').addEventListener('keydown', e => { if(e.key === 'Enter' && !e.shiftKey){ e.preventDefault(); $('send').click(); } });
 $('txt').addEventListener('input', e => { e.target.style.height = 'auto'; e.target.style.height = Math.min(e.target.scrollHeight, 120) + 'px'; });
-$('mic').onclick = () => { if(listening){ stopListen(); } else { startListen(); } };
+$('mic').onclick = () => { unlockAudio(); if(listening){ stopListen(); } else { startListen(); } };
 $('handsfree').onclick = () => {
+  unlockAudio();
   handsfree = !handsfree;
   $('handsfree').style.background = handsfree ? 'var(--accent-2)' : '';
   $('handsfree').style.color = handsfree ? '#2a0f1a' : '';
@@ -521,6 +602,16 @@ function fillVoices(){
 function loadVoices(){ if('speechSynthesis' in window){ VOICES = speechSynthesis.getVoices(); fillVoices(); } }
 if('speechSynthesis' in window){ speechSynthesis.onvoiceschanged = loadVoices; loadVoices(); }
 $('lang').onchange = fillVoices;
+$('ttest').onclick = async () => {
+  unlockAudio();
+  const key = $('key').value.trim(); if(key) S.key = key;
+  if(!S.key){ $('vnote').textContent = 'Age upore API key dao.'; return; }
+  $('vnote').textContent = 'Gemini voice toiri hochhe...';
+  try{
+    await geminiSpeak('হাই, আমি রিমি। তুমি কেমন আছো সোনা?', $('ttsvoice').value);
+    $('vnote').textContent = 'Gemini voice kaj korche. Pochhondo hole Save chapo.';
+  }catch(e){ $('vnote').textContent = 'Gemini voice hoy ni: ' + String(e.message).slice(0, 120); }
+};
 $('vtest').onclick = () => {
   if(!('speechSynthesis' in window)) return;
   const pre = $('lang').value.slice(0, 2);
