@@ -117,7 +117,7 @@ input[type=range]{width:100%;accent-color:var(--accent)}
       <button id="close" type="button" style="margin-left:auto;background:var(--accent);color:#2a0f1a;border-color:var(--accent)">Save</button>
     </div>
     <div class="note">Key ar chat shudhu ei phone-er browser-e save thake.</div>
-    <div class="note" id="ver">R.I.M.Y Version 13</div>
+    <div class="note" id="ver">R.I.M.Y Version 14</div>
   </div>
 </div>
 
@@ -450,7 +450,7 @@ async function geminiSpeak(text, voice){
   unlockAudio();
   if(!audioCtx) throw new Error('Ei browser-e audio cholbe na');
   const model = await pickTtsModel();
-  const body = {contents:[{parts:[{text:'Say in a warm, soft, affectionate, natural voice: ' + text}]}], generationConfig:{responseModalities:['AUDIO'], speechConfig:{voiceConfig:{prebuiltVoiceConfig:{voiceName:voice || S.ttsVoice || 'Aoede'}}}}};
+  const body = {contents:[{parts:[{text:text}]}], generationConfig:{responseModalities:['AUDIO'], speechConfig:{voiceConfig:{prebuiltVoiceConfig:{voiceName:voice || S.ttsVoice || 'Aoede'}}}}};
   const r = await fetch('https://generativelanguage.googleapis.com/v1beta/models/' + encodeURIComponent(model) + ':generateContent?key=' + encodeURIComponent(S.key), {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(body)});
   const j = await r.json();
   if(!r.ok){ if(r.status === 404){ S.ttsModel = ''; persist(); } const e = new Error((j.error && j.error.message) || ('HTTP ' + r.status)); e.status = r.status; throw e; }
