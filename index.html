@@ -117,7 +117,7 @@ input[type=range]{width:100%;accent-color:var(--accent)}
       <button id="close" type="button" style="margin-left:auto;background:var(--accent);color:#2a0f1a;border-color:var(--accent)">Save</button>
     </div>
     <div class="note">Key ar chat shudhu ei phone-er browser-e save thake.</div>
-    <div class="note" id="ver">R.I.M.Y Version 17</div>
+    <div class="note" id="ver">R.I.M.Y Version 18</div>
   </div>
 </div>
 
@@ -162,7 +162,7 @@ Emotion: read the user's mood from their words and answer to match it. Comfort t
 
 Keep replies short and natural, like a spoken conversation (1 to 4 sentences) unless the user asks for detail. No markdown, no lists, no emoji overload, because your words may be read aloud.
 
-${mode === 'search' ? 'Live info: you can search the web. Use it for news, prices, weather, sports, and anything recent.' : 'Live info: you have four live tools: get_news (recent headlines only), get_weather (weather and forecast for a city), get_exchange_rate (currency rates), and wikipedia_lookup (facts about people, places, topics). Always call the matching tool instead of guessing, and report what it returns faithfully. For news, give the headlines in the user\'s language, say they are headlines only, and never add details the headlines do not contain. If a tool returns an error or nothing, say so honestly. You do NOT have general web search. For anything live these tools cannot answer (sports scores, stock prices), say sweetly and honestly that you cannot check that right now. Never claim you searched the web and never invent current facts.'} Today is ${now}.
+${mode === 'search' ? 'Live info: you can search the web. Use it for news, prices, weather, sports, and anything recent.' : 'Live info: you have live tools: get_news (recent headlines with links), read_article (opens a page and returns its text), web_search (searches the web), get_weather, get_exchange_rate, and wikipedia_lookup. Always call a tool instead of guessing, and report what it returns faithfully. For news: first call get_news and give the headlines. When the user asks for details, more, or the full story, call read_article on the most relevant link and explain it in the user\'s language in detail, using only what the page text says. For anything else live (scores, prices, recent events) use web_search, then read_article if you need more. If a tool errors, try another link or tool once, then say honestly what failed. Never invent facts and never claim to have read something you did not.'} Today is ${now}.
 
 Memory: the notes below are things you remember about the user. Use them naturally when relevant, and never recite them without reason.
 ${memory.length ? memory.map(m => '- ' + m).join('\n') : '- (nothing yet)'}
@@ -247,6 +247,24 @@ const TOOLS = {
     if(!arts.length) return {error:'could not get news right now, ask again in a few seconds', debug:why.join(' | ')};
     return {articles:arts};
   },
+  async read_article(a){
+    const u = String(a.url || '').trim();
+    if(!/^https?:\/\//.test(u)) return {error:'invalid url'};
+    const r = await fetch('https://r.jina.ai/' + u, {headers:{'Accept':'text/plain'}});
+    if(!r.ok) return {error:'could not open the page (HTTP ' + r.status + ')'};
+    const t = (await r.text()).replace(/\n{3,}/g, '\n\n').trim();
+    if(t.length < 200) return {error:'page had no readable text'};
+    return {url:u, text:t.slice(0, 7000)};
+  },
+  async web_search(a){
+    const q = String(a.query || '').trim();
+    if(!q) return {error:'empty query'};
+    const r = await fetch('https://r.jina.ai/https://html.duckduckgo.com/html/?q=' + encodeURIComponent(q), {headers:{'Accept':'text/plain'}});
+    if(!r.ok) return {error:'web search failed (HTTP ' + r.status + ')'};
+    const t = (await r.text()).replace(/\n{3,}/g, '\n\n').trim();
+    if(t.length < 100) return {error:'no results'};
+    return {query:q, results:t.slice(0, 6000)};
+  },
   async get_exchange_rate(a){
     const from = String(a.from || '').toUpperCase(), to = String(a.to || '').toUpperCase();
     const j = await getJSON('https://open.er-api.com/v6/latest/' + encodeURIComponent(from));
@@ -263,7 +281,9 @@ const TOOLS = {
 };
 const TOOL_DECLS = [{functionDeclarations:[
   {name:'get_weather', description:'Current weather and 3 day forecast for a city.', parameters:{type:'OBJECT', properties:{city:{type:'STRING', description:'City name in English, for example Riyadh'}}, required:['city']}},
-  {name:'get_news', description:'Latest news headlines (last 2 days) about a topic or country. Returns headlines only.', parameters:{type:'OBJECT', properties:{topic:{type:'STRING', description:'Search topic in English, for example Saudi Arabia'}, lang:{type:'STRING', description:'Source language: en, bn, ar, hi or ur. Default en.'}}, required:['topic']}},
+  {name:'get_news', description:'Latest news headlines (last 2 days) about a topic or country, with article links. Use read_article on a link to get details.', parameters:{type:'OBJECT', properties:{topic:{type:'STRING', description:'Search topic in English, for example Saudi Arabia'}, lang:{type:'STRING', description:'Source language: en, bn, ar, hi or ur. Default en.'}}, required:['topic']}},
+  {name:'read_article', description:'Opens a web page by URL and returns its readable text. Use it after get_news or web_search when the user wants details, to read the real article before answering.', parameters:{type:'OBJECT', properties:{url:{type:'STRING', description:'Full http(s) URL of the page'}}, required:['url']}},
+  {name:'web_search', description:'Searches the web and returns result titles, links and snippets. Use for sports scores, prices, recent events, or anything the other tools cannot answer.', parameters:{type:'OBJECT', properties:{query:{type:'STRING'}}, required:['query']}},
   {name:'get_exchange_rate', description:'Current exchange rate from one currency to another.', parameters:{type:'OBJECT', properties:{from:{type:'STRING', description:'ISO currency code such as USD'}, to:{type:'STRING', description:'ISO currency code such as SAR'}}, required:['from', 'to']}},
   {name:'wikipedia_lookup', description:'Short factual summary about a person, place, or topic from Wikipedia.', parameters:{type:'OBJECT', properties:{query:{type:'STRING'}, lang:{type:'STRING', description:'Wikipedia language code: en, bn, hi, ar or ur. Default en.'}}, required:['query']}}
 ]}];
@@ -331,7 +351,7 @@ async function askGemini(){
       }catch(e){}
     }
   }
-  for(let step = 0; step < 4; step++){
+  for(let step = 0; step < 6; step++){
     if(!r.ok){ throw new Error(busy() ? 'Gemini-te ekhon onek chap, onno user-ra beshi use korche. Ek minute por abar try koro.' : ((j.error && j.error.message) || ('HTTP ' + r.status))); }
     const c = j.candidates && j.candidates[0];
     const parts = (c && c.content && c.content.parts) || [];
