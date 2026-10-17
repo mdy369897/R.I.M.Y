@@ -34,6 +34,11 @@ button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-vis
 .acts a{color:var(--bg);background:var(--accent-2);padding:6px 12px;border-radius:10px;text-decoration:none;font-size:14px}
 .src{margin-top:8px;font-size:12.5px;color:var(--muted)}
 .src a{color:var(--accent-2)}
+.bar{display:flex;gap:2px;margin-top:8px;margin-left:-8px}
+.bar button{border:none;padding:6px 8px;border-radius:10px;color:var(--muted);display:flex;align-items:center}
+.bar button svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.bar button.on{color:var(--accent-2)}
+.bar button.on svg{fill:currentColor}
 #dock{padding:10px 16px;padding-bottom:calc(10px + env(safe-area-inset-bottom,0px));border-top:1px solid var(--line);background:var(--panel);display:flex;gap:8px;align-items:flex-end}
 #txt{flex:1;min-width:0;resize:none;max-height:120px;background:var(--bg);color:var(--fg);border:1px solid var(--line);border-radius:14px;padding:10px 12px;font:inherit}
 #mic,#send{width:46px;height:46px;border-radius:50%;padding:0;font-size:20px;flex:none}
@@ -117,7 +122,7 @@ input[type=range]{width:100%;accent-color:var(--accent)}
       <button id="close" type="button" style="margin-left:auto;background:var(--accent);color:#2a0f1a;border-color:var(--accent)">Save</button>
     </div>
     <div class="note">Key ar chat shudhu ei phone-er browser-e save thake.</div>
-    <div class="note" id="ver">R.I.M.Y Version 18</div>
+    <div class="note" id="ver">R.I.M.Y Version 19</div>
   </div>
 </div>
 
@@ -162,7 +167,7 @@ Emotion: read the user's mood from their words and answer to match it. Comfort t
 
 Keep replies short and natural, like a spoken conversation (1 to 4 sentences) unless the user asks for detail. No markdown, no lists, no emoji overload, because your words may be read aloud.
 
-${mode === 'search' ? 'Live info: you can search the web. Use it for news, prices, weather, sports, and anything recent.' : 'Live info: you have live tools: get_news (recent headlines with links), read_article (opens a page and returns its text), web_search (searches the web), get_weather, get_exchange_rate, and wikipedia_lookup. Always call a tool instead of guessing, and report what it returns faithfully. For news: first call get_news and give the headlines. When the user asks for details, more, or the full story, call read_article on the most relevant link and explain it in the user\'s language in detail, using only what the page text says. For anything else live (scores, prices, recent events) use web_search, then read_article if you need more. If a tool errors, try another link or tool once, then say honestly what failed. Never invent facts and never claim to have read something you did not.'} Today is ${now}.
+${mode === 'search' ? 'Live info: you can search the web. Use it for news, prices, weather, sports, and anything recent.' : 'Live info: you have live tools: get_news (recent headlines with links), read_article (opens a page and returns its text), web_search (searches the web), get_weather, get_exchange_rate, and wikipedia_lookup. Always call a tool instead of guessing, and report what it returns faithfully. For news: first call get_news and give the headlines. When the user asks for details, more, or the full story, call read_article on the most relevant link (if it fails or has too little text, try the next link, up to 3 links) and then explain the story fully in the user\'s language: 6 to 10 sentences covering who, what, where, when, why and what happens next, using only what the page text says. Detail requests override the short-reply rule. If the headline has no readable page, use web_search for the same story. For anything else live (scores, prices, recent events) use web_search, then read_article if you need more. If a tool errors, try another link or tool once, then say honestly what failed. Never invent facts and never claim to have read something you did not.'} Today is ${now}.
 
 Memory: the notes below are things you remember about the user. Use them naturally when relevant, and never recite them without reason.
 ${memory.length ? memory.map(m => '- ' + m).join('\n') : '- (nothing yet)'}
@@ -178,6 +183,36 @@ ${S.name ? 'The user\'s name is ' + S.name + '.' : ''}`;
 function setStatus(t){ $('status').textContent = t; }
 function orb(cls){ $('orb').className = 'orb' + (cls ? ' ' + cls : ''); }
 
+const IC = {
+  copy:'<rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V6a2 2 0 0 1 2-2h9"/>',
+  share:'<path d="M12 15V4"/><path d="M8 8l4-4 4 4"/><path d="M5 13v5a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-5"/>',
+  speak:'<path d="M4 9v6h4l5 4V5L8 9H4z"/><path d="M16.5 8.5a5 5 0 0 1 0 7"/><path d="M19 6a8.5 8.5 0 0 1 0 12"/>',
+  like:'<path d="M7 11v9H4v-9h3zM7 11l4-8a2 2 0 0 1 2 2v4h5.5a2 2 0 0 1 2 2.3l-1.2 6A2 2 0 0 1 17.3 20H7"/>',
+  dislike:'<path d="M17 13V4h3v9h-3zM17 13l-4 8a2 2 0 0 1-2-2v-4H5.5a2 2 0 0 1-2-2.3l1.2-6A2 2 0 0 1 6.7 4H17"/>',
+  redo:'<path d="M20 12a8 8 0 1 1-2.4-5.7"/><path d="M20 4v5h-5"/>'
+};
+function copyText(t){
+  if(navigator.clipboard && navigator.clipboard.writeText) return navigator.clipboard.writeText(t);
+  return new Promise((ok, no) => { try{ const x = document.createElement('textarea'); x.value = t; document.body.appendChild(x); x.select(); document.execCommand('copy'); x.remove(); ok(); }catch(e){ no(e); } });
+}
+function saveFeedback(text, v){
+  const fb = LS.get('rimy_fb', []).filter(x => x.t !== text.slice(0, 80));
+  if(v) fb.push({t:text.slice(0, 80), v});
+  LS.set('rimy_fb', fb.slice(-50));
+}
+function addBar(d, text){
+  document.querySelectorAll('.bar .rg').forEach(b => b.remove());
+  const bar = document.createElement('div'); bar.className = 'bar';
+  const mk = (k, label, fn, cls) => { const b = document.createElement('button'); b.type = 'button'; b.title = label; b.setAttribute('aria-label', label); if(cls) b.className = cls; b.innerHTML = '<svg viewBox="0 0 24 24">' + IC[k] + '</svg>'; b.onclick = () => fn(b); bar.appendChild(b); return b; };
+  mk('copy', 'Copy', b => { copyText(text).then(() => setStatus('copy hoyeche')).catch(() => setStatus('copy hoy ni')); });
+  mk('share', 'Share', () => { if(navigator.share){ navigator.share({text}).catch(() => {}); } else { copyText(text).then(() => setStatus('copy hoyeche (share nei)')); } });
+  mk('speak', 'Shuno', () => { unlockAudio(); stopAudio(); if('speechSynthesis' in window) speechSynthesis.cancel(); speak(text); });
+  const lk = mk('like', 'Bhalo laglo', b => { const on = !b.classList.contains('on'); b.classList.toggle('on', on); dk.classList.remove('on'); saveFeedback(text, on ? 'like' : ''); });
+  const dk = mk('dislike', 'Bhalo lage ni', b => { const on = !b.classList.contains('on'); b.classList.toggle('on', on); lk.classList.remove('on'); saveFeedback(text, on ? 'dislike' : ''); });
+  mk('redo', 'Abar uttor dao', () => { if(busy) return; const last = history[history.length - 1], u = history[history.length - 2]; if(!last || last.role !== 'model' || !u || u.role !== 'user') return; history.pop(); d.remove(); send(u.text, true); }, 'rg');
+  d.appendChild(bar);
+}
+
 function addMsg(role, text, extra){
   const d = document.createElement('div');
   d.className = 'm ' + role;
@@ -192,6 +227,7 @@ function addMsg(role, text, extra){
     extra.sources.slice(0, 3).forEach((x, i) => { const l = document.createElement('a'); l.href = x.uri; l.target = '_blank'; l.rel = 'noopener'; l.textContent = (x.title || 'link') + (i < Math.min(extra.sources.length, 3) - 1 ? ', ' : ''); s.appendChild(l); });
     d.appendChild(s);
   }
+  if(role === 'her' && !(extra && extra.nobar)) addBar(d, text);
   $('msgs').appendChild(d);
   $('msgs').scrollTop = $('msgs').scrollHeight;
   return d;
@@ -250,11 +286,27 @@ const TOOLS = {
   async read_article(a){
     const u = String(a.url || '').trim();
     if(!/^https?:\/\//.test(u)) return {error:'invalid url'};
-    const r = await fetch('https://r.jina.ai/' + u, {headers:{'Accept':'text/plain'}});
-    if(!r.ok) return {error:'could not open the page (HTTP ' + r.status + ')'};
-    const t = (await r.text()).replace(/\n{3,}/g, '\n\n').trim();
-    if(t.length < 200) return {error:'page had no readable text'};
-    return {url:u, text:t.slice(0, 7000)};
+    const why = [];
+    try{
+      const r = await fetch('https://r.jina.ai/' + u, {headers:{'Accept':'text/plain'}});
+      if(r.ok){
+        const t = (await r.text()).replace(/\n{3,}/g, '\n\n').trim();
+        if(t.length >= 300) return {url:u, text:t.slice(0, 8000)};
+        why.push('reader: text kom');
+      } else why.push('reader HTTP ' + r.status);
+    }catch(e){ why.push('reader: ' + e.message); }
+    try{
+      const r = await fetch('https://api.allorigins.win/raw?url=' + encodeURIComponent(u));
+      if(r.ok){
+        const doc = new DOMParser().parseFromString(await r.text(), 'text/html');
+        doc.querySelectorAll('script,style,nav,footer,header,aside,form,noscript').forEach(n => n.remove());
+        const ps = Array.from(doc.querySelectorAll('article p, main p, p')).map(p => p.textContent.trim()).filter(x => x.length > 60);
+        const t = ps.join('\n\n');
+        if(t.length >= 300) return {url:u, text:t.slice(0, 8000)};
+        why.push('proxy: text kom');
+      } else why.push('proxy HTTP ' + r.status);
+    }catch(e){ why.push('proxy: ' + e.message); }
+    return {error:'could not read this page, try another link', debug:why.join(' | ')};
   },
   async web_search(a){
     const q = String(a.query || '').trim();
@@ -397,15 +449,14 @@ function parseTags(raw){
   return {clean, mood, acts};
 }
 
-async function send(text){
+async function send(text, regen){
   unlockAudio();
   text = (text || '').trim();
   if(!text || busy) return;
   if(!S.key){ addMsg('sys', 'Age Settings (⚙) e Gemini API key dao.'); openSettings(); return; }
   busy = true;
   stopListen();
-  addMsg('you', text);
-  history.push({role:'user', text});
+  if(!regen){ addMsg('you', text); history.push({role:'user', text}); }
   setStatus('bhabchhi...'); orb('');
   try{
     const {text:raw, sources} = await askGemini();
@@ -416,7 +467,7 @@ async function send(text){
     persist();
     speak(clean || raw);
   }catch(e){
-    history.pop();
+    if(!regen) history.pop();
     addMsg('sys', 'Shomossha: ' + (e.message === 'Failed to fetch' ? 'Internet-er sathe jog hochhe na. Net check kore abar try koro.' : e.message) + (/not found|404/i.test(e.message) ? ' (Settings-e "List" chepe ekta cholbe emon model bachho.)' : ''));
     setStatus('ready');
     persist();
@@ -673,7 +724,7 @@ $('vtest').onclick = () => {
 
 history.slice(-12).forEach(h => addMsg(h.role === 'user' ? 'you' : 'her', h.text));
 if(!history.length){
-  addMsg('her', (S.name ? S.name + ', ' : '') + 'ami R.I.M.Y. Tomar ki khobor? Kotha bolo, ami shunchhi.');
+  addMsg('her', (S.name ? S.name + ', ' : '') + 'ami R.I.M.Y. Tomar ki khobor? Kotha bolo, ami shunchhi.', {nobar:true});
 }
 if(!S.key){ addMsg('sys', 'Shuru korar age ⚙ chepe Gemini API key dao.'); }
 </script>
