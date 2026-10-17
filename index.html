@@ -117,7 +117,7 @@ input[type=range]{width:100%;accent-color:var(--accent)}
       <button id="close" type="button" style="margin-left:auto;background:var(--accent);color:#2a0f1a;border-color:var(--accent)">Save</button>
     </div>
     <div class="note">Key ar chat shudhu ei phone-er browser-e save thake.</div>
-    <div class="note" id="ver">R.I.M.Y Version 15</div>
+    <div class="note" id="ver">R.I.M.Y Version 17</div>
   </div>
 </div>
 
@@ -420,7 +420,7 @@ function unlockAudio(){
     if(audioCtx && audioCtx.state === 'suspended') audioCtx.resume();
   }catch(e){}
 }
-function stopAudio(){ if(curSrc){ try{ curSrc.onended = null; curSrc.stop(); }catch(e){} curSrc = null; } }
+function stopAudio(){ if(curSrc){ try{ curSrc.onended = null; if(curSrc.pause) curSrc.pause(); else curSrc.stop(); }catch(e){} curSrc = null; } }
 async function pickTtsModel(){
   if(S.ttsModel) return S.ttsModel;
   const r = await fetch('https://generativelanguage.googleapis.com/v1beta/models?pageSize=200&key=' + encodeURIComponent(S.key));
@@ -439,19 +439,38 @@ function playPcm(b64, rate){
     const buf = audioCtx.createBuffer(1, n, rate);
     const ch = buf.getChannelData(0);
     for(let i = 0; i < n; i++){ let v = bin.charCodeAt(2 * i) | (bin.charCodeAt(2 * i + 1) << 8); if(v >= 32768) v -= 65536; ch[i] = v / 32768; }
-    // tail-er noise/pop kete fela: sesh-er nishobdo/noise trim + fade
+    // 1) sesh-er noise: lomba nishobdo-r pore chhoto jhamela tukro thakle kete fela
+    const win = Math.floor(rate * 0.02), nw = Math.floor(n / win);
+    const rms = w => { let t = 0; for(let i = w * win; i < (w + 1) * win; i++) t += ch[i] * ch[i]; return Math.sqrt(t / win); };
     let end = n;
     while(end > rate * 0.3 && Math.abs(ch[end - 1]) < 0.015) end--;
-    end = Math.min(n, end + Math.floor(rate * 0.12));
+    let w = Math.floor(end / win) - 1, quiet = 0, lastGap = -1;
+    for(; w >= 0 && (end - w * win) < rate * 2.0; w--){
+      if(rms(w) < 0.012){ quiet++; if(quiet >= 15){ lastGap = w; break; } } else quiet = 0;
+    }
+    if(lastGap >= 0 && (end - (lastGap + 15) * win) < rate * 1.2) end = lastGap * win;
+    while(end > rate * 0.3 && Math.abs(ch[end - 1]) < 0.015) end--;
+    end = Math.min(n, end + Math.floor(rate * 0.1));
+    // 2) fade in/out
     const fo = Math.floor(rate * 0.08), fi = Math.floor(rate * 0.01);
     for(let i = 0; i < fo && end - 1 - i >= 0; i++) ch[end - 1 - i] *= i / fo;
     for(let i = 0; i < fi && i < end; i++) ch[i] *= i / fi;
-    for(let i = end; i < n; i++) ch[i] = 0;
+    // 3) WAV baniye <audio> diye bajano (Web Audio-r speaker pop erate) + sheshe nishobdo
+    const tot = end + Math.floor(rate * 0.4);
+    const dv = new DataView(new ArrayBuffer(44 + tot * 2));
+    const wr = (o, t) => { for(let i = 0; i < t.length; i++) dv.setUint8(o + i, t.charCodeAt(i)); };
+    wr(0, 'RIFF'); dv.setUint32(4, 36 + tot * 2, true); wr(8, 'WAVE'); wr(12, 'fmt ');
+    dv.setUint32(16, 16, true); dv.setUint16(20, 1, true); dv.setUint16(22, 1, true);
+    dv.setUint32(24, rate, true); dv.setUint32(28, rate * 2, true); dv.setUint16(32, 2, true); dv.setUint16(34, 16, true);
+    wr(36, 'data'); dv.setUint32(40, tot * 2, true);
+    for(let i = 0; i < end; i++){ const v = Math.max(-1, Math.min(1, ch[i] * 0.85)); dv.setInt16(44 + i * 2, v < 0 ? v * 32768 : v * 32767, true); }
     stopAudio();
-    const src = audioCtx.createBufferSource();
-    src.buffer = buf; src.connect(audioCtx.destination);
-    src.onended = () => { curSrc = null; resolve(); };
-    curSrc = src; src.start();
+    const url = URL.createObjectURL(new Blob([dv], {type:'audio/wav'}));
+    const a = new Audio(url);
+    const done = () => { URL.revokeObjectURL(url); if(curSrc === a) curSrc = null; resolve(); };
+    a.onended = done; a.onerror = done;
+    curSrc = a;
+    a.play().catch(done);
   });
 }
 async function geminiSpeak(text, voice){
