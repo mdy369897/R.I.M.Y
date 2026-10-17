@@ -117,7 +117,7 @@ input[type=range]{width:100%;accent-color:var(--accent)}
       <button id="close" type="button" style="margin-left:auto;background:var(--accent);color:#2a0f1a;border-color:var(--accent)">Save</button>
     </div>
     <div class="note">Key ar chat shudhu ei phone-er browser-e save thake.</div>
-    <div class="note" id="ver">R.I.M.Y Version 14</div>
+    <div class="note" id="ver">R.I.M.Y Version 15</div>
   </div>
 </div>
 
@@ -439,6 +439,14 @@ function playPcm(b64, rate){
     const buf = audioCtx.createBuffer(1, n, rate);
     const ch = buf.getChannelData(0);
     for(let i = 0; i < n; i++){ let v = bin.charCodeAt(2 * i) | (bin.charCodeAt(2 * i + 1) << 8); if(v >= 32768) v -= 65536; ch[i] = v / 32768; }
+    // tail-er noise/pop kete fela: sesh-er nishobdo/noise trim + fade
+    let end = n;
+    while(end > rate * 0.3 && Math.abs(ch[end - 1]) < 0.015) end--;
+    end = Math.min(n, end + Math.floor(rate * 0.12));
+    const fo = Math.floor(rate * 0.08), fi = Math.floor(rate * 0.01);
+    for(let i = 0; i < fo && end - 1 - i >= 0; i++) ch[end - 1 - i] *= i / fo;
+    for(let i = 0; i < fi && i < end; i++) ch[i] *= i / fi;
+    for(let i = end; i < n; i++) ch[i] = 0;
     stopAudio();
     const src = audioCtx.createBufferSource();
     src.buffer = buf; src.connect(audioCtx.destination);
