@@ -122,7 +122,7 @@ input[type=range]{width:100%;accent-color:var(--accent)}
       <button id="close" type="button" style="margin-left:auto;background:var(--accent);color:#2a0f1a;border-color:var(--accent)">Save</button>
     </div>
     <div class="note">Key ar chat shudhu ei phone-er browser-e save thake.</div>
-    <div class="note" id="ver">R.I.M.Y Version 19</div>
+    <div class="note" id="ver">R.I.M.Y Version 21</div>
   </div>
 </div>
 
@@ -165,7 +165,7 @@ Language: reply in the same language the user writes in (Bangla, English, Hindi,
 
 Emotion: read the user's mood from their words and answer to match it. Comfort them when sad, celebrate when happy, calm them when angry or stressed.
 
-Keep replies short and natural, like a spoken conversation (1 to 4 sentences) unless the user asks for detail. No markdown, no lists, no emoji overload, because your words may be read aloud.
+Listen to the user's WHOLE message before answering: read every part of it, answer exactly what was asked, and if they asked several things answer all of them. If the message looks cut off or unclear, ask them to say it again instead of guessing. Keep replies short and natural, like a spoken conversation (1 to 4 sentences) unless the user asks for detail. No markdown, no lists, no emoji overload, because your words may be read aloud.
 
 ${mode === 'search' ? 'Live info: you can search the web. Use it for news, prices, weather, sports, and anything recent.' : 'Live info: you have live tools: get_news (recent headlines with links), read_article (opens a page and returns its text), web_search (searches the web), get_weather, get_exchange_rate, and wikipedia_lookup. Always call a tool instead of guessing, and report what it returns faithfully. For news: first call get_news and give the headlines. When the user asks for details, more, or the full story, call read_article on the most relevant link (if it fails or has too little text, try the next link, up to 3 links) and then explain the story fully in the user\'s language: 6 to 10 sentences covering who, what, where, when, why and what happens next, using only what the page text says. Detail requests override the short-reply rule. If the headline has no readable page, use web_search for the same story. For anything else live (scores, prices, recent events) use web_search, then read_article if you need more. If a tool errors, try another link or tool once, then say honestly what failed. Never invent facts and never claim to have read something you did not.'} Today is ${now}.
 
@@ -521,6 +521,23 @@ function playPcm(b64, rate){
     }
     if(lastGap >= 0 && (end - (lastGap + 15) * win) < rate * 1.2) end = lastGap * win;
     while(end > rate * 0.3 && Math.abs(ch[end - 1]) < 0.015) end--;
+    /* kotha (voiced) shesh hoyar por noise thakle kete fela: shesh 3 second-e shesh "kotha-r moto" tukro khuji */
+    {
+      const W = Math.floor(rate * 0.03), from = Math.max(0, end - Math.floor(rate * 3));
+      let lastV = -1;
+      for(let st = end - W; st >= from; st -= Math.floor(W / 2)){
+        let e0 = 0; for(let i = st; i < st + W; i++) e0 += ch[i] * ch[i];
+        if(Math.sqrt(e0 / W) < 0.02) continue;
+        let best = 0;
+        for(let lag = Math.floor(rate / 400); lag <= Math.floor(rate / 70); lag += 2){
+          let c = 0, e1 = 0;
+          for(let i = st; i < st + W - lag; i += 2){ c += ch[i] * ch[i + lag]; e1 += ch[i + lag] * ch[i + lag]; }
+          const r = c / Math.sqrt((e0 / 2) * e1 + 1e-9); if(r > best) best = r;
+        }
+        if(best > 0.55){ lastV = st + W; break; }
+      }
+      if(lastV > 0 && end - lastV > rate * 0.3) end = Math.min(end, lastV + Math.floor(rate * 0.25));
+    }
     end = Math.min(n, end + Math.floor(rate * 0.1));
     // 2) fade in/out
     const fo = Math.floor(rate * 0.08), fi = Math.floor(rate * 0.01);
@@ -598,31 +615,50 @@ function afterSpeak(){ if(handsfree && !busy) setTimeout(startListen, 300); }
 
 /* ---------- voice in ---------- */
 const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+let heard = '', silenceT = null;
+const SILENCE_MS = 2200; /* kotha thamar koto por uttor dibe */
+function buildHeard(res){
+  /* Android Chrome-e continuous mode-e jhamela: ager text abar abar ashe. Tai dedupe kori */
+  const parts = [];
+  for(let i = 0; i < res.length; i++){
+    const t = (res[i][0].transcript || '').trim();
+    if(!t) continue;
+    if(parts.length && t.startsWith(parts[parts.length - 1])) parts[parts.length - 1] = t;
+    else if(parts.length && parts[parts.length - 1].startsWith(t)) continue;
+    else parts.push(t);
+  }
+  return parts.join(' ');
+}
 function startListen(){
   if(!SR){ addMsg('sys', 'Ei browser-e voice shona cholbe na. Chrome e kholo.'); handsfree = false; $('handsfree').style.background = ''; return; }
   if(listening || busy) return;
   stopAudio();
   if('speechSynthesis' in window) speechSynthesis.cancel();
   rec = new SR();
-  rec.lang = S.lang; rec.interimResults = true; rec.continuous = false;
-  let finalText = '';
-  rec.onstart = () => { listening = true; $('mic').classList.add('on'); orb('listening'); setStatus('shunchhi...'); };
+  rec.lang = S.lang; rec.interimResults = true; rec.continuous = true;
+  heard = ''; clearTimeout(silenceT);
+  rec.onstart = () => { listening = true; $('mic').classList.add('on'); orb('listening'); setStatus('shunchhi... (kotha shesh hole 2 second por uttor dibo)'); };
   rec.onresult = e => {
-    let t = '';
-    for(let i = 0; i < e.results.length; i++) t += e.results[i][0].transcript;
-    finalText = t; $('txt').value = t;
+    heard = buildHeard(e.results);
+    $('txt').value = heard;
+    clearTimeout(silenceT);
+    silenceT = setTimeout(() => { try{ rec.stop(); }catch(_){} }, SILENCE_MS);
   };
   rec.onerror = e => {
     if(e.error === 'not-allowed' || e.error === 'service-not-allowed'){ addMsg('sys', 'Mic permission "Allow" koro, tarpor abar mic chapo.'); handsfree = false; $('handsfree').style.background = ''; }
   };
   rec.onend = () => {
+    clearTimeout(silenceT);
     listening = false; $('mic').classList.remove('on'); orb(''); setStatus('ready');
-    const t = finalText.trim(); $('txt').value = '';
+    const t = heard.trim(); heard = ''; $('txt').value = '';
     if(t) send(t); else if(handsfree && !busy) setTimeout(startListen, 400);
   };
   try{ rec.start(); }catch(e){}
 }
-function stopListen(){ if(rec && listening){ try{ rec.onend = () => { listening = false; $('mic').classList.remove('on'); orb(''); }; rec.stop(); }catch(e){} } }
+/* send() ba onno kaj-er age: kichu na pathiye bondho */
+function stopListen(){ clearTimeout(silenceT); heard = ''; if(rec && listening){ try{ rec.onend = () => { listening = false; $('mic').classList.remove('on'); orb(''); }; rec.stop(); }catch(e){} } }
+/* mic-e abar chaple: ja shona hoyeche seta pathiye dao */
+function finishListen(){ clearTimeout(silenceT); if(rec && listening){ try{ rec.stop(); }catch(e){} } }
 
 /* ---------- ui ---------- */
 function openSettings(){
@@ -676,7 +712,7 @@ $('clearchat').onclick = () => { history = []; $('msgs').textContent = ''; persi
 $('send').onclick = () => { const t = $('txt').value; $('txt').value = ''; send(t); };
 $('txt').addEventListener('keydown', e => { if(e.key === 'Enter' && !e.shiftKey){ e.preventDefault(); $('send').click(); } });
 $('txt').addEventListener('input', e => { e.target.style.height = 'auto'; e.target.style.height = Math.min(e.target.scrollHeight, 120) + 'px'; });
-$('mic').onclick = () => { unlockAudio(); if(listening){ stopListen(); } else { startListen(); } };
+$('mic').onclick = () => { unlockAudio(); if(listening){ finishListen(); } else { startListen(); } };
 $('handsfree').onclick = () => {
   unlockAudio();
   handsfree = !handsfree;
