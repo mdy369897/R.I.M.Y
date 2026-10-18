@@ -122,7 +122,7 @@ input[type=range]{width:100%;accent-color:var(--accent)}
       <button id="close" type="button" style="margin-left:auto;background:var(--accent);color:#2a0f1a;border-color:var(--accent)">Save</button>
     </div>
     <div class="note">Key ar chat shudhu ei phone-er browser-e save thake.</div>
-    <div class="note" id="ver">R.I.M.Y Version 22</div>
+    <div class="note" id="ver">R.I.M.Y Version 23</div>
   </div>
 </div>
 
@@ -618,10 +618,9 @@ function afterSpeak(){ if(handsfree && !busy) setTimeout(startListen, 300); }
 
 /* ---------- voice in ---------- */
 const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
-let heard = '', silenceT = null;
-const SILENCE_MS = 2200; /* kotha thamar koto por uttor dibe */
+let heard = '', pending = '', sendT = null, manual = false;
+const SILENCE_MS = 2500; /* kotha thamar koto por uttor dibe (Android Chrome nijei thamiye dey, tai ami abar chalu kori) */
 function buildHeard(res){
-  /* Android Chrome-e continuous mode-e jhamela: ager text abar abar ashe. Tai dedupe kori */
   const parts = [];
   for(let i = 0; i < res.length; i++){
     const t = (res[i][0].transcript || '').trim();
@@ -632,6 +631,14 @@ function buildHeard(res){
   }
   return parts.join(' ');
 }
+function micOff(){ listening = false; $('mic').classList.remove('on'); orb(''); }
+function sendPending(){
+  clearTimeout(sendT); sendT = null;
+  const t = (pending + ' ' + heard).trim(); pending = ''; heard = ''; manual = false;
+  if(rec && listening){ rec.onend = micOff; try{ rec.stop(); }catch(e){} }
+  micOff(); setStatus('ready'); $('txt').value = '';
+  if(t) send(t); else if(handsfree && !busy) setTimeout(startListen, 400);
+}
 function startListen(){
   if(!SR){ addMsg('sys', 'Ei browser-e voice shona cholbe na. Chrome e kholo.'); handsfree = false; $('handsfree').style.background = ''; return; }
   if(listening || busy) return;
@@ -639,29 +646,33 @@ function startListen(){
   if('speechSynthesis' in window) speechSynthesis.cancel();
   rec = new SR();
   rec.lang = S.lang; rec.interimResults = true; rec.continuous = true;
-  heard = ''; clearTimeout(silenceT);
-  rec.onstart = () => { listening = true; $('mic').classList.add('on'); orb('listening'); setStatus('shunchhi... (kotha shesh hole 2 second por uttor dibo)'); };
+  heard = '';
+  rec.onstart = () => { listening = true; $('mic').classList.add('on'); orb('listening'); setStatus('shunchhi... (kotha shesh hole 2-3 second por uttor dibo)'); };
   rec.onresult = e => {
     heard = buildHeard(e.results);
-    $('txt').value = heard;
-    clearTimeout(silenceT);
-    silenceT = setTimeout(() => { try{ rec.stop(); }catch(_){} }, SILENCE_MS);
+    $('txt').value = (pending + ' ' + heard).trim();
+    clearTimeout(sendT); sendT = setTimeout(sendPending, SILENCE_MS);
   };
   rec.onerror = e => {
-    if(e.error === 'not-allowed' || e.error === 'service-not-allowed'){ addMsg('sys', 'Mic permission "Allow" koro, tarpor abar mic chapo.'); handsfree = false; $('handsfree').style.background = ''; }
+    if(e.error === 'not-allowed' || e.error === 'service-not-allowed'){ addMsg('sys', 'Mic permission "Allow" koro, tarpor abar mic chapo.'); handsfree = false; $('handsfree').style.background = ''; pending = ''; clearTimeout(sendT); }
   };
   rec.onend = () => {
-    clearTimeout(silenceT);
-    listening = false; $('mic').classList.remove('on'); orb(''); setStatus('ready');
-    const t = heard.trim(); heard = ''; $('txt').value = '';
-    if(t) send(t); else if(handsfree && !busy) setTimeout(startListen, 400);
+    micOff();
+    pending = (pending + ' ' + heard).trim(); heard = '';
+    if(manual){ sendPending(); return; }
+    if(pending){
+      /* Chrome nijei thamiye diyeche kintu tumi hoyto ekhono bolcho: abar shuru kori, timer shesh hole pathabo */
+      if(!sendT) sendT = setTimeout(sendPending, SILENCE_MS);
+      setTimeout(startListen, 120);
+    } else if(handsfree && !busy) setTimeout(startListen, 400);
+    else setStatus('ready');
   };
   try{ rec.start(); }catch(e){}
 }
 /* send() ba onno kaj-er age: kichu na pathiye bondho */
-function stopListen(){ clearTimeout(silenceT); heard = ''; if(rec && listening){ try{ rec.onend = () => { listening = false; $('mic').classList.remove('on'); orb(''); }; rec.stop(); }catch(e){} } }
+function stopListen(){ clearTimeout(sendT); sendT = null; heard = ''; pending = ''; manual = false; if(rec && listening){ try{ rec.onend = micOff; rec.stop(); }catch(e){} } }
 /* mic-e abar chaple: ja shona hoyeche seta pathiye dao */
-function finishListen(){ clearTimeout(silenceT); if(rec && listening){ try{ rec.stop(); }catch(e){} } }
+function finishListen(){ clearTimeout(sendT); if(rec && listening){ manual = true; try{ rec.stop(); }catch(e){} } else if(pending){ sendPending(); } }
 
 /* ---------- ui ---------- */
 function openSettings(){
@@ -715,7 +726,7 @@ $('clearchat').onclick = () => { history = []; $('msgs').textContent = ''; persi
 $('send').onclick = () => { const t = $('txt').value; $('txt').value = ''; send(t); };
 $('txt').addEventListener('keydown', e => { if(e.key === 'Enter' && !e.shiftKey){ e.preventDefault(); $('send').click(); } });
 $('txt').addEventListener('input', e => { e.target.style.height = 'auto'; e.target.style.height = Math.min(e.target.scrollHeight, 120) + 'px'; });
-$('mic').onclick = () => { unlockAudio(); if(listening){ finishListen(); } else { startListen(); } };
+$('mic').onclick = () => { unlockAudio(); if(listening || pending){ finishListen(); } else { startListen(); } };
 $('handsfree').onclick = () => {
   unlockAudio();
   handsfree = !handsfree;
