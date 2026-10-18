@@ -122,7 +122,7 @@ input[type=range]{width:100%;accent-color:var(--accent)}
       <button id="close" type="button" style="margin-left:auto;background:var(--accent);color:#2a0f1a;border-color:var(--accent)">Save</button>
     </div>
     <div class="note">Key ar chat shudhu ei phone-er browser-e save thake.</div>
-    <div class="note" id="ver">R.I.M.Y Version 21</div>
+    <div class="note" id="ver">R.I.M.Y Version 22</div>
   </div>
 </div>
 
@@ -484,7 +484,7 @@ function pickLang(t){
   return 'en-US';
 }
 /* ---------- Gemini voice (prakritik meye-r golar) ---------- */
-let audioCtx = null, curSrc = null, ttsPausedUntil = 0;
+let audioCtx = null, curSrc = null, ttsPausedUntil = LS.get('rimy_ttspause', 0);
 function unlockAudio(){
   try{
     if(!audioCtx){ const AC = window.AudioContext || window.webkitAudioContext; if(AC) audioCtx = new AC(); }
@@ -584,8 +584,11 @@ function speak(t){
   if(S.tts && S.key && audioCtx && Date.now() >= ttsPausedUntil){
     setStatus('golaa toiri korchhi...');
     geminiSpeak(say).then(() => { orb(''); afterSpeak(); }).catch(e => {
-      ttsPausedUntil = Date.now() + ((e.status === 429 || /quota/i.test(e.message)) ? 10 * 60000 : 60000);
-      addMsg('sys', 'Gemini voice ekhon pabo na (' + String(e.message).slice(0, 90) + '), tai built-in voice diye bolchhi.');
+      const quota = (e.status === 429 || /quota/i.test(e.message));
+      const first = Date.now() >= ttsPausedUntil;
+      ttsPausedUntil = Date.now() + (quota ? 3 * 3600000 : 60000);
+      if(quota) LS.set('rimy_ttspause', ttsPausedUntil);
+      if(first) addMsg('sys', quota ? 'Gemini voice-er quota ekhon shesh. Kichu khon built-in voice-e bolbo, error ar dekhabo na.' : 'Gemini voice ekhon pabo na, built-in voice-e bolchhi.');
       setStatus('ready'); orb('');
       speakBrowser(t);
     });
