@@ -10,28 +10,34 @@
 :root{
   --bg:#1b1220; --panel:#261a2e; --line:#3a2a45; --fg:#f4ebf6; --muted:#a995b3;
   --accent:#ff6f91; --accent-2:#ffc371; --me:#3b2a4d; --ok:#7bdcb5;
+  --me1:#ff6f91; --me2:#ff9a76; --mefg:#2a0f1a; --her1:#2f2038; --her2:#3a2748; --herfg:#f4ebf6; --fs:16px;
   color-scheme:dark;
 }
 *{box-sizing:border-box}
 html,body{height:100%;margin:0}
 body{background:var(--bg);color:var(--fg);font:16px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,"Noto Sans Bengali","Noto Sans Arabic",sans-serif;display:flex;flex-direction:column;overflow:hidden}
-header{display:flex;align-items:center;gap:12px;padding:12px 16px;border-bottom:1px solid var(--line);background:var(--panel)}
-.orb{width:38px;height:38px;border-radius:50%;background:radial-gradient(circle at 30% 30%,var(--accent-2),var(--accent));flex:none;box-shadow:0 0 0 0 rgba(255,111,145,.5)}
-.orb.listening{animation:pulse 1.4s infinite}
-.orb.speaking{animation:pulse .7s infinite}
-@keyframes pulse{70%{box-shadow:0 0 0 14px rgba(255,111,145,0)}100%{box-shadow:0 0 0 0 rgba(255,111,145,0)}}
+header{display:flex;align-items:center;gap:10px;padding:8px 14px;border-bottom:1px solid var(--line);background:var(--panel)}
+.orb{width:72px;height:72px;flex:none;margin:-6px -6px -6px -8px}
+.orb canvas{width:72px;height:72px;display:block}
 .title{flex:1;min-width:0}
-.title b{display:block;letter-spacing:.14em;font-size:17px}
+.title b{display:block;letter-spacing:.16em;font-size:18px;background:linear-gradient(90deg,var(--accent),var(--accent-2));-webkit-background-clip:text;background-clip:text;color:transparent;width:max-content}
 .title span{font-size:12.5px;color:var(--muted)}
 button{font:inherit;color:inherit;background:none;border:1px solid var(--line);border-radius:12px;padding:8px 12px;cursor:pointer}
 button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 #msgs{flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:10px;min-height:0}
-.m{max-width:86%;padding:10px 14px;border-radius:18px;white-space:pre-wrap;overflow-wrap:anywhere}
-.m.you{align-self:flex-end;background:var(--me);border-bottom-right-radius:6px}
-.m.her{align-self:flex-start;background:var(--panel);border:1px solid var(--line);border-bottom-left-radius:6px}
-.m.sys{align-self:center;color:var(--muted);font-size:13.5px;text-align:center}
+.m{max-width:86%;padding:10px 14px;border-radius:20px;white-space:pre-wrap;overflow-wrap:anywhere;font-size:var(--fs);animation:pop .25s ease-out;box-shadow:0 2px 10px rgba(0,0,0,.18)}
+@keyframes pop{from{opacity:0;transform:translateY(6px) scale(.98)}to{opacity:1;transform:none}}
+.m.you{align-self:flex-end;background:linear-gradient(135deg,var(--me1),var(--me2));color:var(--mefg);border-bottom-right-radius:6px}
+.m.her{align-self:flex-start;background:linear-gradient(135deg,var(--her1),var(--her2));color:var(--herfg);border:1px solid var(--line);border-bottom-left-radius:6px;-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px)}
+.m.typing{display:flex;gap:5px;padding:14px 16px}
+.m.typing i{width:8px;height:8px;border-radius:50%;background:var(--accent-2);opacity:.5;animation:dot 1s infinite}
+.m.typing i:nth-child(2){animation-delay:.15s}.m.typing i:nth-child(3){animation-delay:.3s}
+@keyframes dot{50%{opacity:1;transform:translateY(-4px)}}
+.look{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.look select{width:100%}
+.m.sys{box-shadow:none;align-self:center;color:var(--muted);font-size:13.5px;text-align:center}
 .acts{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}
-.acts a{color:var(--bg);background:var(--accent-2);padding:6px 12px;border-radius:10px;text-decoration:none;font-size:14px}
+.acts a{color:var(--mefg);background:var(--accent-2);padding:6px 12px;border-radius:10px;text-decoration:none;font-size:14px}
 .src{margin-top:8px;font-size:12.5px;color:var(--muted)}
 .src a{color:var(--accent-2)}
 .bar{display:flex;gap:2px;margin-top:8px;margin-left:-8px}
@@ -42,7 +48,7 @@ button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-vis
 #dock{padding:10px 16px;padding-bottom:calc(10px + env(safe-area-inset-bottom,0px));border-top:1px solid var(--line);background:var(--panel);display:flex;gap:8px;align-items:flex-end}
 #txt{flex:1;min-width:0;resize:none;max-height:120px;background:var(--bg);color:var(--fg);border:1px solid var(--line);border-radius:14px;padding:10px 12px;font:inherit}
 #mic,#send{width:46px;height:46px;border-radius:50%;padding:0;font-size:20px;flex:none}
-#send{background:var(--accent);border-color:var(--accent);color:#2a0f1a}
+#send{background:linear-gradient(135deg,var(--accent),var(--accent-2));border-color:transparent;color:var(--mefg)}
 #mic.on{background:var(--accent-2);color:#2a0f1a;border-color:var(--accent-2)}
 #set{position:fixed;inset:0;background:rgba(10,5,14,.75);display:none;align-items:flex-end;justify-content:center;z-index:5}
 #set.open{display:flex}
@@ -58,12 +64,12 @@ input[type=text],input[type=password],select{width:100%;background:var(--bg);col
 .mem button{padding:2px 8px;font-size:13px}
 .note{font-size:13px;color:var(--muted);margin-top:6px}
 input[type=range]{width:100%;accent-color:var(--accent)}
-@media (prefers-reduced-motion:reduce){.orb{animation:none!important}}
+@media (prefers-reduced-motion:reduce){.m,.m.typing i{animation:none!important}}
 </style>
 </head>
 <body>
 <header>
-  <div class="orb" id="orb"></div>
+  <div class="orb" id="orb"><canvas id="av" width="72" height="72" aria-hidden="true"></canvas></div>
   <div class="title"><b>R.I.M.Y</b><span id="status">ready</span></div>
   <button id="handsfree" title="Hands-free voice chat">Live</button>
   <button id="gear" aria-label="Settings">&#9881;</button>
@@ -78,6 +84,44 @@ input[type=range]{width:100%;accent-color:var(--accent)}
 <div id="set">
   <div class="sheet">
     <h2>R.I.M.Y Settings</h2>
+    <label>Dekhte kemon (Look)</label>
+    <div class="look">
+      <div><label for="theme" style="margin-top:0">Theme</label><select id="theme">
+        <option value="rose">Gulabi (rose)</option>
+        <option value="sunset">Shondhya (sunset)</option>
+        <option value="ocean">Shagor (ocean)</option>
+        <option value="aurora">Aurora</option>
+        <option value="midnight">Raat (midnight)</option>
+        <option value="light">Halka (light)</option>
+      </select></div>
+      <div><label for="wall" style="margin-top:0">Chat wallpaper</label><select id="wall">
+        <option value="none">Shada</option>
+        <option value="aurora">Aurora</option>
+        <option value="sunset">Shondhya</option>
+        <option value="ocean">Shagor</option>
+        <option value="hearts">Hridoy</option>
+        <option value="stars">Tara</option>
+        <option value="waves">Dheu</option>
+        <option value="custom">Nijer chhobi</option>
+      </select></div>
+      <div><label for="tcol" style="margin-top:8px">Lekhar rong (R.I.M.Y)</label><select id="tcol">
+        <option value="">Theme-er moto</option>
+        <option value="#ffd1e3">Gulabi</option>
+        <option value="#ffe8a3">Shona</option>
+        <option value="#bfe6ff">Akashi</option>
+        <option value="#c6f7d8">Pudina</option>
+        <option value="#e4d4ff">Beguni</option>
+      </select></div>
+      <div><label for="fs" style="margin-top:8px">Lekhar akar</label><select id="fs">
+        <option value="14">Chhoto</option>
+        <option value="16">Majhari</option>
+        <option value="18">Boro</option>
+        <option value="20">Onek boro</option>
+      </select></div>
+    </div>
+    <div class="row" style="margin-top:8px"><button id="wallpick" type="button">Gallery theke chhobi nao</button><button id="wallclr" type="button">Muchho</button></div>
+    <input id="wallfile" type="file" accept="image/*" style="display:none">
+    <div class="note" id="wnote">Wallpaper-e "Nijer chhobi" bechhe gallery theke photo dao.</div>
     <label for="key">Gemini API key (Google AI Studio theke)</label>
     <input id="key" type="password" autocomplete="off" placeholder="AIza...">
     <label for="model">Model</label>
@@ -122,7 +166,7 @@ input[type=range]{width:100%;accent-color:var(--accent)}
       <button id="close" type="button" style="margin-left:auto;background:var(--accent);color:#2a0f1a;border-color:var(--accent)">Save</button>
     </div>
     <div class="note">Key ar chat shudhu ei phone-er browser-e save thake.</div>
-    <div class="note" id="ver">R.I.M.Y Version 23</div>
+    <div class="note" id="ver">R.I.M.Y Version 24</div>
   </div>
 </div>
 
@@ -132,7 +176,7 @@ const LS = {
   get(k, d){ try{ const v = localStorage.getItem(k); return v == null ? d : JSON.parse(v); }catch(e){ return d; } },
   set(k, v){ try{ localStorage.setItem(k, JSON.stringify(v)); }catch(e){} }
 };
-let S = Object.assign({key:'', model:'gemini-3.6-flash', search:false, lang:'bn-BD', speak:true, name:'', pitch:1.25, vmap:{}, tts:true, ttsVoice:'Aoede', ttsModel:''}, LS.get('rimy_settings', {}));
+let S = Object.assign({theme:'rose', wall:'aurora', tcol:'', fs:16, key:'', model:'gemini-3.6-flash', search:false, lang:'bn-BD', speak:true, name:'', pitch:1.25, vmap:{}, tts:true, ttsVoice:'Aoede', ttsModel:''}, LS.get('rimy_settings', {}));
 if(S.model === 'gemini-2.5-flash' || S.model === 'gemini-1.5-flash') S.model = 'gemini-3.6-flash';
 if(!S.v2){ S.search = false; S.v2 = true; }
 
@@ -181,7 +225,54 @@ ${S.name ? 'The user\'s name is ' + S.name + '.' : ''}`;
 }
 
 function setStatus(t){ $('status').textContent = t; }
-function orb(cls){ $('orb').className = 'orb' + (cls ? ' ' + cls : ''); }
+function orb(cls){ avState = cls || 'idle'; }
+/* ---------- avatar: dheu-er moto jibonto gol mukh ---------- */
+let avState = 'idle', avCols = null, avTarget = null, avAmp = .07, avPh = 0, avLast = 0;
+const AV = $('av'), AC = AV.getContext('2d'), DPR = Math.min(window.devicePixelRatio || 1, 3);
+AV.width = 72 * DPR; AV.height = 72 * DPR;
+const RM = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
+function hexRgb(h){ h = String(h).trim().replace('#', ''); if(h.length === 3) h = h.replace(/./g, c => c + c); const n = parseInt(h, 16) || 0; return [(n >> 16) & 255, (n >> 8) & 255, n & 255]; }
+function themeCols(){ const cs = getComputedStyle(document.documentElement); return [hexRgb(cs.getPropertyValue('--accent')), hexRgb(cs.getPropertyValue('--accent-2'))]; }
+function setMood(m){
+  m = String(m || '').toLowerCase(); let c = null;
+  if(/sad|lonely|cry|hurt|upset|down|dukh|kosto/.test(m)) c = [[106,168,255],[177,140,255]];
+  else if(/angry|mad|stress|anxi|worr|tense|rag|furious/.test(m)) c = [[79,209,197],[123,220,181]];
+  else if(/tired|sleep|exhaust|bored|ghum/.test(m)) c = [[160,140,230],[205,185,255]];
+  else if(/calm|peace|relax|shanto/.test(m)) c = [[123,220,181],[106,168,255]];
+  avTarget = c || themeCols();
+}
+function avDraw(ts){
+  requestAnimationFrame(avDraw);
+  if(!avCols){ avCols = themeCols(); avTarget = avCols; }
+  const dt = Math.min(.05, (ts - avLast) / 1000 || .016); avLast = ts;
+  for(let k = 0; k < 2; k++) for(let j = 0; j < 3; j++) avCols[k][j] += (avTarget[k][j] - avCols[k][j]) * .06;
+  const st = avState, speed = RM ? .3 : ({listening:1.8, thinking:3.4, speaking:2.6}[st] || .9);
+  let ta = {listening:.13, thinking:.11, speaking:.2 + .12 * Math.abs(Math.sin(ts / 130) * Math.sin(ts / 370))}[st];
+  if(ta == null) ta = .07;
+  avAmp += (ta - avAmp) * .12; avPh += dt * speed;
+  const c1 = avCols[0].map(Math.round).join(','), c2 = avCols[1].map(Math.round).join(',');
+  const g = AC; g.setTransform(DPR, 0, 0, DPR, 0, 0); g.clearRect(0, 0, 72, 72);
+  const cx = 36, cy = 36, R = 24 * (1 + (RM ? 0 : .03 * Math.sin(ts / 700)));
+  if(!RM && (st === 'listening' || st === 'speaking')){
+    for(let i = 0; i < 3; i++){ const p = ((ts / 1500) + i / 3) % 1; g.beginPath(); g.arc(cx, cy, R + 2 + p * 10, 0, 7); g.strokeStyle = 'rgba(' + c2 + ',' + ((1 - p) * .55).toFixed(3) + ')'; g.lineWidth = 1.6; g.stroke(); }
+  }
+  if(st === 'thinking' && !RM){ g.beginPath(); g.arc(cx, cy, R + 5, avPh * 2, avPh * 2 + 1.7); g.strokeStyle = 'rgba(' + c2 + ',.9)'; g.lineWidth = 2.2; g.lineCap = 'round'; g.stroke(); }
+  g.save(); g.shadowColor = 'rgba(' + c1 + ',.65)'; g.shadowBlur = 14;
+  const rg = g.createRadialGradient(cx - 8, cy - 9, 3, cx, cy, R);
+  rg.addColorStop(0, 'rgb(' + c2 + ')'); rg.addColorStop(1, 'rgb(' + c1 + ')');
+  g.beginPath(); g.arc(cx, cy, R, 0, 7); g.fillStyle = rg; g.fill(); g.restore();
+  g.save(); g.beginPath(); g.arc(cx, cy, R, 0, 7); g.clip();
+  for(let l = 0; l < 3; l++){
+    g.beginPath(); const base = cy + R * (.28 - .3 * l);
+    for(let x = cx - R; x <= cx + R; x += 2){ const y = base + avAmp * R * 1.6 * Math.sin((x - cx) * (.12 + .04 * l) + avPh * (1 + l * .5) * (l % 2 ? -1 : 1) + l * 1.7); x === cx - R ? g.moveTo(x, y) : g.lineTo(x, y); }
+    g.lineTo(cx + R, cy + R); g.lineTo(cx - R, cy + R); g.closePath();
+    g.fillStyle = 'rgba(255,255,255,' + (.16 + .08 * l) + ')'; g.fill();
+  }
+  const gl = g.createRadialGradient(cx - 9, cy - 10, 1, cx - 9, cy - 10, 13);
+  gl.addColorStop(0, 'rgba(255,255,255,.55)'); gl.addColorStop(1, 'rgba(255,255,255,0)');
+  g.fillStyle = gl; g.fillRect(cx - R, cy - R, R * 2, R * 2); g.restore();
+}
+requestAnimationFrame(avDraw);
 
 const IC = {
   copy:'<rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V6a2 2 0 0 1 2-2h9"/>',
@@ -199,6 +290,10 @@ function saveFeedback(text, v){
   const fb = LS.get('rimy_fb', []).filter(x => x.t !== text.slice(0, 80));
   if(v) fb.push({t:text.slice(0, 80), v});
   LS.set('rimy_fb', fb.slice(-50));
+}
+function addTyping(){
+  const d = document.createElement('div'); d.className = 'm her typing'; d.innerHTML = '<i></i><i></i><i></i>';
+  $('msgs').appendChild(d); $('msgs').scrollTop = $('msgs').scrollHeight; return d;
 }
 function addBar(d, text){
   document.querySelectorAll('.bar .rg').forEach(b => b.remove());
@@ -457,16 +552,19 @@ async function send(text, regen){
   busy = true;
   stopListen();
   if(!regen){ addMsg('you', text); history.push({role:'user', text}); }
-  setStatus('bhabchhi...'); orb('');
+  setStatus('bhabchhi...'); orb('thinking');
+  const tp = addTyping();
   try{
     const {text:raw, sources} = await askGemini();
     const {clean, mood, acts} = parseTags(raw);
+    tp.remove(); setMood(mood);
     history.push({role:'model', text:clean || raw});
     addMsg('her', clean || raw, {acts, sources});
     setStatus(mood ? 'tomar mood: ' + mood : 'ready');
     persist();
     speak(clean || raw);
   }catch(e){
+    tp.remove(); orb('');
     if(!regen) history.pop();
     addMsg('sys', 'Shomossha: ' + (e.message === 'Failed to fetch' ? 'Internet-er sathe jog hochhe na. Net check kore abar try koro.' : e.message) + (/not found|404/i.test(e.message) ? ' (Settings-e "List" chepe ekta cholbe emon model bachho.)' : ''));
     setStatus('ready');
@@ -614,7 +712,7 @@ function speakBrowser(t){
   u.onend = u.onerror = () => { orb(''); afterSpeak(); };
   speechSynthesis.speak(u);
 }
-function afterSpeak(){ if(handsfree && !busy) setTimeout(startListen, 300); }
+function afterSpeak(){ orb(''); if(handsfree && !busy) setTimeout(startListen, 300); }
 
 /* ---------- voice in ---------- */
 const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
@@ -674,6 +772,59 @@ function stopListen(){ clearTimeout(sendT); sendT = null; heard = ''; pending = 
 /* mic-e abar chaple: ja shona hoyeche seta pathiye dao */
 function finishListen(){ clearTimeout(sendT); if(rec && listening){ manual = true; try{ rec.stop(); }catch(e){} } else if(pending){ sendPending(); } }
 
+
+/* ---------- look: theme, wallpaper, lekhar rong ---------- */
+const THEMES = {
+  rose:{bg:'#1b1220',panel:'#261a2e',line:'#3a2a45',fg:'#f4ebf6',muted:'#a995b3',accent:'#ff6f91','accent-2':'#ffc371',me1:'#ff6f91',me2:'#ff9a76',mefg:'#2a0f1a',her1:'#2f2038',her2:'#3a2748',herfg:'#f4ebf6'},
+  sunset:{bg:'#1f1217',panel:'#2b1a20',line:'#4a2b33',fg:'#fff0e8',muted:'#c49a8f',accent:'#fb7185','accent-2':'#fbbf24',me1:'#fb7185',me2:'#fbbf24',mefg:'#2d0d12',her1:'#35202a',her2:'#432a2f',herfg:'#fff0e8'},
+  ocean:{bg:'#0b1622',panel:'#11222f',line:'#1f3a4d',fg:'#e6f4fb',muted:'#86a6b8',accent:'#38bdf8','accent-2':'#5eead4',me1:'#38bdf8',me2:'#5eead4',mefg:'#062030',her1:'#12283a',her2:'#17344a',herfg:'#e6f4fb'},
+  aurora:{bg:'#0d1a17',panel:'#132a24',line:'#21443b',fg:'#e8fbf3',muted:'#8fb5a8',accent:'#34d399','accent-2':'#a78bfa',me1:'#34d399',me2:'#a78bfa',mefg:'#052018',her1:'#173329',her2:'#1f3d4a',herfg:'#e8fbf3'},
+  midnight:{bg:'#0a0a12',panel:'#14141f',line:'#26263a',fg:'#ececff',muted:'#8a8aa8',accent:'#818cf8','accent-2':'#f0abfc',me1:'#818cf8',me2:'#c084fc',mefg:'#0a0a1f',her1:'#17172a',her2:'#1d1d36',herfg:'#ececff'},
+  light:{bg:'#fdf4f8',panel:'#ffffff',line:'#f1d3e0',fg:'#3a2038',muted:'#8b6a85',accent:'#ec4899','accent-2':'#f59e0b',me1:'#ec4899',me2:'#f472b6',mefg:'#ffffff',her1:'#ffffff',her2:'#fff0f6',herfg:'#3a2038'}
+};
+const svgUrl = (w, h, body) => "url(\"data:image/svg+xml;utf8," + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="' + w + '" height="' + h + '">' + body + '</svg>') + "\")";
+const WALLS = {
+  none:() => ['', ''],
+  aurora:() => ['radial-gradient(60% 50% at 20% 8%,rgba(52,211,153,.30),transparent 60%),radial-gradient(50% 40% at 88% 30%,rgba(167,139,250,.30),transparent 60%),radial-gradient(60% 50% at 50% 105%,rgba(56,189,248,.24),transparent 60%)', 'auto'],
+  sunset:() => ['linear-gradient(180deg,rgba(251,113,133,.30),rgba(251,191,36,.14) 55%,transparent 90%)', 'auto'],
+  ocean:() => ['radial-gradient(70% 40% at 50% 0%,rgba(56,189,248,.28),transparent 70%),linear-gradient(180deg,transparent 40%,rgba(94,234,212,.14))', 'auto'],
+  hearts:() => [svgUrl(64, 64, '<path transform="translate(8 10) scale(1.1)" fill="rgba(255,111,145,.10)" d="M12 21s-7.5-4.6-9.6-9.2C.8 8 3 4.5 6.5 4.5c2 0 3.6 1.1 4.5 2.6.9-1.5 2.5-2.6 4.5-2.6 3.5 0 5.7 3.5 4.1 7.3C19.5 16.4 12 21 12 21z"/><path transform="translate(40 40) scale(.6)" fill="rgba(255,195,113,.10)" d="M12 21s-7.5-4.6-9.6-9.2C.8 8 3 4.5 6.5 4.5c2 0 3.6 1.1 4.5 2.6.9-1.5 2.5-2.6 4.5-2.6 3.5 0 5.7 3.5 4.1 7.3C19.5 16.4 12 21 12 21z"/>'), '64px 64px'],
+  stars:() => [svgUrl(90, 90, '<circle cx="12" cy="14" r="1.4" fill="rgba(255,255,255,.35)"/><circle cx="60" cy="40" r="1" fill="rgba(255,255,255,.28)"/><circle cx="35" cy="75" r="1.2" fill="rgba(255,255,255,.3)"/><path d="M70 10l1.6 4.4L76 16l-4.4 1.6L70 22l-1.6-4.4L64 16l4.4-1.6z" fill="rgba(255,226,140,.3)"/><path d="M20 52l1.1 3L24 56l-2.9 1L20 60l-1.1-3L16 56l2.9-1z" fill="rgba(255,226,140,.25)"/>'), '90px 90px'],
+  waves:() => [svgUrl(120, 36, '<path d="M0 18 Q15 4 30 18 T60 18 T90 18 T120 18" fill="none" stroke="rgba(255,255,255,.12)" stroke-width="2"/>'), '120px 36px'],
+  custom:() => { const u = LS.get('rimy_wall', ''); return u ? ['linear-gradient(rgba(10,5,14,.42),rgba(10,5,14,.42)),url(' + u + ')', 'cover'] : ['', '']; }
+};
+function applyLook(){
+  const r = document.documentElement.style, t = THEMES[S.theme] || THEMES.rose;
+  for(const k in t) r.setProperty('--' + k, t[k]);
+  r.setProperty('--me', t.me1);
+  r.setProperty('--herfg', S.tcol || t.herfg);
+  r.setProperty('--fs', (S.fs || 16) + 'px');
+  r.setProperty('color-scheme', S.theme === 'light' ? 'light' : 'dark');
+  const mt = document.querySelector('meta[name=theme-color]'); if(mt) mt.content = t.bg;
+  const w = (WALLS[S.wall] || WALLS.none)(), m = $('msgs');
+  m.style.backgroundImage = w[0] || 'none'; m.style.backgroundSize = w[1] || 'auto';
+  m.style.backgroundPosition = S.wall === 'custom' ? 'center' : '0 0'; m.style.backgroundRepeat = (S.wall === 'custom' || ['aurora','sunset','ocean'].includes(S.wall)) ? 'no-repeat' : 'repeat';
+  avTarget = themeCols();
+}
+function pickWall(file){
+  if(!file) return;
+  const fr = new FileReader();
+  fr.onload = () => {
+    const im = new Image();
+    im.onload = () => {
+      const k = Math.min(1, 1100 / Math.max(im.width, im.height)), c = document.createElement('canvas');
+      c.width = Math.round(im.width * k); c.height = Math.round(im.height * k);
+      c.getContext('2d').drawImage(im, 0, 0, c.width, c.height);
+      const u = c.toDataURL('image/jpeg', .72);
+      try{ localStorage.setItem('rimy_wall', JSON.stringify(u)); }catch(e){ $('wnote').textContent = 'Chhobi-ta onek boro, save hoy ni. Chhoto chhobi dao.'; return; }
+      S.wall = 'custom'; $('wall').value = 'custom'; persist(); applyLook(); $('wnote').textContent = 'Wallpaper set hoyeche.';
+    };
+    im.onerror = () => { $('wnote').textContent = 'Ei chhobi khola gelo na.'; };
+    im.src = fr.result;
+  };
+  fr.readAsDataURL(file);
+}
+
 /* ---------- ui ---------- */
 function openSettings(){
   $('key').value = S.key; $('model').value = S.model; $('uname').value = S.name; $('lang').value = S.lang;
@@ -681,6 +832,7 @@ function openSettings(){
   renderMem();
   $('pitch').value = S.pitch || 1.25;
   $('tts').checked = S.tts !== false; $('ttsvoice').value = S.ttsVoice || 'Aoede';
+  $('theme').value = S.theme || 'rose'; $('wall').value = S.wall || 'none'; $('tcol').value = S.tcol || ''; $('fs').value = String(S.fs || 16);
   fillVoices();
   $('set').classList.add('open');
 }
@@ -720,6 +872,13 @@ async function listModels(){
 }
 
 $('gear').onclick = openSettings;
+$('theme').onchange = () => { S.theme = $('theme').value; persist(); applyLook(); };
+$('wall').onchange = () => { S.wall = $('wall').value; if(S.wall === 'custom' && !LS.get('rimy_wall', '')){ $('wnote').textContent = 'Age "Gallery theke chhobi nao" chepe ekta chhobi bachho.'; } persist(); applyLook(); };
+$('tcol').onchange = () => { S.tcol = $('tcol').value; persist(); applyLook(); };
+$('fs').onchange = () => { S.fs = parseInt($('fs').value, 10) || 16; persist(); applyLook(); };
+$('wallpick').onclick = () => $('wallfile').click();
+$('wallfile').onchange = e => { pickWall(e.target.files[0]); e.target.value = ''; };
+$('wallclr').onclick = () => { try{ localStorage.removeItem('rimy_wall'); }catch(e){} if(S.wall === 'custom') S.wall = 'none'; $('wall').value = S.wall; persist(); applyLook(); $('wnote').textContent = 'Nijer chhobi muchhe feleche.'; };
 $('close').onclick = saveSettings;
 $('listm').onclick = listModels;
 $('clearchat').onclick = () => { history = []; $('msgs').textContent = ''; persist(); addMsg('sys', 'Chat muchhe feleche. Ja ja mone rekheche shob ache.'); };
@@ -772,6 +931,7 @@ $('vtest').onclick = () => {
   speechSynthesis.speak(u);
 };
 
+applyLook();
 history.slice(-12).forEach(h => addMsg(h.role === 'user' ? 'you' : 'her', h.text));
 if(!history.length){
   addMsg('her', (S.name ? S.name + ', ' : '') + 'ami R.I.M.Y. Tomar ki khobor? Kotha bolo, ami shunchhi.', {nobar:true});
