@@ -159,6 +159,7 @@ input[type=range]{width:100%;accent-color:var(--accent)}
     <input id="uname" type="text" autocomplete="off">
     <label for="lang">Voice shonar bhasha</label>
     <select id="lang">
+      <option value="auto">Auto (jei bhashai bolo)</option>
       <option value="bn-BD">Bangla (Bangladesh)</option>
       <option value="bn-IN">Bangla (India)</option>
       <option value="en-US">English</option>
@@ -190,7 +191,7 @@ input[type=range]{width:100%;accent-color:var(--accent)}
       <button id="close" type="button" style="margin-left:auto;background:var(--accent);color:#2a0f1a;border-color:var(--accent)">Save</button>
     </div>
     <div class="note">Key ar chat shudhu ei phone-er browser-e save thake.</div>
-    <div class="note" id="ver">R.I.M.Y Version 26</div>
+    <div class="note" id="ver">R.I.M.Y Version 27</div>
   </div>
 </div>
 
@@ -243,12 +244,141 @@ ${memory.length ? memory.map(m => '- ' + m).join('\n') : '- (nothing yet)'}
 Hidden tags: at the very end of every reply, add these tags on their own (the app strips them, the user never sees them):
 [[MOOD: one word for the user's mood now, e.g. happy, sad, angry, tired, excited, calm]]
 If the user asks you to remember something, or tells you a lasting fact worth keeping (a task, a plan, a preference, a person's name), add [[MEMORY: short note in the user's language]].
-If the user asks you to call someone and gives a number, add [[CALL: number]]. If they ask to open a website, add [[OPEN: https://full-url]]. The user taps a button to confirm; never say a call was already placed.
+Phone control: when the user asks you to set an alarm or timer, open an app, send a message, call someone, or open a link, add one tag [[DO: {json}]] with one of these: {"do":"alarm","hour":7,"minute":30,"label":"..."}, {"do":"timer","seconds":300,"label":"..."}, {"do":"open","app":"WhatsApp"}, {"do":"sms","to":"+...","text":"..."}, {"do":"call","to":"..."}, {"do":"url","url":"https://..."}. Say in your reply what you are doing in the user's language. The phone shows a confirm screen before calls and messages, so never say it is already done. If the user asks you to call someone and gives a number, add [[CALL: number]]. If they ask to open a website, add [[OPEN: https://full-url]]. The user taps a button to confirm; never say a call was already placed.
 You cannot control the phone's apps or screen yourself. If asked, say so honestly and offer what you can do.
 ${S.name ? 'The user\'s name is ' + S.name + '.' : ''}`;
 }
 
-function setStatus(t){ $('status').textContent = t; }
+/* ---------- bhasha: Settings + status Bangla / English / Hindi / Arabic / Urdu ---------- */
+const TR = {
+ en: {
+  'R.I.M.Y Settings':'R.I.M.Y Settings','Dekhte kemon (Look)':'Appearance','Theme':'Theme',
+  'Gulabi (rose)':'Rose','Shondhya (sunset)':'Sunset','Shagor (ocean)':'Ocean','Aurora':'Aurora','Raat (midnight)':'Midnight','Halka (light)':'Light',
+  'Chat wallpaper':'Chat wallpaper','Shada':'Plain','Shondhya':'Sunset','Shagor':'Ocean','Hridoy':'Hearts','Tara':'Stars','Dheu':'Waves','Nijer chhobi':'My photo',
+  'Lekhar rong (R.I.M.Y)':'Text colour (R.I.M.Y)','Theme-er moto':'Same as theme','Gulabi':'Pink','Shona':'Gold','Akashi':'Sky blue','Pudina':'Mint','Beguni':'Lavender',
+  'Lekhar akar':'Text size','Chhoto':'Small','Majhari':'Medium','Boro':'Large','Onek boro':'Extra large',
+  'Gallery theke chhobi nao':'Pick photo from gallery','Muchho':'Remove',
+  'Wallpaper-e "Nijer chhobi" bechhe gallery theke photo dao.':'Choose "My photo" as wallpaper, then pick a photo from your gallery.',
+  'Gemini API key (Google AI Studio theke)':'Gemini API key (from Google AI Studio)','Model':'Model','List':'List',
+  '"List" chaple tomar key-te jei model gulo cholbe segulo dekhabe. 404 error ashle ekta model eikhan theke bachho.':'Tap "List" to see the models your key can use. If you get a 404 error, pick a model here.',
+  'Tomar naam (R.I.M.Y tomake ei naame dakbe)':'Your name (R.I.M.Y will call you this)',
+  'Voice shonar bhasha':'Language for listening','Bangla (Bangladesh)':'Bangla (Bangladesh)','Bangla (India)':'Bangla (India)','English':'English','Hindi':'Hindi','Arabic':'Arabic','Urdu':'Urdu',
+  'Auto (jei bhashai bolo)':'Auto (any language you speak)',
+  'Google Search (billing lagbe; bondho thakle free weather, dam, Wikipedia, news cholbe)':'Google Search (needs billing; when off, free weather, prices, Wikipedia and news still work)',
+  'R.I.M.Y uttor bolbe (voice)':'R.I.M.Y speaks replies (voice)','Gemini-r prakritik meye-r voice (quota lage)':'Natural female Gemini voice (uses quota)','Gemini voice':'Gemini voice',
+  'Aoede (halka, mishti)':'Aoede (soft, sweet)','Kore (shanto, dhir)':'Kore (calm, steady)','Leda (tarun)':'Leda (young)','Zephyr (ujjol)':'Zephyr (bright)','Achernar (nromo)':'Achernar (gentle)','Callirrhoe (shohoj)':'Callirrhoe (easy)',
+  'Shunao':'Play',
+  'R.I.M.Y-er golar voice (shunao chepe meye-r golar ta bachho)':'Phone voice for R.I.M.Y (tap Play and pick a female voice)',
+  'Golar sur (barale meye-r moto mishti hoy)':'Pitch (higher sounds more feminine)',
+  'Voice-er list tomar phone-er installed voice theke ashe. Upore je bhasha bachho, sei bhashar voice dekhabe.':'Voices come from your phone and match the language chosen above.',
+  'Ja ja mone rekheche':'Things I remember','Chat muchho':'Clear chat','Save':'Save',
+  'Key ar chat shudhu ei phone-er browser-e save thake.':'Key and chat are saved only in this phone\'s browser.',
+  'ready':'ready','shunchhi...':'listening...','bolchhi...':'speaking...','bhabchhi...':'thinking...','Mic chepe kotha bolo':'Tap the mic and speak','Kotha bolo ba likho...':'Speak or type...','golaa toiri korchhi...':'preparing voice...',
+  'ami R.I.M.Y. Tomar ki khobor? Kotha bolo, ami shunchhi.':'I am R.I.M.Y. What is new with you? Tell me, I am listening.'
+ },
+ hi: {
+  'R.I.M.Y Settings':'R.I.M.Y सेटिंग्स','Dekhte kemon (Look)':'दिखावट','Theme':'थीम',
+  'Gulabi (rose)':'गुलाबी','Shondhya (sunset)':'सूर्यास्त','Shagor (ocean)':'समुद्र','Aurora':'ऑरोरा','Raat (midnight)':'आधी रात','Halka (light)':'हल्का',
+  'Chat wallpaper':'चैट वॉलपेपर','Shada':'सादा','Shondhya':'सूर्यास्त','Shagor':'समुद्र','Hridoy':'दिल','Tara':'तारे','Dheu':'लहरें','Nijer chhobi':'मेरी फ़ोटो',
+  'Lekhar rong (R.I.M.Y)':'अक्षरों का रंग (R.I.M.Y)','Theme-er moto':'थीम जैसा','Gulabi':'गुलाबी','Shona':'सुनहरा','Akashi':'आसमानी','Pudina':'पुदीना','Beguni':'बैंगनी',
+  'Lekhar akar':'अक्षरों का आकार','Chhoto':'छोटा','Majhari':'मध्यम','Boro':'बड़ा','Onek boro':'बहुत बड़ा',
+  'Gallery theke chhobi nao':'गैलरी से फ़ोटो चुनें','Muchho':'हटाएं',
+  'Wallpaper-e "Nijer chhobi" bechhe gallery theke photo dao.':'"मेरी फ़ोटो" चुनकर गैलरी से फ़ोटो दें।',
+  'Gemini API key (Google AI Studio theke)':'Gemini API key (Google AI Studio से)','Model':'मॉडल','List':'सूची',
+  '"List" chaple tomar key-te jei model gulo cholbe segulo dekhabe. 404 error ashle ekta model eikhan theke bachho.':'"सूची" दबाने पर आपकी key के मॉडल दिखेंगे। 404 error आए तो यहां से मॉडल चुनें।',
+  'Tomar naam (R.I.M.Y tomake ei naame dakbe)':'आपका नाम (R.I.M.Y इसी नाम से बुलाएगी)',
+  'Voice shonar bhasha':'सुनने की भाषा','Bangla (Bangladesh)':'बंगला (बांग्लादेश)','Bangla (India)':'बंगला (भारत)','English':'English','Hindi':'हिन्दी','Arabic':'अरबी','Urdu':'उर्दू',
+  'Auto (jei bhashai bolo)':'ऑटो (आप जो भाषा बोलें)',
+  'Google Search (billing lagbe; bondho thakle free weather, dam, Wikipedia, news cholbe)':'Google Search (billing चाहिए; बंद हो तो मुफ़्त मौसम, भाव, Wikipedia और समाचार चलेंगे)',
+  'R.I.M.Y uttor bolbe (voice)':'R.I.M.Y जवाब बोलेगी (voice)','Gemini-r prakritik meye-r voice (quota lage)':'Gemini की प्राकृतिक महिला आवाज़ (quota लगता है)','Gemini voice':'Gemini आवाज़',
+  'Aoede (halka, mishti)':'Aoede (मीठी, कोमल)','Kore (shanto, dhir)':'Kore (शांत, धीर)','Leda (tarun)':'Leda (युवा)','Zephyr (ujjol)':'Zephyr (चमकीली)','Achernar (nromo)':'Achernar (नरम)','Callirrhoe (shohoj)':'Callirrhoe (सहज)',
+  'Shunao':'सुनाओ',
+  'R.I.M.Y-er golar voice (shunao chepe meye-r golar ta bachho)':'R.I.M.Y की फ़ोन आवाज़ (सुनाओ दबाकर महिला आवाज़ चुनें)',
+  'Golar sur (barale meye-r moto mishti hoy)':'पिच (ऊँची पिच ज़्यादा नरम लगती है)',
+  'Voice-er list tomar phone-er installed voice theke ashe. Upore je bhasha bachho, sei bhashar voice dekhabe.':'आवाज़ें आपके फ़ोन से आती हैं और ऊपर चुनी भाषा से मेल खाती हैं।',
+  'Ja ja mone rekheche':'जो याद रखा है','Chat muchho':'चैट मिटाएं','Save':'सेव करें',
+  'Key ar chat shudhu ei phone-er browser-e save thake.':'Key और चैट सिर्फ़ इस फ़ोन के ब्राउज़र में सेव रहते हैं।',
+  'ready':'तैयार','shunchhi...':'सुन रही हूँ...','bolchhi...':'बोल रही हूँ...','bhabchhi...':'सोच रही हूँ...','Mic chepe kotha bolo':'माइक दबाकर बोलें','Kotha bolo ba likho...':'बोलें या लिखें...','golaa toiri korchhi...':'आवाज़ तैयार हो रही है...',
+  'ami R.I.M.Y. Tomar ki khobor? Kotha bolo, ami shunchhi.':'मैं R.I.M.Y हूँ। आज क्या ख़बर है? बोलो, मैं सुन रही हूँ।'
+ },
+ ar: {
+  'R.I.M.Y Settings':'إعدادات R.I.M.Y','Dekhte kemon (Look)':'المظهر','Theme':'السمة',
+  'Gulabi (rose)':'وردي','Shondhya (sunset)':'غروب','Shagor (ocean)':'محيط','Aurora':'شفق','Raat (midnight)':'منتصف الليل','Halka (light)':'فاتح',
+  'Chat wallpaper':'خلفية المحادثة','Shada':'بسيطة','Shondhya':'غروب','Shagor':'محيط','Hridoy':'قلوب','Tara':'نجوم','Dheu':'أمواج','Nijer chhobi':'صورتي',
+  'Lekhar rong (R.I.M.Y)':'لون الكتابة (R.I.M.Y)','Theme-er moto':'حسب السمة','Gulabi':'وردي','Shona':'ذهبي','Akashi':'أزرق سماوي','Pudina':'نعناعي','Beguni':'بنفسجي',
+  'Lekhar akar':'حجم الخط','Chhoto':'صغير','Majhari':'متوسط','Boro':'كبير','Onek boro':'كبير جدا',
+  'Gallery theke chhobi nao':'اختر صورة من المعرض','Muchho':'إزالة',
+  'Wallpaper-e "Nijer chhobi" bechhe gallery theke photo dao.':'اختر "صورتي" كخلفية، ثم اختر صورة من المعرض.',
+  'Gemini API key (Google AI Studio theke)':'مفتاح Gemini API (من Google AI Studio)','Model':'النموذج','List':'قائمة',
+  '"List" chaple tomar key-te jei model gulo cholbe segulo dekhabe. 404 error ashle ekta model eikhan theke bachho.':'اضغط "قائمة" لعرض النماذج المتاحة لمفتاحك. إذا ظهر خطأ 404 فاختر نموذجا من هنا.',
+  'Tomar naam (R.I.M.Y tomake ei naame dakbe)':'اسمك (ستناديك R.I.M.Y بهذا الاسم)',
+  'Voice shonar bhasha':'لغة الاستماع','Bangla (Bangladesh)':'البنغالية (بنغلاديش)','Bangla (India)':'البنغالية (الهند)','English':'English','Hindi':'الهندية','Arabic':'العربية','Urdu':'الأردية',
+  'Auto (jei bhashai bolo)':'تلقائي (أي لغة تتحدث بها)',
+  'Google Search (billing lagbe; bondho thakle free weather, dam, Wikipedia, news cholbe)':'بحث Google (يحتاج فوترة؛ وعند إيقافه تعمل الأدوات المجانية: الطقس والأسعار وويكيبيديا والأخبار)',
+  'R.I.M.Y uttor bolbe (voice)':'ترد R.I.M.Y بالصوت','Gemini-r prakritik meye-r voice (quota lage)':'صوت أنثوي طبيعي من Gemini (يستهلك الحصة)','Gemini voice':'صوت Gemini',
+  'Aoede (halka, mishti)':'Aoede (ناعم، عذب)','Kore (shanto, dhir)':'Kore (هادئ، رزين)','Leda (tarun)':'Leda (شاب)','Zephyr (ujjol)':'Zephyr (مشرق)','Achernar (nromo)':'Achernar (لطيف)','Callirrhoe (shohoj)':'Callirrhoe (سهل)',
+  'Shunao':'تشغيل',
+  'R.I.M.Y-er golar voice (shunao chepe meye-r golar ta bachho)':'صوت الهاتف لـ R.I.M.Y (اضغط تشغيل واختر صوتا أنثويا)',
+  'Golar sur (barale meye-r moto mishti hoy)':'طبقة الصوت (الطبقة الأعلى تبدو أنثوية أكثر)',
+  'Voice-er list tomar phone-er installed voice theke ashe. Upore je bhasha bachho, sei bhashar voice dekhabe.':'الأصوات تأتي من هاتفك وتطابق اللغة المختارة أعلاه.',
+  'Ja ja mone rekheche':'ما أتذكره','Chat muchho':'مسح المحادثة','Save':'حفظ',
+  'Key ar chat shudhu ei phone-er browser-e save thake.':'المفتاح والمحادثة محفوظان في متصفح هذا الهاتف فقط.',
+  'ready':'جاهزة','shunchhi...':'أستمع...','bolchhi...':'أتكلم...','bhabchhi...':'أفكر...','Mic chepe kotha bolo':'اضغط الميكروفون وتكلم','Kotha bolo ba likho...':'تكلم أو اكتب...','golaa toiri korchhi...':'جاري تجهيز الصوت...',
+  'ami R.I.M.Y. Tomar ki khobor? Kotha bolo, ami shunchhi.':'أنا R.I.M.Y. ما الجديد عندك؟ قل لي، أنا أستمع.'
+ },
+ ur: {
+  'R.I.M.Y Settings':'R.I.M.Y ترتیبات','Dekhte kemon (Look)':'ظاہری شکل','Theme':'تھیم',
+  'Gulabi (rose)':'گلابی','Shondhya (sunset)':'غروب آفتاب','Shagor (ocean)':'سمندر','Aurora':'شفق','Raat (midnight)':'آدھی رات','Halka (light)':'ہلکا',
+  'Chat wallpaper':'چیٹ وال پیپر','Shada':'سادہ','Shondhya':'غروب آفتاب','Shagor':'سمندر','Hridoy':'دل','Tara':'ستارے','Dheu':'لہریں','Nijer chhobi':'میری تصویر',
+  'Lekhar rong (R.I.M.Y)':'تحریر کا رنگ (R.I.M.Y)','Theme-er moto':'تھیم کے مطابق','Gulabi':'گلابی','Shona':'سنہرا','Akashi':'آسمانی','Pudina':'پودینہ','Beguni':'جامنی',
+  'Lekhar akar':'تحریر کا سائز','Chhoto':'چھوٹا','Majhari':'درمیانہ','Boro':'بڑا','Onek boro':'بہت بڑا',
+  'Gallery theke chhobi nao':'گیلری سے تصویر چنیں','Muchho':'ہٹائیں',
+  'Wallpaper-e "Nijer chhobi" bechhe gallery theke photo dao.':'"میری تصویر" چن کر گیلری سے تصویر دیں۔',
+  'Gemini API key (Google AI Studio theke)':'Gemini API key (Google AI Studio سے)','Model':'ماڈل','List':'فہرست',
+  '"List" chaple tomar key-te jei model gulo cholbe segulo dekhabe. 404 error ashle ekta model eikhan theke bachho.':'"فہرست" دبانے سے آپ کی key کے ماڈل دکھائے جائیں گے۔ 404 خرابی آئے تو یہاں سے ماڈل چنیں۔',
+  'Tomar naam (R.I.M.Y tomake ei naame dakbe)':'آپ کا نام (R.I.M.Y اسی نام سے بلائے گی)',
+  'Voice shonar bhasha':'سننے کی زبان','Bangla (Bangladesh)':'بنگالی (بنگلہ دیش)','Bangla (India)':'بنگالی (بھارت)','English':'English','Hindi':'ہندی','Arabic':'عربی','Urdu':'اردو',
+  'Auto (jei bhashai bolo)':'خودکار (جو زبان بولیں)',
+  'Google Search (billing lagbe; bondho thakle free weather, dam, Wikipedia, news cholbe)':'Google Search (بلنگ درکار؛ بند ہو تو مفت موسم، قیمتیں، Wikipedia اور خبریں چلیں گی)',
+  'R.I.M.Y uttor bolbe (voice)':'R.I.M.Y جواب بولے گی (آواز)','Gemini-r prakritik meye-r voice (quota lage)':'Gemini کی قدرتی نسوانی آواز (quota لگتا ہے)','Gemini voice':'Gemini آواز',
+  'Aoede (halka, mishti)':'Aoede (نرم، میٹھی)','Kore (shanto, dhir)':'Kore (پرسکون، ٹھہری ہوئی)','Leda (tarun)':'Leda (نوجوان)','Zephyr (ujjol)':'Zephyr (روشن)','Achernar (nromo)':'Achernar (نرم)','Callirrhoe (shohoj)':'Callirrhoe (آسان)',
+  'Shunao':'سنائیں',
+  'R.I.M.Y-er golar voice (shunao chepe meye-r golar ta bachho)':'R.I.M.Y کی فون آواز (سنائیں دبا کر نسوانی آواز چنیں)',
+  'Golar sur (barale meye-r moto mishti hoy)':'سر (اونچا سر زیادہ نرم لگتا ہے)',
+  'Voice-er list tomar phone-er installed voice theke ashe. Upore je bhasha bachho, sei bhashar voice dekhabe.':'آوازیں آپ کے فون سے آتی ہیں اور اوپر چنی زبان کے مطابق ہیں۔',
+  'Ja ja mone rekheche':'جو یاد رکھا ہے','Chat muchho':'چیٹ مٹائیں','Save':'محفوظ کریں',
+  'Key ar chat shudhu ei phone-er browser-e save thake.':'key اور چیٹ صرف اس فون کے براؤزر میں محفوظ رہتی ہیں۔',
+  'ready':'تیار','shunchhi...':'سن رہی ہوں...','bolchhi...':'بول رہی ہوں...','bhabchhi...':'سوچ رہی ہوں...','Mic chepe kotha bolo':'مائیک دبا کر بولیں','Kotha bolo ba likho...':'بولیں یا لکھیں...','golaa toiri korchhi...':'آواز تیار ہو رہی ہے...',
+  'ami R.I.M.Y. Tomar ki khobor? Kotha bolo, ami shunchhi.':'میں R.I.M.Y ہوں۔ آج آپ کی کیا خبر ہے؟ بولیں، میں سن رہی ہوں۔'
+ }
+};
+const LANGS = ['bn','en','hi','ar','ur'];
+function uiLang(){
+  const v = S.lang || 'bn-BD';
+  if(v === 'auto'){ const n = (navigator.language || 'bn').slice(0, 2).toLowerCase(); return LANGS.includes(n) ? n : 'bn'; }
+  const p = v.slice(0, 2); return LANGS.includes(p) ? p : 'bn';
+}
+function recLang(){ return S.lang === 'auto' ? 'bn-BD' : (S.lang || 'bn-BD'); }
+function selPre(){ const v = ($('lang') && $('lang').value) || S.lang || 'bn-BD'; return v === 'auto' ? uiLang() : v.slice(0, 2); }
+function tr(s){ const d = TR[uiLang()]; return (d && d[s]) || s; }
+const ORIG_TXT = new WeakMap();
+function applyI18n(){
+  const L = uiLang(), d = TR[L] || {};
+  document.documentElement.lang = L;
+  document.documentElement.dir = (L === 'ar' || L === 'ur') ? 'rtl' : 'ltr';
+  const w = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT);
+  const nodes = []; let n; while((n = w.nextNode())) nodes.push(n);
+  for(const node of nodes){
+    const p = node.parentElement;
+    if(!p || p.closest('#msgs') || p.closest('script,style')) continue;
+    if(!ORIG_TXT.has(node)) ORIG_TXT.set(node, node.nodeValue);
+    const orig = ORIG_TXT.get(node), src = orig.trim();
+    node.nodeValue = (src && d[src]) ? orig.replace(src, d[src]) : orig;
+  }
+  if($('txt')) $('txt').placeholder = tr('Kotha bolo ba likho...');
+  if(typeof callState === 'function') callState();
+}
+function setStatus(t){ $('status').textContent = tr(t); }
 function orb(cls){ avState = cls || 'idle'; if(typeof callState === 'function') callState(); }
 /* ---------- avatar: dheu-er moto jibonto gol mukh ---------- */
 let avState = 'idle', avCols = null, avTarget = null, avAmp = .07, avPh = 0, avLast = 0;
@@ -291,7 +421,7 @@ function openCall(){ if(callOpen) return; callOpen = true; sizeBig(); $('call').
 function closeCall(){ callOpen = false; $('call').classList.remove('open'); }
 function callTxt(t){ $('calltxt').textContent = t || ''; }
 function callState(){
-  const m = {listening:'shunchhi...', thinking:'bhabchhi...', speaking:'bolchhi...'}[avState] || 'Mic chepe kotha bolo';
+  const m = {listening:tr('shunchhi...'), thinking:tr('bhabchhi...'), speaking:tr('bolchhi...')}[avState] || tr('Mic chepe kotha bolo');
   $('callst').textContent = m; $('callmic').classList.toggle('on', avState === 'listening');
 }
 function eyeLid(g, X, Y, f, cx, cy, rx, ry, b){
@@ -666,17 +796,27 @@ async function askGemini(){
 
 function parseTags(raw){
   let mood = '', acts = [];
-  const clean = raw.replace(/\[\[(MOOD|MEMORY|CALL|OPEN):\s*([^\]]*)\]\]/gi, (m, k, v) => {
+  const dos = [];
+  const clean = raw.replace(/\[\[(MOOD|MEMORY|CALL|OPEN|DO):\s*([^\]]*)\]\]/gi, (m, k, v) => {
     k = k.toUpperCase(); v = v.trim();
     if(k === 'MOOD') mood = v;
     else if(k === 'MEMORY' && v){ if(!memory.includes(v)) memory.push(v); memory = memory.slice(-40); }
     else if(k === 'CALL' && /^[+\d][\d\s\-]{3,}$/.test(v)) acts.push({label:'Call ' + v, href:'tel:' + v.replace(/[\s\-]/g, '')});
     else if(k === 'OPEN' && /^https?:\/\//i.test(v)) acts.push({label:'Open link', href:v});
+    else if(k === 'DO'){ try{ const o = JSON.parse(v); if(o && o.do) dos.push(o); }catch(e){} }
     return '';
   }).trim();
-  return {clean, mood, acts};
+  return {clean, mood, acts, dos};
 }
 
+function runDos(list){
+  for(const d of list || []){
+    if(!window.RimyNative){ addMsg('sys', 'Phone-er kaj (' + d.do + ') shudhu Rimy Android app-e cholbe.'); continue; }
+    let r = 'error';
+    try{ r = RimyNative.doAction(JSON.stringify(d)); }catch(e){}
+    if(r !== 'ok') addMsg('sys', 'Kaj-ti hoy ni (' + d.do + ').');
+  }
+}
 async function send(text, regen){
   unlockAudio();
   text = (text || '').trim();
@@ -689,7 +829,8 @@ async function send(text, regen){
   const tp = addTyping();
   try{
     const {text:raw, sources} = await askGemini();
-    const {clean, mood, acts} = parseTags(raw);
+    const {clean, mood, acts, dos} = parseTags(raw);
+    runDos(dos);
     tp.remove(); setMood(mood); callTxt(clean || raw);
     history.push({role:'model', text:clean || raw});
     addMsg('her', clean || raw, {acts, sources});
@@ -870,13 +1011,29 @@ function sendPending(){
   micOff(); setStatus('ready'); $('txt').value = '';
   if(t) send(t); else if(handsfree && !busy) setTimeout(startListen, 400);
 }
+function nativeListen(){
+  if(listening || busy) return;
+  stopAudio();
+  if('speechSynthesis' in window) speechSynthesis.cancel();
+  listening = true; $('mic').classList.add('on'); orb('listening'); setStatus('shunchhi...');
+  window.onNativeSpeech = t => {
+    window.onNativeSpeech = null;
+    listening = false; $('mic').classList.remove('on'); orb(''); setStatus('ready');
+    const txt = (t || '').trim();
+    if(txt){ $('txt').value = ''; callTxt(txt); send(txt); }
+    else if(handsfree && !busy) setTimeout(startListen, 400);
+    else closeCall();
+  };
+  try{ RimyNative.listen(recLang(), S.lang === 'auto'); }catch(e){ window.onNativeSpeech(''); }
+}
 function startListen(){
+  if(!SR && window.RimyNative){ nativeListen(); return; }
   if(!SR){ addMsg('sys', 'Ei browser-e voice shona cholbe na. Chrome e kholo.'); handsfree = false; $('handsfree').style.background = ''; return; }
   if(listening || busy) return;
   stopAudio();
   if('speechSynthesis' in window) speechSynthesis.cancel();
   rec = new SR();
-  rec.lang = S.lang; rec.interimResults = true; rec.continuous = true;
+  rec.lang = recLang(); rec.interimResults = true; rec.continuous = true;
   heard = '';
   rec.onstart = () => { listening = true; $('mic').classList.add('on'); orb('listening'); setStatus('shunchhi... (kotha shesh hole 2-3 second por uttor dibo)'); };
   rec.onresult = e => {
@@ -901,9 +1058,9 @@ function startListen(){
   try{ rec.start(); }catch(e){}
 }
 /* send() ba onno kaj-er age: kichu na pathiye bondho */
-function stopListen(){ clearTimeout(sendT); sendT = null; heard = ''; pending = ''; manual = false; if(rec && listening){ try{ rec.onend = micOff; rec.stop(); }catch(e){} } }
+function stopListen(){ clearTimeout(sendT); sendT = null; heard = ''; pending = ''; manual = false; if(!SR && window.RimyNative){ window.onNativeSpeech = null; try{ RimyNative.stopListen(); }catch(e){} listening = false; micOff(); return; } if(rec && listening){ try{ rec.onend = micOff; rec.stop(); }catch(e){} } }
 /* mic-e abar chaple: ja shona hoyeche seta pathiye dao */
-function finishListen(){ clearTimeout(sendT); if(rec && listening){ manual = true; try{ rec.stop(); }catch(e){} } else if(pending){ sendPending(); } }
+function finishListen(){ clearTimeout(sendT); if(!SR && window.RimyNative){ if(listening){ try{ RimyNative.stopListen(); }catch(e){} } return; } if(rec && listening){ manual = true; try{ rec.stop(); }catch(e){} } else if(pending){ sendPending(); } }
 
 
 /* ---------- look: theme, wallpaper, lekhar rong ---------- */
@@ -986,8 +1143,8 @@ function saveSettings(){
   S.pitch = parseFloat($('pitch').value) || 1.25;
   S.tts = $('tts').checked; S.ttsVoice = $('ttsvoice').value;
   S.vmap = S.vmap || {};
-  { const pre = S.lang.slice(0, 2); if($('voice').value) S.vmap[pre] = $('voice').value; else delete S.vmap[pre]; }
-  persist(); $('set').classList.remove('open');
+  { const pre = selPre(); if($('voice').value) S.vmap[pre] = $('voice').value; else delete S.vmap[pre]; }
+  persist(); applyI18n(); $('set').classList.remove('open');
 }
 async function listModels(){
   const key = $('key').value.trim();
@@ -1031,7 +1188,7 @@ $('handsfree').onclick = () => {
 let VOICES = [];
 function fillVoices(){
   const sel = $('voice'); if(!sel) return;
-  const pre = $('lang').value.slice(0, 2);
+  const pre = selPre();
   sel.textContent = '';
   const auto = document.createElement('option'); auto.value = ''; auto.textContent = 'Auto'; sel.appendChild(auto);
   VOICES.filter(v => v.lang.replace('_', '-').slice(0, 2) === pre).sort((a, b) => a.name.localeCompare(b.name)).forEach(v => {
@@ -1043,7 +1200,7 @@ function fillVoices(){
 }
 function loadVoices(){ if('speechSynthesis' in window){ VOICES = speechSynthesis.getVoices(); fillVoices(); } }
 if('speechSynthesis' in window){ speechSynthesis.onvoiceschanged = loadVoices; loadVoices(); }
-$('lang').onchange = fillVoices;
+$('lang').onchange = () => { S.lang = $('lang').value; persist(); fillVoices(); applyI18n(); };
 $('ttest').onclick = async () => {
   unlockAudio();
   const key = $('key').value.trim(); if(key) S.key = key;
@@ -1056,20 +1213,20 @@ $('ttest').onclick = async () => {
 };
 $('vtest').onclick = () => {
   if(!('speechSynthesis' in window)) return;
-  const pre = $('lang').value.slice(0, 2);
+  const pre = selPre();
   const sample = {bn:'হাই, আমি রিমি। তুমি কেমন আছো?', en:"Hi, I'm Rimy. How are you today?", hi:'हाय, मैं रिमी हूँ। आप कैसे हैं?', ar:'مرحبا، أنا ريمي. كيف حالك؟', ur:'ہائے، میں ریمی ہوں۔ آپ کیسے ہیں؟'}[pre] || 'Hi, I am Rimy.';
   speechSynthesis.cancel();
   const u = new SpeechSynthesisUtterance(sample);
   const v = VOICES.find(x => x.name === $('voice').value);
-  if(v){ u.voice = v; u.lang = v.lang.replace('_', '-'); } else { u.lang = $('lang').value; }
+  if(v){ u.voice = v; u.lang = v.lang.replace('_', '-'); } else { u.lang = recLang(); }
   u.pitch = parseFloat($('pitch').value) || 1.25;
   speechSynthesis.speak(u);
 };
 
-applyLook();
+applyLook(); applyI18n();
 history.slice(-12).forEach(h => addMsg(h.role === 'user' ? 'you' : 'her', h.text));
 if(!history.length){
-  addMsg('her', (S.name ? S.name + ', ' : '') + 'ami R.I.M.Y. Tomar ki khobor? Kotha bolo, ami shunchhi.', {nobar:true});
+  addMsg('her', (S.name ? S.name + ', ' : '') + tr('ami R.I.M.Y. Tomar ki khobor? Kotha bolo, ami shunchhi.'), {nobar:true});
 }
 if(!S.key){ addMsg('sys', 'Shuru korar age ⚙ chepe Gemini API key dao.'); }
 </script>
