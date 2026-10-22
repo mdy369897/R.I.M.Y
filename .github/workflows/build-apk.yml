@@ -4,6 +4,7 @@ on:
   push:
     paths:
       - 'rimy-android.zip'
+      - 'android/**'
       - '.github/workflows/build-apk.yml'
   workflow_dispatch:
 
@@ -11,19 +12,22 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout
+        uses: actions/checkout@v4
 
-      - name: Unzip project
-        run: unzip -o rimy-android.zip -d .
+      - name: Unzip project (android folder)
+        run: |
+          if [ -f rimy-android.zip ]; then unzip -o rimy-android.zip 'android/*' -d .; fi
+          ls -la android
 
-      - uses: actions/setup-java@v4
+      - name: Setup Java 17
+        uses: actions/setup-java@v4
         with:
           distribution: temurin
           java-version: '17'
 
-      - uses: android-actions/setup-android@v3
-
-      - uses: gradle/actions/setup-gradle@v4
+      - name: Setup Gradle 8.9
+        uses: gradle/actions/setup-gradle@v4
         with:
           gradle-version: '8.9'
 
@@ -31,7 +35,8 @@ jobs:
         working-directory: android
         run: gradle :app:assembleDebug --no-daemon
 
-      - uses: actions/upload-artifact@v4
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
         with:
           name: rimy-debug-apk
           path: android/app/build/outputs/apk/debug/app-debug.apk
