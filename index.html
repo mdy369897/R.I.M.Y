@@ -213,7 +213,7 @@ input[type=range]{width:100%;accent-color:var(--accent)}
       <button id="close" type="button" style="margin-left:auto;background:var(--accent);color:#2a0f1a;border-color:var(--accent)">Save</button>
     </div>
     <div class="note">Key ar chat shudhu ei phone-er browser-e save thake.</div>
-    <div class="note" id="ver">R.I.M.Y Version 34</div>
+    <div class="note" id="ver">R.I.M.Y Version 35</div>
   </div>
 </div>
 
@@ -282,7 +282,7 @@ Hidden tags: at the very end of every reply, add these tags on their own (the ap
 [[MOOD: one word for the user's mood now, e.g. happy, sad, angry, tired, excited, calm]]
 If the user asks you to remember something, or tells you a lasting fact worth keeping (a task, a plan, a preference, a person's name), add [[MEMORY: short note in the user's language]].
 Phone control: when the user asks you to set an alarm or timer, open an app, send a message, call someone, or open a link, add one tag [[DO: {json}]] with one of these: {"do":"alarm","hour":7,"minute":30,"label":"..."}, {"do":"timer","seconds":300,"label":"..."}, {"do":"open","app":"WhatsApp"}, {"do":"sms","to":"+...","text":"..."}, {"do":"call","to":"..."}, {"do":"url","url":"https://..."}, {"do":"nav","action":"back"} (action can be back, home, recents or notifications). For back, home, recents or notifications you MUST add the nav tag in the same reply every time the user asks, even if they typed it. Never say you went back or went home unless the nav tag is in your reply. If the user says "X sec pore" (after X seconds), add "delay":X to the nav tag, e.g. {"do":"nav","action":"back","delay":5}. Say in your reply what you are doing in the user's language. The phone shows a confirm screen before calls and messages, so never say it is already done. If the user asks you to call someone and gives a number, add [[CALL: number]] and the call DO tag. If the user asks to call but gives only a name and no number, do NOT add any call tag; ask them for the phone number (with country code, e.g. +880...) instead. If they ask to open a website, add [[OPEN: https://full-url]]. The user taps a button to confirm; never say a call was already placed.
-Phone control is ONLY through the [[DO]] tags above. Never say you cannot set alarms, timers, call, send messages, open apps or links; use the matching tag instead. For music or a YouTube video, use {"do":"url","url":"https://www.youtube.com/results?search_query=<song or artist, URL-encoded>"} (or {"do":"open","app":"YouTube"}) and tell the user to tap the first result to play. You can read the phone screen only with the read_screen tool, and only when the user asks about it.
+If the user says you made a mistake (bhul, vul, thik koro, kaj hoy ni), reply with one short apology in the user's language, say what went wrong in one line, and do the correct action now with the right tag. Never say "done" without the tag. Phone control is ONLY through the [[DO]] tags above. Never say you cannot set alarms, timers, call, send messages, open apps or links; use the matching tag instead. For music or a YouTube video, use {"do":"url","url":"https://www.youtube.com/results?search_query=<song or artist, URL-encoded>"} (or {"do":"open","app":"YouTube"}) and tell the user to tap the first result to play. You can read the phone screen only with the read_screen tool, and only when the user asks about it.
 ${S.name ? 'The user\'s name is ' + S.name + '.' : ''}`;
 }
 
