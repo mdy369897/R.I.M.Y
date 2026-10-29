@@ -104,6 +104,7 @@ input[type=range]{width:100%;accent-color:var(--accent)}
 </div>
 <div id="dock">
   <button id="mic" aria-label="Speak">&#127908;</button>
+  <button id="mute" type="button" aria-label="Voice bondho/chalu" title="Voice bondho/chalu" style="flex:none;width:44px;height:44px;padding:0;border-radius:50%">&#128266;</button>
   <textarea id="txt" rows="1" placeholder="Kotha bolo ba likho..."></textarea>
   <button id="send" aria-label="Send">&#10148;</button>
 </div>
@@ -220,7 +221,7 @@ input[type=range]{width:100%;accent-color:var(--accent)}
       <button id="close" type="button" style="margin-left:auto;background:var(--accent);color:#2a0f1a;border-color:var(--accent)">Save</button>
     </div>
     <div class="note">Key ar chat shudhu ei phone-er browser-e save thake.</div>
-    <div class="note" id="ver">R.I.M.Y Version 37</div>
+    <div class="note" id="ver">R.I.M.Y Version 38</div>
   </div>
 </div>
 
@@ -420,7 +421,12 @@ TR.bn = {
   'Ja ja mone rekheche':'যা যা মনে রেখেছি','Chat muchho':'চ্যাট মুছুন','Save':'সংরক্ষণ',
   'Key ar chat shudhu ei phone-er browser-e save thake.':'Key আর চ্যাট শুধু এই ফোনের browser-এ সংরক্ষিত থাকে।',
   'ready':'প্রস্তুত','shunchhi...':'শুনছি...','bolchhi...':'বলছি...','bhabchhi...':'ভাবছি...','Mic chepe kotha bolo':'মাইক চেপে কথা বলুন','Kotha bolo ba likho...':'বলুন বা লিখুন...','golaa toiri korchhi...':'voice তৈরি হচ্ছে...',
-  'ami R.I.M.Y. Tomar ki khobor? Kotha bolo, ami shunchhi.':'আমি R.I.M.Y। তোমার কী খবর? বলো, আমি শুনছি।'
+  'ami R.I.M.Y. Tomar ki khobor? Kotha bolo, ami shunchhi.':'আমি R.I.M.Y। তোমার কী খবর? বলো, আমি শুনছি।',
+  'Screen dekhar jonno Settings > Accessibility > R.I.M.Y te on korte hobe. Password field kokhono dekhbo na.':'স্ক্রিন দেখার জন্য Settings > Accessibility > R.I.M.Y-তে চালু করতে হবে। Password field কখনো দেখবো না।',
+  'Screen-e access chalu koro':'Screen-এ access চালু করুন',
+  'Din-e Gemini request-er limit (tomar nijer hishab, 0 = bondho)':'দিনে Gemini request-এর limit (আপনার নিজের হিসাব, 0 = বন্ধ)',
+  'copy hoyeche':'কপি হয়েছে','copy hoy ni':'কপি হয়নি','abar try korchhi...':'আবার চেষ্টা করছি...','chhobi banachhi...':'ছবি বানাচ্ছি...',
+  'tomar mood: ':'তোমার মুড: ','calm':'শান্ত','happy':'খুশি','excited':'উত্তেজিত','playful':'মজাদার','sad':'মন খারাপ','curious':'কৌতূহলী','romantic':'রোমান্টিক','angry':'রাগী','neutral':'স্বাভাবিক','loving':'আদুরে'
 };
 const LANGS = ['bn','en','hi','ar','ur'];
 function uiLang(){
@@ -436,6 +442,39 @@ Object.assign(TR.hi, {'Chhobi diye prosno':'तस्वीर से सवा�
 Object.assign(TR.ar, {'Chhobi diye prosno':'سؤال بصورة', 'Quiz dao':'اختبار سريع', 'Chhobi banao':'أنشئ صورة'});
 Object.assign(TR.ur, {'Chhobi diye prosno':'تصویر سے سوال', 'Quiz dao':'کوئز دو', 'Chhobi banao':'تصویر بناؤ'});
 function tr(s){ const d = TR[uiLang()]; return (d && d[s]) || s; }
+/* Sys message-er Bangla/English. Ekhon bn ar en; hi/ar/ur-e English dekhabe */
+const MS = {
+  gsq: {bn:'Google Search-এর quota নেই, তাই free tool (weather, দাম, Wikipedia, news) দিয়ে চালাচ্ছি।', en:'Google Search quota is over, so I am using free tools (weather, prices, Wikipedia, news).'},
+  scr: {bn:'Screen access বন্ধ আছে। Settings > Accessibility-তে গিয়ে R.I.M.Y চালু করো।', en:'Screen access is off. Turn on R.I.M.Y in Settings > Accessibility.'},
+  scrTxt: {bn:'কাজটি হয়নি: Screen access নেই (Settings > Accessibility > R.I.M.Y চালু করো)।', en:'Could not do it: screen access is off (Settings > Accessibility > R.I.M.Y).'},
+  kajNo: {bn:'কাজটি হয়নি', en:'Could not do it'},
+  phoneApp: {bn:'ফোনের কাজ ({do}) শুধু R.I.M.Y Android app-এ চলবে।', en:'Phone action ({do}) works only in the R.I.M.Y Android app.'},
+  shomossha: {bn:'সমস্যা: ', en:'Problem: '},
+  net: {bn:'Internet-এর সাথে যোগাযোগ হচ্ছে না। Net চেক করে আবার চেষ্টা করো।', en:'No internet connection. Check your net and try again.'},
+  quota: {bn:'Gemini-এর limit এখন শেষ। একটু পরে আবার চেষ্টা করো, বা অন্য key দাও।', en:'Gemini limit is used up. Try again later or add another key.'},
+  quotaSpeak: {bn:'Gemini-এর limit এখন শেষ হয়ে গেছে। একটু পরে আবার চেষ্টা করো।', en:'Gemini limit has run out. Please try again later.'},
+  modelList: {bn:' (Settings-এ "তালিকা" চেপে যে model চলে সেটা বাছো।)', en:' (In Settings, tap "List" and pick a model that works.)'},
+  imgLimit: {bn:'ছবি বানানোর free limit নেই। Google billing চালু করলে চলবে।', en:'No free limit for image generation. It works once Google billing is on.'},
+  imgFail: {bn:'ছবি বানাতে পারলাম না: ', en:'Could not make the image: '},
+  chhobiNite: {bn:'ছবি নিতে পারলাম না: ', en:'Could not take the photo: '},
+  dayWarn: {bn:'আজকের Gemini request প্রায় শেষ: {n}/{cap}। Limit কাছে, সাবধানে ভাবো।', en:'Today\'s Gemini requests are nearly used up: {n}/{cap}.'},
+  dayCap: {bn:'আজকের নিজের সেট করা limit ({cap}) শেষ। কাল আবার চলবে।', en:'Your own daily limit ({cap}) is used up. It works again tomorrow.'},
+  ttsQuota: {bn:'Gemini voice-এর quota এখন শেষ। কিছুক্ষণ built-in voice-এ বলবো।', en:'Gemini voice quota is used up. I will use the built-in voice for a while.'},
+  ttsFail: {bn:'Gemini voice এখন পাবো না, built-in voice-এ বলছি।', en:'Gemini voice is not available now, using the built-in voice.'},
+  shuru: {bn:'শুরু করার আগে ⚙ চেপে Gemini API key দাও।', en:'Before starting, tap ⚙ and add your Gemini API key.'},
+  noVoice: {bn:'এই browser-এ voice শোনা যাবে না। Chrome-এ খোলো।', en:'Voice listening does not work in this browser. Open it in Chrome.'},
+  micDenied: {bn:'Mic permission "Allow" করো, তারপর আবার mic চাপো।', en:'Allow mic permission, then tap mic again.'},
+  chhobiReady: {bn:'ছবি প্রস্তুত। এখন প্রশ্ন লেখো বা Send দাও (খালি রেখে Send দিলে আমি ব্যাখ্যা করবো)।', en:'Image ready. Type a question and send (send it empty and I will explain).'},
+  chatClear: {bn:'চ্যাট মুছে ফেলেছি। যা যা মনে রেখেছি সব আছে।', en:'Chat cleared. Everything I remember is still saved.'},
+  appOnly: {bn:'এই কাজ R.I.M.Y Android app-এ চলবে।', en:'This works only in the R.I.M.Y Android app.'}
+};
+let gsqShown = false;
+function ms(id, vars){
+  const m = MS[id];
+  let s = m ? (m[uiLang()] || m.en) : id;
+  if(vars) for(const k in vars) s = s.split('{' + k + '}').join(vars[k]);
+  return s;
+}
 const ORIG_TXT = new WeakMap();
 function applyI18n(){
   const L = uiLang(), d = TR[L] || {};
@@ -453,7 +492,7 @@ function applyI18n(){
   if($('txt')) $('txt').placeholder = tr('Kotha bolo ba likho...');
   if(typeof callState === 'function') callState();
 }
-function setStatus(t){ $('status').textContent = tr(t); }
+function setStatus(t){ const m = /^(tomar mood: )(.*)$/.exec(t); $('status').textContent = m ? tr(m[1]) + tr(m[2]) : tr(t); }
 function orb(cls){ avState = cls || 'idle'; if(typeof callState === 'function') callState(); }
 /* ---------- avatar: dheu-er moto jibonto gol mukh ---------- */
 let avState = 'idle', avCols = null, avTarget = null, avAmp = .07, avPh = 0, avLast = 0;
@@ -794,14 +833,14 @@ function bumpCount(){
   const warned = LS.get('rimy_cntw_' + day, 0) || 0;
   if(level > warned){
     LS.set('rimy_cntw_' + day, level);
-    const msg = level === 2 ? 'Ajker nijer set kora limit (' + cap + ') shesh. Kal abar cholbe.' : 'Ajker Gemini request prai sesh: ' + n + '/' + cap + '. Limit kache, sabdhane bhabo.';
-    addMsg('sys', msg); speak(msg);
+    const msg = level === 2 ? ms('dayCap', {cap}) : ms('dayWarn', {n, cap});
+    addMsg('sys', msg); speakQuiet(msg);
   }
 }
 function friendlyErr(m){
   m = String(m || '');
-  if(/429|quota|RESOURCE_EXHAUSTED|rate.?limit/i.test(m)) return 'Gemini-r limit ekhon shesh. Ektu pore abar chesta koro, ba onno key dao.';
-  if(/Failed to fetch/i.test(m)) return 'Internet-er sathe jog hochhe na. Net check kore abar try koro.';
+  if(/429|quota|RESOURCE_EXHAUSTED|rate.?limit/i.test(m)) return ms('quota');
+  if(/Failed to fetch/i.test(m)) return ms('net');
   return m;
 }
 function addMsg(role, text, extra){
@@ -980,7 +1019,7 @@ async function askGemini(){
     /* Google Search-er quota na thakle free tool (weather, dam, Wikipedia, news) diye cholbe */
     if(mode === 'search'){
       mode = 'tools';
-      addMsg('sys', 'Google Search-er quota nei, tai free tool (weather, dam, Wikipedia, news) diye cholchhi.');
+      if(!gsqShown){ gsqShown = true; addMsg('sys', ms('gsq')); } speakQuiet(ms('gsq'));
       ({r, j} = await call());
     }
     /* Tarpor-o quota na thakle halka (lite) model try kori */
@@ -1080,11 +1119,11 @@ function runDos(list){
   }
 }
 function runOne(d){
-  if(!window.RimyNative){ addMsg('sys', 'Phone-er kaj (' + d.do + ') shudhu Rimy Android app-e cholbe.'); return; }
+  if(!window.RimyNative){ addMsg('sys', ms('phoneApp', {do: d.do})); return; }
   let r = 'error';
   try{ r = RimyNative.doAction(JSON.stringify(d)); }catch(e){}
-  if(r !== 'ok') addMsg('sys', 'Kaj-ti hoy ni (' + d.do + '): ' + r);
-  if(r !== 'ok' && /screen-access/.test(r)) speak('Screen access off ache. Settings, Accessibility, er moddhe R.I.M.Y on koro.');
+  if(r !== 'ok' && /screen-access/.test(r)){ addMsg('sys', ms('scrTxt')); speakQuiet(ms('scr')); }
+  else if(r !== 'ok'){ addMsg('sys', ms('kajNo') + ' (' + d.do + '): ' + r); }
 }
 let sessImg = null; /* study chhobi: shudhu memory-te thake, persist hoy na */
 let pendingImg = null;
@@ -1135,7 +1174,7 @@ async function send(text, regen){
   if(!text && !pendingImg) return;
   if(busy) return;
   if(pendingImg){ sessImg = pendingImg; pendingImg = null; $('qimg').classList.remove('on'); if(!text) text = 'Ei chhobi-ta ta bujhiye bolo, step by step.'; text = text + ' [chhobi]'; }
-  if(!S.key){ addMsg('sys', 'Age Settings (⚙) e Gemini API key dao.'); openSettings(); return; }
+  if(!S.key){ addMsg('sys', ms('shuru')); openSettings(); return; }
   busy = true;
   stopListen();
   if(!regen){ addMsg('you', text); history.push({role:'user', text}); }
@@ -1151,7 +1190,7 @@ async function send(text, regen){
     for(const pr of imgs || []){
       setStatus('chhobi banachhi...');
       try{ showImage(await genImage(pr)); }
-      catch(err){ addMsg('sys', /quota|429|limit: 0/i.test(err.message) ? 'Chhobi banano-r free limit nei. Google billing on korle chalbe.' : 'Chhobi banate parlam na: ' + err.message); }
+      catch(err){ addMsg('sys', /quota|429|limit: 0/i.test(err.message) ? ms('imgLimit') : ms('imgFail') + err.message); }
     }
     setStatus(mood ? 'tomar mood: ' + mood : 'ready');
     persist();
@@ -1159,8 +1198,8 @@ async function send(text, regen){
   }catch(e){
     tp.remove(); orb(''); closeCall();
     if(!regen) history.pop();
-    addMsg('sys', 'Shomossha: ' + friendlyErr(e.message) + (/not found|404/i.test(e.message) ? ' (Settings-e "List" chepe ekta cholbe emon model bachho.)' : ''));
-    if(/quota|429|RESOURCE_EXHAUSTED/i.test(e.message)) speak('Gemini-r limit ekhon shesh hoye geche. Ektu pore abar chesta koro.');
+    addMsg('sys', ms('shomossha') + friendlyErr(e.message) + (/not found|404/i.test(e.message) ? ms('modelList') : ''));
+    if(/quota|429|RESOURCE_EXHAUSTED/i.test(e.message)) speakQuiet(ms('quotaSpeak'));
     setStatus('ready');
     persist();
   }finally{
@@ -1274,6 +1313,7 @@ async function geminiSpeak(text, voice){
   orb(''); setStatus('ready');
 }
 function speak(t){
+  if(S.mute){ afterSpeak(); return; }
   if(!S.speak){ afterSpeak(); return; }
   const say = t.replace(/[*_#`~>]/g, '').replace(/[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}]/gu, '').trim().slice(0, 500);
   if(!say){ afterSpeak(); return; }
@@ -1284,7 +1324,7 @@ function speak(t){
       const first = Date.now() >= ttsPausedUntil;
       ttsPausedUntil = Date.now() + (quota ? 3 * 3600000 : 60000);
       if(quota) LS.set('rimy_ttspause', ttsPausedUntil);
-      if(first) addMsg('sys', quota ? 'Gemini voice-er quota ekhon shesh. Kichu khon built-in voice-e bolbo, error ar dekhabo na.' : 'Gemini voice ekhon pabo na, built-in voice-e bolchhi.');
+      if(first) addMsg('sys', quota ? ms('ttsQuota') : ms('ttsFail'));
       setStatus('ready'); orb('');
       speakBrowser(t);
     });
@@ -1292,7 +1332,18 @@ function speak(t){
   }
   speakBrowser(t);
 }
+/* Shudhu phone-er voice, kono callback/flow chhara (screen/quota ityadi notification-er jonno) */
+function speakQuiet(t){
+  if(S.mute || !S.speak) return;
+  try{
+    if(window.RimyNative && RimyNative.speak){
+      const pl = pickLang(t);
+      RimyNative.speak(String(t).slice(0, 300), pl, (S.vmap && S.vmap[pl.slice(0, 2)]) || '');
+    }
+  }catch(e){}
+}
 function speakBrowser(t){
+  if(S.mute){ afterSpeak(); return; }
   if(!S.speak){ afterSpeak(); return; }
   const say = t.replace(/[*_#`~>]/g, '').replace(/[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}]/gu, '').trim();
   if(!say){ afterSpeak(); return; }
@@ -1369,7 +1420,7 @@ function nativeListen(){
 }
 function startListen(){
   if(!SR && window.RimyNative){ nativeListen(); return; }
-  if(!SR){ addMsg('sys', 'Ei browser-e voice shona cholbe na. Chrome e kholo.'); handsfree = false; $('handsfree').style.background = ''; return; }
+  if(!SR){ addMsg('sys', ms('noVoice')); handsfree = false; $('handsfree').style.background = ''; return; }
   if(listening || busy) return;
   stopAudio();
   if('speechSynthesis' in window) speechSynthesis.cancel();
@@ -1383,7 +1434,7 @@ function startListen(){
     clearTimeout(sendT); sendT = setTimeout(sendPending, SILENCE_MS);
   };
   rec.onerror = e => {
-    if(e.error === 'not-allowed' || e.error === 'service-not-allowed'){ addMsg('sys', 'Mic permission "Allow" koro, tarpor abar mic chapo.'); closeCall(); handsfree = false; $('handsfree').style.background = ''; pending = ''; clearTimeout(sendT); }
+    if(e.error === 'not-allowed' || e.error === 'service-not-allowed'){ addMsg('sys', ms('micDenied')); closeCall(); handsfree = false; $('handsfree').style.background = ''; pending = ''; clearTimeout(sendT); }
   };
   rec.onend = () => {
     micOff();
@@ -1534,12 +1585,12 @@ $('imgfile').onchange = async e => {
   try{
     pendingImg = await readImgFile(f);
     $('qimg').classList.add('on');
-    addMsg('sys', 'Chhobi ready. Ekhon prosno likho ba Send dao (khali rekhe Send dile ami explain korbo).');
-  }catch(err){ addMsg('sys', 'Chhobi nite parlam na: ' + err.message); }
+    addMsg('sys', ms('chhobiReady'));
+  }catch(err){ addMsg('sys', ms('chhobiNite') + err.message); }
 };
 $('qgen').onclick = () => { $('txt').value = 'Ekta chhobi anko: '; $('txt').focus(); };
 $('qquiz').onclick = () => send(sessImg ? 'Ei chhobi/bishoy theke amake ekta quiz dao: 5ti MCQ, ekta ekta kore.' : 'Amake ekta chhoto quiz dao (5ti MCQ), ekta ekta kore. Ami uttor dile tarpor shikhiye dio.');
-$('clearchat').onclick = () => { history = []; sessImg = null; pendingImg = null; $('qimg').classList.remove('on'); $('msgs').textContent = ''; persist(); addMsg('sys', 'Chat muchhe feleche. Ja ja mone rekheche shob ache.'); };
+$('clearchat').onclick = () => { history = []; sessImg = null; pendingImg = null; $('qimg').classList.remove('on'); $('msgs').textContent = ''; persist(); addMsg('sys', ms('chatClear')); };
 $('send').onclick = () => { const t = $('txt').value; $('txt').value = ''; send(t); };
 $('txt').addEventListener('keydown', e => { if(e.key === 'Enter' && !e.shiftKey){ e.preventDefault(); $('send').click(); } });
 $('txt').addEventListener('input', e => { e.target.style.height = 'auto'; e.target.style.height = Math.min(e.target.scrollHeight, 120) + 'px'; });
@@ -1550,7 +1601,7 @@ $('wake').onchange = () => {
   S.wake = $('wake').checked; persist();
   try{ if(window.RimyNative && RimyNative.setWake) RimyNative.setWake(S.wake); }catch(e){}
 };
-$('accbtn').onclick = () => { try{ RimyNative.openAccess(); }catch(e){ addMsg('sys', 'Ei kaj Rimy Android app-e cholbe.'); } };
+$('accbtn').onclick = () => { try{ RimyNative.openAccess(); }catch(e){ addMsg('sys', ms('appOnly')); } };
 /* Hey Rimy theke khule: Rimy nijei "Ji, bolo" bole shunbe */
 window.onWake = () => {
   unlockAudio();
@@ -1587,6 +1638,9 @@ function fillVoices(){
 function loadVoices(){ if('speechSynthesis' in window){ VOICES = speechSynthesis.getVoices(); fillVoices(); } }
 if('speechSynthesis' in window){ speechSynthesis.onvoiceschanged = loadVoices; loadVoices(); }
 $('lang').onchange = () => { S.lang = $('lang').value; persist(); fillVoices(); applyI18n(); };
+function renderMute(){ $('mute').textContent = S.mute ? '\u{1F515}' : '\u{1F50A}'; $('mute').classList.toggle('on', !!S.mute); }
+$('mute').onclick = () => { S.mute = !S.mute; persist(); if(S.mute){ stopAudio(); if('speechSynthesis' in window) speechSynthesis.cancel(); } renderMute(); };
+renderMute();
 $('ttest').onclick = async () => {
   unlockAudio();
   const key = $('key').value.trim(); if(key) S.key = key;
@@ -1622,7 +1676,7 @@ history.slice(-12).forEach(h => addMsg(h.role === 'user' ? 'you' : 'her', h.text
 if(!history.length){
   addMsg('her', (S.name ? S.name + ', ' : '') + tr('ami R.I.M.Y. Tomar ki khobor? Kotha bolo, ami shunchhi.'), {nobar:true});
 }
-if(!S.key){ addMsg('sys', 'Shuru korar age ⚙ chepe Gemini API key dao.'); }
+if(!S.key){ addMsg('sys', ms('shuru')); }
 </script>
 </body>
 </html>
