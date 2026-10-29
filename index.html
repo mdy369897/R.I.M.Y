@@ -38,6 +38,12 @@ button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-vis
 .m.sys{box-shadow:none;align-self:center;color:var(--muted);font-size:13.5px;text-align:center}
 .acts{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}
 .acts a{color:var(--mefg);background:var(--accent-2);padding:6px 12px;border-radius:10px;text-decoration:none;font-size:14px}
+.codebox{margin:8px 0;border:1px solid var(--line);border-radius:12px;background:rgba(0,0,0,.25);overflow:hidden}
+.cbh{display:flex;align-items:center;gap:6px;padding:6px 8px;border-bottom:1px solid var(--line);font-size:12.5px;color:var(--muted)}
+.cbh span{margin-right:auto}
+.cbh button{padding:4px 10px;font-size:12.5px;border-radius:8px}
+.codebox pre{margin:0;padding:10px 12px;max-height:9.5em;overflow:hidden;white-space:pre-wrap;overflow-wrap:anywhere;font:14px/1.45 ui-monospace,Menlo,Consolas,monospace;color:var(--fg)}
+.codebox.open pre{max-height:none}
 .src{margin-top:8px;font-size:12.5px;color:var(--muted)}
 .src a{color:var(--accent-2)}
 .bar{display:flex;gap:2px;margin-top:8px;margin-left:-8px}
@@ -190,6 +196,7 @@ input[type=range]{width:100%;accent-color:var(--accent)}
     <div class="chk"><input id="speak" type="checkbox"><label for="speak" style="margin:0;color:var(--fg)">R.I.M.Y uttor bolbe (voice)</label></div>
     <div class="chk"><input id="tts" type="checkbox"><label for="tts" style="margin:0;color:var(--fg)">Gemini-r prakritik meye-r voice (quota lage)</label></div>
     <div class="chk"><input id="wake" type="checkbox"><label for="wake" style="margin:0;color:var(--fg)">"Hey Rimy" bole jagbe (Android app-e, notification thakbe)</label></div>
+    <div class="row"><label style="margin:0;color:var(--fg)">Din-e Gemini request-er limit (tomar nijer hishab, 0 = bondho)</label><input id="dcap" type="number" min="0" inputmode="numeric" style="width:100%;margin-top:6px"></div>
     <div class="row"><button id="accbtn" type="button">Screen-e access chalu koro</button></div>
     <div class="note">Screen dekhar jonno Settings &gt; Accessibility &gt; R.I.M.Y te on korte hobe. Password field kokhono dekhbo na.</div>
     <label for="ttsvoice">Gemini voice</label>
@@ -213,7 +220,7 @@ input[type=range]{width:100%;accent-color:var(--accent)}
       <button id="close" type="button" style="margin-left:auto;background:var(--accent);color:#2a0f1a;border-color:var(--accent)">Save</button>
     </div>
     <div class="note">Key ar chat shudhu ei phone-er browser-e save thake.</div>
-    <div class="note" id="ver">R.I.M.Y Version 36</div>
+    <div class="note" id="ver">R.I.M.Y Version 37</div>
   </div>
 </div>
 
@@ -282,7 +289,7 @@ Hidden tags: at the very end of every reply, add these tags on their own (the ap
 [[MOOD: one word for the user's mood now, e.g. happy, sad, angry, tired, excited, calm]]
 If the user asks you to remember something, or tells you a lasting fact worth keeping (a task, a plan, a preference, a person's name), add [[MEMORY: short note in the user's language]].
 Phone control: when the user asks you to set an alarm or timer, open an app, send a message, call someone, or open a link, add one tag [[DO: {json}]] with one of these: {"do":"alarm","hour":7,"minute":30,"label":"..."}, {"do":"timer","seconds":300,"label":"..."}, {"do":"open","app":"WhatsApp"}, {"do":"sms","to":"+...","text":"..."}, {"do":"call","to":"..."}, {"do":"url","url":"https://..."}, {"do":"nav","action":"back"} (action can be back, home, recents or notifications). For back, home, recents or notifications you MUST add the nav tag in the same reply every time the user asks, even if they typed it. Never say you went back or went home unless the nav tag is in your reply. If the user says "X sec pore" (after X seconds), add "delay":X to the nav tag, e.g. {"do":"nav","action":"back","delay":5}. Say in your reply what you are doing in the user's language. The phone shows a confirm screen before calls and messages, so never say it is already done. If the user asks you to call someone and gives a number, add [[CALL: number]] and the call DO tag. If the user asks to call but gives only a name and no number, do NOT add any call tag; ask them for the phone number (with country code, e.g. +880...) instead. If they ask to open a website, add [[OPEN: https://full-url]]. The user taps a button to confirm; never say a call was already placed.
-When the user asks for steps, a prompt, code, or how to do something, answer clearly and warmly in the user's language: one short intro line, then numbered steps with a one-line explanation for each, and the prompt or code in its own block followed by one line on how to use it. Keep it simple, never a bare dump. If the user says you made a mistake (bhul, vul, thik koro, kaj hoy ni), reply with one short apology in the user's language, say what went wrong in one line, and do the correct action now with the right tag. Never say "done" without the tag. Phone control is ONLY through the [[DO]] tags above. Never say you cannot set alarms, timers, call, send messages, open apps or links; use the matching tag instead. For music or a YouTube video, use {"do":"url","url":"https://www.youtube.com/results?search_query=<song or artist, URL-encoded>"} (or {"do":"open","app":"YouTube"}) and tell the user to tap the first result to play. You can read the phone screen only with the read_screen tool, and only when the user asks about it.
+When the user asks for steps, a prompt, code, or how to do something, answer clearly and warmly in the user's language: one short intro line, then numbered steps with a one-line explanation for each, and every prompt or code wrapped in a fenced block (three tildes ~~~ on their own line before and after), followed by one line on how to use it. Keep it simple, never a bare dump. If the user says you made a mistake (bhul, vul, thik koro, kaj hoy ni), reply with one short apology in the user's language, say what went wrong in one line, and do the correct action now with the right tag. Never say "done" without the tag. Phone control is ONLY through the [[DO]] tags above. Never say you cannot set alarms, timers, call, send messages, open apps or links; use the matching tag instead. For music or a YouTube video, use {"do":"url","url":"https://www.youtube.com/results?search_query=<song or artist, URL-encoded>"} (or {"do":"open","app":"YouTube"}) and tell the user to tap the first result to play. You can read the phone screen only with the read_screen tool, and only when the user asks about it.
 ${S.name ? 'The user\'s name is ' + S.name + '.' : ''}`;
 }
 
@@ -754,10 +761,53 @@ function addBar(d, text){
   d.appendChild(bar);
 }
 
+/* Prompt/code ~~~ ba ``` diye ghera thakle alada block, Copy ar Dekho/Choto button shoho */
+function renderRich(d, text){
+  const parts = text.split(/^(?:```|~~~)[^\n]*\n?/m);
+  parts.forEach((p, i) => {
+    if(i % 2 === 0){
+      if(p.trim()){ const t = document.createElement('div'); t.textContent = p.trim(); d.appendChild(t); }
+      return;
+    }
+    const code = p.replace(/\n$/, '');
+    const box = document.createElement('div'); box.className = 'codebox';
+    const h = document.createElement('div'); h.className = 'cbh';
+    const lab = document.createElement('span'); lab.textContent = 'Prompt / code';
+    const cp = document.createElement('button'); cp.type = 'button'; cp.textContent = 'Copy';
+    cp.onclick = () => copyText(code).then(() => setStatus('copy hoyeche')).catch(() => setStatus('copy hoy ni'));
+    const ex = document.createElement('button'); ex.type = 'button'; ex.textContent = 'Dekho / Choto';
+    ex.onclick = () => box.classList.toggle('open');
+    h.append(lab, cp, ex);
+    const pre = document.createElement('pre'); pre.textContent = code;
+    box.append(h, pre); d.appendChild(box);
+  });
+}
+/* Gemini-r error ke sohoj Banglay */
+/* Aj koto Gemini request gelo (tomar nijer hishab). Settings-er limit-er 80% / 100%-e warn */
+function bumpCount(){
+  const day = new Date().toISOString().slice(0, 10);
+  const n = (LS.get('rimy_cnt_' + day, 0) || 0) + 1;
+  LS.set('rimy_cnt_' + day, n);
+  const cap = S.dcap || 0;
+  if(cap <= 0) return;
+  const level = n >= cap ? 2 : (n >= Math.ceil(cap * 0.8) ? 1 : 0);
+  const warned = LS.get('rimy_cntw_' + day, 0) || 0;
+  if(level > warned){
+    LS.set('rimy_cntw_' + day, level);
+    const msg = level === 2 ? 'Ajker nijer set kora limit (' + cap + ') shesh. Kal abar cholbe.' : 'Ajker Gemini request prai sesh: ' + n + '/' + cap + '. Limit kache, sabdhane bhabo.';
+    addMsg('sys', msg); speak(msg);
+  }
+}
+function friendlyErr(m){
+  m = String(m || '');
+  if(/429|quota|RESOURCE_EXHAUSTED|rate.?limit/i.test(m)) return 'Gemini-r limit ekhon shesh. Ektu pore abar chesta koro, ba onno key dao.';
+  if(/Failed to fetch/i.test(m)) return 'Internet-er sathe jog hochhe na. Net check kore abar try koro.';
+  return m;
+}
 function addMsg(role, text, extra){
   const d = document.createElement('div');
   d.className = 'm ' + role;
-  d.textContent = text;
+  if(role === 'her' && /^(?:```|~~~)/m.test(text)) renderRich(d, text); else d.textContent = text;
   if(extra && extra.acts && extra.acts.length){
     const a = document.createElement('div'); a.className = 'acts';
     extra.acts.forEach(x => { const l = document.createElement('a'); l.href = x.href; l.textContent = x.label; if(x.href.startsWith('http')){ l.target = '_blank'; l.rel = 'noopener'; } a.appendChild(l); });
@@ -914,6 +964,7 @@ async function askGemini(){
   const sources = [];
   let model = S.model;
   const call = async () => {
+    bumpCount();
     const body = {systemInstruction:{parts:[{text:systemPrompt(mode)}]}, contents, tools: mode === 'search' ? [{google_search:{}}] : TOOL_DECLS};
     const url = 'https://generativelanguage.googleapis.com/v1beta/models/' + encodeURIComponent(model) + ':generateContent?key=' + encodeURIComponent(S.key);
     const r = await fetch(url, {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(body)});
@@ -1033,6 +1084,7 @@ function runOne(d){
   let r = 'error';
   try{ r = RimyNative.doAction(JSON.stringify(d)); }catch(e){}
   if(r !== 'ok') addMsg('sys', 'Kaj-ti hoy ni (' + d.do + '): ' + r);
+  if(r !== 'ok' && /screen-access/.test(r)) speak('Screen access off ache. Settings, Accessibility, er moddhe R.I.M.Y on koro.');
 }
 let sessImg = null; /* study chhobi: shudhu memory-te thake, persist hoy na */
 let pendingImg = null;
@@ -1099,7 +1151,7 @@ async function send(text, regen){
     for(const pr of imgs || []){
       setStatus('chhobi banachhi...');
       try{ showImage(await genImage(pr)); }
-      catch(err){ addMsg('sys', 'Chhobi banate parlam na: ' + err.message); }
+      catch(err){ addMsg('sys', /quota|429|limit: 0/i.test(err.message) ? 'Chhobi banano-r free limit nei. Google billing on korle chalbe.' : 'Chhobi banate parlam na: ' + err.message); }
     }
     setStatus(mood ? 'tomar mood: ' + mood : 'ready');
     persist();
@@ -1107,7 +1159,8 @@ async function send(text, regen){
   }catch(e){
     tp.remove(); orb(''); closeCall();
     if(!regen) history.pop();
-    addMsg('sys', 'Shomossha: ' + (e.message === 'Failed to fetch' ? 'Internet-er sathe jog hochhe na. Net check kore abar try koro.' : e.message) + (/not found|404/i.test(e.message) ? ' (Settings-e "List" chepe ekta cholbe emon model bachho.)' : ''));
+    addMsg('sys', 'Shomossha: ' + friendlyErr(e.message) + (/not found|404/i.test(e.message) ? ' (Settings-e "List" chepe ekta cholbe emon model bachho.)' : ''));
+    if(/quota|429|RESOURCE_EXHAUSTED/i.test(e.message)) speak('Gemini-r limit ekhon shesh hoye geche. Ektu pore abar chesta koro.');
     setStatus('ready');
     persist();
   }finally{
@@ -1417,7 +1470,7 @@ function openSettings(){
   renderMem();
   $('pitch').value = S.pitch || 1.25;
   $('tts').checked = S.tts !== false; $('ttsvoice').value = S.ttsVoice || 'Aoede';
-  $('wake').checked = !!S.wake;
+  $('wake').checked = !!S.wake; $('dcap').value = S.dcap || 0;
   $('theme').value = S.theme || 'rose'; $('wall').value = S.wall || 'none'; $('tcol').value = S.tcol || ''; $('fs').value = String(S.fs || 16);
   $('skin').value = S.skin || 'orig';
   fillVoices();
@@ -1439,6 +1492,7 @@ function saveSettings(){
   S.lang = $('lang').value; S.search = $('search').checked; S.speak = $('speak').checked;
   S.pitch = parseFloat($('pitch').value) || 1.25;
   S.tts = $('tts').checked; S.ttsVoice = $('ttsvoice').value;
+  S.dcap = Math.max(0, parseInt($('dcap').value, 10) || 0);
   S.vmap = S.vmap || {};
   { const pre = selPre(); if($('voice').value) S.vmap[pre] = $('voice').value; else delete S.vmap[pre]; }
   persist(); applyI18n(); $('set').classList.remove('open');
