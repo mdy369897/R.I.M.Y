@@ -221,7 +221,7 @@ input[type=range]{width:100%;accent-color:var(--accent)}
       <button id="close" type="button" style="margin-left:auto;background:var(--accent);color:#2a0f1a;border-color:var(--accent)">Save</button>
     </div>
     <div class="note">Key ar chat shudhu ei phone-er browser-e save thake.</div>
-    <div class="note" id="ver">R.I.M.Y Version 38</div>
+    <div class="note" id="ver">R.I.M.Y Version 39</div>
   </div>
 </div>
 
@@ -1175,6 +1175,18 @@ async function send(text, regen){
   if(busy) return;
   if(pendingImg){ sessImg = pendingImg; pendingImg = null; $('qimg').classList.remove('on'); if(!text) text = 'Ei chhobi-ta ta bujhiye bolo, step by step.'; text = text + ' [chhobi]'; }
   if(!S.key){ addMsg('sys', ms('shuru')); openSettings(); return; }
+  /* "limit koto?" type proshno: Google-er asol limit API theke pawa jay na, tai ami nijer hisab-tai bolbo */
+  if(!regen && !pendingImg && text.length < 120 && /(limit|quota)/i.test(text) && /(koto|kotota|kotoi|baki|bakita|ache|kom|remain|current|ekhon|how much|left)/i.test(text)){
+    addMsg('you', text);
+    const day = new Date().toISOString().slice(0, 10);
+    const n = LS.get('rimy_cnt_' + day, 0) || 0;
+    const cap = S.dcap || 0;
+    const reply = cap > 0
+      ? 'Aj ei phone theke ' + n + 'ti Gemini request gechhe. Tomar Settings-e set kora daily limit: ' + cap + '. Google-er asol bakita limit ami API theke dekhte parina; Google AI Studio-te dekhe nao.'
+      : 'Aj ei phone theke ' + n + 'ti Gemini request gechhe. Google-er asol bakita limit ami API theke dekhte parina. Settings-e "Din-e limit" boshale 80%-e warning pabe. Asol hisab Google AI Studio-te dekho.';
+    addMsg('her', reply, {nobar: true}); speakQuiet(reply);
+    return;
+  }
   busy = true;
   stopListen();
   if(!regen){ addMsg('you', text); history.push({role:'user', text}); }
