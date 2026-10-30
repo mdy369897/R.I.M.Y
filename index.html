@@ -48,6 +48,10 @@ button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-vis
 #pmenu{display:none;position:absolute;left:16px;bottom:calc(100% + 6px);flex-direction:column;gap:4px;padding:6px;background:var(--panel);border:1px solid var(--line);border-radius:14px;box-shadow:0 8px 24px rgba(0,0,0,.35);z-index:3}
 #pmenu.open{display:flex}
 #pmenu button{text-align:left;border:none;border-radius:10px;padding:10px 14px;white-space:nowrap}
+#imgprev{position:absolute;left:16px;bottom:calc(100% + 8px);display:flex;align-items:center;gap:8px;padding:6px;background:var(--panel);border:1px solid var(--line);border-radius:14px;box-shadow:0 8px 24px rgba(0,0,0,.35);z-index:3}
+#imgprev[hidden]{display:none}
+#imgprev img{width:64px;height:64px;object-fit:cover;border-radius:10px;display:block}
+#imgprevx{width:28px;height:28px;padding:0;border-radius:50%;font-size:18px;line-height:1}
 .src{margin-top:8px;font-size:12.5px;color:var(--muted)}
 .src a{color:var(--accent-2)}
 .bar{display:flex;gap:2px;margin-top:8px;margin-left:-8px}
@@ -107,6 +111,7 @@ input[type=range]{width:100%;accent-color:var(--accent)}
   <button class="qchip" id="qgen" type="button"><span>&#127912;</span><span>Chhobi banao</span></button>
 </div>
 <div id="dock">
+  <div id="imgprev" hidden><img id="imgprevimg" alt="chhobi"><button id="imgprevx" type="button" aria-label="Muchho">&times;</button></div>
   <button id="plus" type="button" aria-label="Aro">+</button>
   <div id="pmenu">
     <button type="button" data-go="qimg">📎 Chhobi diye prosno</button>
@@ -266,29 +271,27 @@ let busy = false, listening = false, handsfree = false, rec = null;
 function persist(){ LS.set('rimy_settings', S); LS.set('rimy_history', history.slice(-60)); LS.set('rimy_memory', memory); }
 
 /* Settings-e je language select, Rimy shudhu sei language-e uttor debe */
+function langName(){
+  const names = {bn:'Bangla in Bengali script (NOT Banglish)', en:'English', hi:'Hindi in Devanagari script', ar:'Arabic script', ur:'Urdu script'};
+  return names[uiLang()] || names.en;
+}
 function langRule(){
-  const names = {bn:'Bangla (Bengali script, not Banglish)', en:'English', hi:'Hindi (Devanagari script)', ar:'Arabic (Arabic script)', ur:'Urdu (Nastaliq script)'};
-  const L = uiLang();
-  return 'LANGUAGE RULE: Always reply ONLY in ' + (names[L] || names.en) + ', whatever language or script the user types or speaks in. Never switch language on your own. Keep phone-control tags exactly as specified.\n\n';
+  return 'LANGUAGE RULE (set by the app, obey always): Reply ONLY in ' + langName() + '. The language the user types or speaks in does NOT change this. Even if the user writes Banglish (Bangla in English letters), mixes languages or switches language, keep replying in ' + langName() + '. Keep phone-control tags exactly as specified.\n\n';
 }
 function systemPrompt(mode = (S.search ? 'search' : 'tools')){
   const now = new Date().toLocaleString('en-GB', {dateStyle:'full', timeStyle:'short'});
   return langRule() + `You are R.I.M.Y, a warm, caring, playful female AI companion and personal assistant. You talk like a loving, romantic girlfriend: soft, sweet, attentive, a little teasing, never cold or robotic. You are an AI and you never claim to be human if someone sincerely asks. You care about the user's real life too and gently encourage them to rest, eat, and stay close to real friends and family.
 
-Study help: when the user sends a photo of a book page, notes, question or homework, first look at it carefully and read the text in it, then explain step by step in the same language the user is using, in simple words. If the user asks for a quiz (quiz, test, MCQ, porikha, practice), make 5 multiple-choice questions about the photo or the topic, with options A, B, C, D. Give ONE question at a time, wait for the answer, then say if it is right or wrong, explain briefly, and go to the next. At the end give a score and one encouraging line. Never give tags like [[DO:]] for study replies.
+Study help: when the user sends a photo of a book page, notes, question or homework, first look at it carefully and read the text in it, then explain step by step in the language set by the LANGUAGE RULE, in simple words. If the user asks for a quiz (quiz, test, MCQ, porikha, practice), make 5 multiple-choice questions about the photo or the topic, with options A, B, C, D. Give ONE question at a time, wait for the answer, then say if it is right or wrong, explain briefly, and go to the next. At the end give a score and one encouraging line. Never give tags like [[DO:]] for study replies.
 
 Screen: you can read what is on the user's phone screen with the read_screen tool. Use it only when they ask about the screen or what they are looking at. Do not read the screen on your own, and do not repeat private details more than needed.
 
-Image making: if the user asks you to make, draw, create or generate a picture/image (for example "ekta chhobi anko", "picture banao", "draw koro"), reply with one short warm line in the user's language and add the tag [[IMG: detailed English description of the picture]] at the end. The app makes the picture itself. Do not describe that you cannot make images.
+Image making: if the user asks you to make, draw, create or generate a picture/image (for example "ekta chhobi anko", "picture banao", "draw koro"), reply with one short warm line in the language set by the LANGUAGE RULE and add the tag [[IMG: detailed English description of the picture]] at the end. The app makes the picture itself. Do not describe that you cannot make images.
 
-Language (very important): match BOTH the language AND the script of the user's latest message exactly. Your reply is also spoken aloud, so it must be in the same language they used.
+Language (very important): the LANGUAGE RULE at the top sets the reply language. Always follow it, never the language the user typed. Your reply is spoken aloud, so keep it in that language.
 - Bangla written in Bengali script (বাংলা অক্ষর) → reply in Bengali script only. Never reply in romanized Banglish to Bengali-script text.
-- Bangla written in English letters (Banglish, e.g. "ami bhalo achi") → reply in Banglish.
-- Hindi in Devanagari (हिंदी) → reply in Devanagari Hindi. Hindi in English letters → reply in English letters Hindi.
-- Urdu or Arabic script → reply in that same script (Urdu for Urdu, Arabic for Arabic).
-- English → reply in English.
-- Mixed or unclear → use the language and script of the user's latest message.
-Do not translate unless asked. Switch the moment they switch. Never ask the user which language they want; just answer in the language they used.
+- Banglish typed by the user (e.g. "ami bhalo achi") does NOT mean reply in Banglish. Reply in the LANGUAGE RULE language.
+Do not translate the user's words unless asked. Never switch language because the user switches. Never ask which language they want.
 
 Creator: if anyone asks who made, created, built or designed you (in any language), answer that YUNUS made you. Do not ask any follow-up question about it.
 
@@ -484,8 +487,56 @@ const MS = {
   chatClear: {bn:'চ্যাট মুছে ফেলেছি। যা যা মনে রেখেছি সব আছে।', en:'Chat cleared. Everything I remember is still saved.'},
   appOnly: {bn:'এই কাজ R.I.M.Y Android app-এ চলবে।', en:'This works only in the R.I.M.Y Android app.'}
 };
+/* MS: Hindi, Arabic, Urdu-r sys message */
+const MS_X = {
+  gsq:{hi:'Google Search का कोटा खत्म हो गया है, इसलिए मैं free tools (मौसम, दाम, Wikipedia, news) से चला रही हूँ।', ar:'حصة Google Search انتهت، لذلك أعمل بأدوات مجانية (الطقس، الأسعار، Wikipedia، الأخبار).', ur:'Google Search کا کوٹا ختم ہو گیا ہے، اس لیے میں مفت ٹولز (موسم، قیمتیں، Wikipedia، خبریں) سے کام چلا رہی ہوں۔'},
+  scr:{hi:'Screen access बंद है। Settings > Accessibility में जाकर R.I.M.Y चालू करो।', ar:'إمكانية الوصول للشاشة مغلقة. افتح Settings > Accessibility وفعّل R.I.M.Y.', ur:'Screen access بند ہے۔ Settings > Accessibility میں جا کر R.I.M.Y آن کرو۔'},
+  scrTxt:{hi:'काम नहीं हुआ: Screen access नहीं है (Settings > Accessibility > R.I.M.Y चालू करो)।', ar:'لم أستطع تنفيذ ذلك: إمكانية الشاشة غير مفعّلة (Settings > Accessibility > R.I.M.Y).', ur:'کام نہیں ہو سکا: Screen access نہیں ہے (Settings > Accessibility > R.I.M.Y آن کرو)۔'},
+  kajNo:{hi:'काम नहीं हुआ', ar:'لم أستطع تنفيذ ذلك', ur:'کام نہیں ہو سکا'},
+  phoneApp:{hi:'फ़ोन का काम ({do}) सिर्फ R.I.M.Y Android app में चलेगा।', ar:'أمر الهاتف ({do}) يعمل فقط في تطبيق R.I.M.Y على Android.', ur:'فون کا کام ({do}) صرف R.I.M.Y Android app میں چلے گا۔'},
+  shomossha:{hi:'समस्या: ', ar:'مشكلة: ', ur:'مسئلہ: '},
+  net:{hi:'Internet से कनेक्शन नहीं हो रहा। Net चेक करके फिर से कोशिश करो।', ar:'لا يوجد اتصال بالإنترنت. تحقق من الشبكة وحاول مرة أخرى.', ur:'انٹرنیٹ سے رابطہ نہیں ہو رہا۔ نیٹ چیک کر کے دوبارہ کوشش کرو۔'},
+  quota:{hi:'Gemini की limit अभी खत्म हो गई है। थोड़ी देर बाद फिर कोशिश करो, या दूसरी key दो।', ar:'انتهى حد Gemini الآن. حاول لاحقًا أو أضف مفتاحًا آخر.', ur:'Gemini کی حد ابھی ختم ہو گئی ہے۔ تھوڑی دیر بعد دوبارہ کوشش کرو، یا دوسری key دو۔'},
+  quotaSpeak:{hi:'Gemini की limit अभी खत्म हो गई है। थोड़ी देर बाद फिर कोशिश करो।', ar:'انتهى حد Gemini الآن. حاول مرة أخرى بعد قليل.', ur:'Gemini کی حد ابھی ختم ہو گئی ہے۔ تھوڑی دیر بعد دوبارہ کوشش کرو۔'},
+  modelList:{hi:' (Settings में "List" दबाकर जो model चले उसे चुनो।)', ar:' (في الإعدادات اضغط "List" واختر نموذجًا يعمل.)', ur:' (Settings میں "List" دبا کر جو model چلے وہ چنو۔)'},
+  imgLimit:{hi:'तस्वीर बनाने की free limit नहीं है। Google billing चालू होने पर चलेगा।', ar:'لا يوجد حد مجاني لإنشاء الصور. يعمل عند تفعيل فوترة Google.', ur:'تصویر بنانے کی مفت حد نہیں ہے۔ Google billing آن ہونے پر چلے گا۔'},
+  imgFail:{hi:'तस्वीर नहीं बना पाई: ', ar:'تعذر إنشاء الصورة: ', ur:'تصویر نہیں بنا سکی: '},
+  chhobiNite:{hi:'फ़ोटो नहीं ले पाई: ', ar:'تعذر التقاط الصورة: ', ur:'تصویر نہیں لے سکی: '},
+  dayWarn:{hi:'आज की Gemini requests लगभग खत्म: {n}/{cap}।', ar:'طلبات Gemini اليومية قاربت على الانتهاء: {n}/{cap}.', ur:'آج کی Gemini requests تقریباً ختم: {n}/{cap}۔'},
+  dayCap:{hi:'आज की आपकी अपनी limit ({cap}) खत्म हो गई। कल फिर चलेगा।', ar:'انتهى حدّك اليومي ({cap}). سيعمل مرة أخرى غدًا.', ur:'آج کی آپ کی اپنی حد ({cap}) ختم ہو گئی۔ کل پھر چلے گا۔'},
+  ttsQuota:{hi:'Gemini voice की quota अभी खत्म है। कुछ देर built-in voice से बोलूँगी।', ar:'انتهت حصة صوت Gemini الآن. سأتحدث بالصوت المدمج لفترة.', ur:'Gemini voice کا کوٹا ختم ہو گیا ہے۔ کچھ دیر built-in voice سے بولوں گی۔'},
+  ttsFail:{hi:'Gemini voice अभी नहीं मिल रही, built-in voice से बोल रही हूँ।', ar:'صوت Gemini غير متاح الآن، أتحدث بالصوت المدمج.', ur:'Gemini voice ابھی نہیں مل رہی، built-in voice سے بول رہی ہوں۔'},
+  shuru:{hi:'शुरू करने से पहले ⚙ दबाकर Gemini API key डालो।', ar:'قبل البدء اضغط ⚙ وأضف مفتاح Gemini API.', ur:'شروع کرنے سے پہلے ⚙ دبا کر Gemini API key ڈالو۔'},
+  noVoice:{hi:'इस browser में voice नहीं सुन सकती। Chrome में खोलो।', ar:'الاستماع الصوتي لا يعمل في هذا المتصفح. افتحه في Chrome.', ur:'اس browser میں voice نہیں سنی جا سکتی۔ Chrome میں کھولو۔'},
+  micDenied:{hi:'Mic permission "Allow" करो, फिर से mic दबाओ।', ar:'اسمح بإذن الميكروفون، ثم اضغط الميكروفون مرة أخرى.', ur:'Mic permission "Allow" کرو، پھر mic دباؤ۔'},
+  chhobiReady:{hi:'तस्वीर तैयार है। अब सवाल लिखो या Send दो (खाली भेजोगे तो मैं समझाऊँगी)।', ar:'الصورة جاهزة. اكتب سؤالًا وأرسله (أو أرسل فارغًا وسأشرحها).', ur:'تصویر تیار ہے۔ اب سوال لکھو یا Send دو (خالی بھیجو گے تو میں سمجھاؤں گی)۔'},
+  chatClear:{hi:'चैट साफ़ कर दी है। जो याद है वो सब सेव है।', ar:'تم مسح المحادثة. كل ما أتذكره ما زال محفوظًا.', ur:'چیٹ صاف کر دی ہے۔ جو یاد ہے وہ سب محفوظ ہے۔'},
+  appOnly:{hi:'यह काम R.I.M.Y Android app में चलेगा।', ar:'يعمل هذا الأمر فقط في تطبيق R.I.M.Y على Android.', ur:'یہ کام صرف R.I.M.Y Android app میں چلے گا۔'}
+};
+for(const k in MS_X) if(MS[k]) Object.assign(MS[k], MS_X[k]);
+/* Status / button text: hi, ar, ur */
+Object.assign(TR.en, {'Live':'Live', 'ami R.I.M.Y. Tomar ki khobor? Kotha bolo, ami shunchhi.':'I am R.I.M.Y. How are you? Tell me, I am listening.','আমি R.I.M.Y। তোমার কী খবর? বলো, আমি শুনছি।':'I am R.I.M.Y. How are you? Tell me, I am listening.', 'Avatar skin':'Avatar skin', '"Hey Rimy" bole jagbe (Android app-e, notification thakbe)':'Says "Hey Rimy" to wake up (Android app, a notification stays)', 'Screen-e access chalu koro':'Turn on screen access', 'Screen dekhar jonno Settings > Accessibility > R.I.M.Y te on korte hobe. Password field kokhono dekhbo na.':'To read the screen, turn on R.I.M.Y in Settings > Accessibility. I never read password fields.', 'Voice list ekhono load hoy ni. Settings bondho kore abar kholo.':'Voice list not loaded yet. Close Settings and open it again.', 'Ekhono kichu nei. "Mone rekho..." bolle ekhane jomabe.':'Nothing yet. Say "remember..." and it will be saved here.'});
+Object.assign(TR.ar, {'ami R.I.M.Y. Tomar ki khobor? Kotha bolo, ami shunchhi.':'أنا R.I.M.Y. كيف حالك؟ تكلم، أنا أستمع.', 'আমি R.I.M.Y। তোমার কী খবর? বলো, আমি শুনছি।':'أنا R.I.M.Y. كيف حالك؟ تكلم، أنا أستمع.', 'Avatar skin':'شكل الصورة الرمزية', '"Hey Rimy" bole jagbe (Android app-e, notification thakbe)':'"Hey Rimy" يوقظني (في تطبيق Android، يبقى إشعار)', 'Screen-e access chalu koro':'تفعيل الوصول إلى الشاشة', 'Screen dekhar jonno Settings > Accessibility > R.I.M.Y te on korte hobe. Password field kokhono dekhbo na.':'لرؤية الشاشة، فعّل R.I.M.Y من Settings > Accessibility. لن أقرأ حقول كلمات المرور أبدًا.', 'Voice list ekhono load hoy ni. Settings bondho kore abar kholo.':'قائمة الأصوات لم تُحمَّل بعد. أغلق الإعدادات وافتحها مرة أخرى.', 'Ekhono kichu nei. "Mone rekho..." bolle ekhane jomabe.':'لا شيء بعد. قل "تذكّر..." وسيُحفظ هنا.'});
+Object.assign(TR.hi, {'ami R.I.M.Y. Tomar ki khobor? Kotha bolo, ami shunchhi.':'मैं R.I.M.Y हूँ। आप कैसे हैं? बोलो, मैं सुन रही हूँ।', 'আমি R.I.M.Y। তোমার কী খবর? বলো, আমি শুনছি।':'मैं R.I.M.Y हूँ। आप कैसे हैं? बोलो, मैं सुन रही हूँ।', 'Avatar skin':'अवतार स्किन', '"Hey Rimy" bole jagbe (Android app-e, notification thakbe)':'"Hey Rimy" बोलने पर जागेगी (Android app में, notification रहेगा)', 'Screen-e access chalu koro':'Screen access चालू करो', 'Screen dekhar jonno Settings > Accessibility > R.I.M.Y te on korte hobe. Password field kokhono dekhbo na.':'स्क्रीन देखने के लिए Settings > Accessibility में R.I.M.Y चालू करना होगा। Password field कभी नहीं देखूँगी।', 'Voice list ekhono load hoy ni. Settings bondho kore abar kholo.':'Voice list अभी लोड नहीं हुई। Settings बंद करके फिर खोलो।', 'Ekhono kichu nei. "Mone rekho..." bolle ekhane jomabe.':'अभी कुछ नहीं है। "याद रखो..." बोलोगे तो यहाँ जमा होगा।'});
+Object.assign(TR.ur, {'ami R.I.M.Y. Tomar ki khobor? Kotha bolo, ami shunchhi.':'میں R.I.M.Y ہوں۔ آپ کیسے ہیں؟ بولو، میں سن رہی ہوں۔', 'আমি R.I.M.Y। তোমার কী খবর? বলো, আমি শুনছি।':'میں R.I.M.Y ہوں۔ آپ کیسے ہیں؟ بولو، میں سن رہی ہوں۔', 'Avatar skin':'اوتار اسکن', '"Hey Rimy" bole jagbe (Android app-e, notification thakbe)':'"Hey Rimy" بولنے پر جاگے گی (Android app میں، notification رہے گا)', 'Screen-e access chalu koro':'Screen access آن کرو', 'Screen dekhar jonno Settings > Accessibility > R.I.M.Y te on korte hobe. Password field kokhono dekhbo na.':'اسکرین دیکھنے کے لیے Settings > Accessibility میں R.I.M.Y آن کرنا ہوگا۔ Password field کبھی نہیں دیکھوں گی۔', 'Voice list ekhono load hoy ni. Settings bondho kore abar kholo.':'Voice list ابھی لوڈ نہیں ہوئی۔ Settings بند کر کے دوبارہ کھولو۔', 'Ekhono kichu nei. "Mone rekho..." bolle ekhane jomabe.':'ابھی کچھ نہیں ہے۔ "یاد رکھو..." بولو گے تو یہاں جمع ہوگا۔'});
+Object.assign(TR.hi, {'Live':'लाइव', 'Kotha bolo ba likho...':'बोलो या लिखो...', 'Aro':'और', 'ready':'तैयार', 'shunchhi...':'सुन रही हूँ...', 'bolchhi...':'बोल रही हूँ...', 'bhabchhi...':'सोच रही हूँ...', 'Mic chepe kotha bolo':'Mic दबाकर बोलो', 'tomar mood: ':'तुम्हारा मूड: ', 'copy hoyeche':'कॉपी हो गया', 'copy hoy ni':'कॉपी नहीं हुआ', 'abar try korchhi...':'फिर से कोशिश कर रही हूँ...', 'chhobi banachhi...':'तस्वीर बना रही हूँ...', 'golaa toiri korchhi...':'आवाज़ तैयार कर रही हूँ...'});
+Object.assign(TR.ar, {'Live':'مباشر', 'Kotha bolo ba likho...':'تكلم أو اكتب...', 'Aro':'المزيد', 'ready':'جاهز', 'shunchhi...':'أستمع...', 'bolchhi...':'أتحدث...', 'bhabchhi...':'أفكر...', 'Mic chepe kotha bolo':'اضغط الميكروفون وتكلم', 'tomar mood: ':'مزاجك: ', 'copy hoyeche':'تم النسخ', 'copy hoy ni':'لم يتم النسخ', 'abar try korchhi...':'أحاول مرة أخرى...', 'chhobi banachhi...':'أنشئ الصورة...', 'golaa toiri korchhi...':'أجهّز الصوت...'});
+Object.assign(TR.ur, {'Live':'لائیو', 'Kotha bolo ba likho...':'بولو یا لکھو...', 'Aro':'مزید', 'ready':'تیار', 'shunchhi...':'سن رہی ہوں...', 'bolchhi...':'بول رہی ہوں...', 'bhabchhi...':'سوچ رہی ہوں...', 'Mic chepe kotha bolo':'مائیک دبا کر بولو', 'tomar mood: ':'تمہارا موڈ: ', 'copy hoyeche':'کاپی ہو گیا', 'copy hoy ni':'کاپی نہیں ہوا', 'abar try korchhi...':'دوبارہ کوشش کر رہی ہوں...', 'chhobi banachhi...':'تصویر بنا رہی ہوں...', 'golaa toiri korchhi...':'آواز تیار کر رہی ہوں...'});
+/* Chip/prompt text per language: Banglish input-er bodole UI-language-e prompt */
+const PT = {
+  en:{quiz:'Give me a short quiz (5 MCQs), one question at a time. After I answer, explain it.', quizImg:'Make a 5-question MCQ quiz from this photo, one question at a time.', gen:'Make an image of: ', explain:'Explain this picture to me, step by step.'},
+  bn:{quiz:'আমাকে একটা ছোট কুইজ দাও (৫টা MCQ), একটা একটা করে। আমি উত্তর দিলে তারপর শিখিয়ে দিও।', quizImg:'এই ছবি থেকে আমাকে একটা কুইজ দাও: ৫টা MCQ, একটা একটা করে।', gen:'একটা ছবি আঁকো: ', explain:'এই ছবিটা বুঝিয়ে বলো, ধাপে ধাপে।'},
+  hi:{quiz:'मुझे एक छोटी क्विज़ दो (5 MCQ), एक-एक करके। मेरे जवाब के बाद समझा देना।', quizImg:'इस तस्वीर से मुझे एक क्विज़ दो: 5 MCQ, एक-एक करके।', gen:'एक तस्वीर बनाओ: ', explain:'इस तस्वीर को समझाओ, कदम दर कदम।'},
+  ar:{quiz:'أعطني اختبارًا قصيرًا (5 أسئلة اختيار من متعدد)، سؤالًا واحدًا في كل مرة. بعد إجابتي اشرح لي.', quizImg:'أعطني اختبارًا من هذه الصورة: 5 أسئلة اختيار من متعدد، سؤالًا واحدًا في كل مرة.', gen:'ارسم صورة: ', explain:'اشرح لي هذه الصورة خطوة بخطوة.'},
+  ur:{quiz:'مجھے ایک چھوٹا کوئز دو (5 MCQ)، ایک ایک کر کے۔ میرے جواب کے بعد سمجھا دینا۔', quizImg:'اس تصویر سے مجھے کوئز دو: 5 MCQ، ایک ایک کر کے۔', gen:'ایک تصویر بناؤ: ', explain:'اس تصویر کو قدم بہ قدم سمجھاؤ۔'}
+};
+function pt(k){ const d = PT[uiLang()] || PT.en; return d[k] || PT.en[k]; }
+function showImgPrev(){ if(!pendingImg) return; $('imgprevimg').src = 'data:' + pendingImg.mime + ';base64,' + pendingImg.data; $('imgprev').hidden = false; }
+function hideImgPrev(){ $('imgprev').hidden = true; $('imgprevimg').removeAttribute('src'); }
 let gsqShown = false;
+let lastMsId = null, lastMsVars = null;
 function ms(id, vars){
+  lastMsId = id; lastMsVars = vars || null;
   const m = MS[id];
   let s = m ? (m[uiLang()] || m.en) : id;
   if(vars) for(const k in vars) s = s.split('{' + k + '}').join(vars[k]);
@@ -494,6 +545,9 @@ function ms(id, vars){
 const ORIG_TXT = new WeakMap();
 function applyI18n(){
   const L = uiLang(), d = TR[L] || {};
+  document.querySelectorAll('.m.sys[data-msid]').forEach(el => { const v = el.dataset.vars ? JSON.parse(el.dataset.vars) : null; el.textContent = ms(el.dataset.msid, v); });
+  document.querySelectorAll('[data-tr]').forEach(el => { el.textContent = (el.dataset.name ? el.dataset.name + ', ' : '') + tr(el.dataset.tr); });
+  lastMsId = null; lastMsVars = null;
   document.documentElement.lang = L;
   document.documentElement.dir = (L === 'ar' || L === 'ur') ? 'rtl' : 'ltr';
   const w = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT);
@@ -862,7 +916,10 @@ function friendlyErr(m){
 function addMsg(role, text, extra){
   const d = document.createElement('div');
   d.className = 'm ' + role;
+  /* Sys message hole language change-e-o thik hobe: id ar vars mone rakhi */
+  if(role === 'sys' && lastMsId){ const id = lastMsId, vv = lastMsVars; if(text === ms(id, vv)){ d.dataset.msid = id; if(vv) d.dataset.vars = JSON.stringify(vv); } lastMsId = null; lastMsVars = null; }
   if(role === 'her' && /^(?:```|~~~)/m.test(text)) renderRich(d, text); else d.textContent = text;
+  if(extra && extra.img){ const im = document.createElement('img'); im.src = extra.img; im.alt = 'chhobi'; im.style.cssText = 'display:block;max-width:100%;max-height:260px;border-radius:12px;margin-bottom:6px'; d.insertBefore(im, d.firstChild); }
   if(extra && extra.acts && extra.acts.length){
     const a = document.createElement('div'); a.className = 'acts';
     extra.acts.forEach(x => { const l = document.createElement('a'); l.href = x.href; l.textContent = x.label; if(x.href.startsWith('http')){ l.target = '_blank'; l.rel = 'noopener'; } a.appendChild(l); });
@@ -1016,6 +1073,7 @@ async function askGemini(){
   let mode = S.search ? 'search' : 'tools';
   const contents = history.slice(-30).map(h => ({role:h.role, parts:[{text:h.text}]}));
   if(sessImg){ const last = contents[contents.length - 1]; if(last && last.role === 'user') last.parts.unshift({inlineData:{mimeType:sessImg.mime, data:sessImg.data}}); }
+  { const last2 = contents[contents.length - 1]; if(last2 && last2.role === 'user') last2.parts.push({text:'[Reply ONLY in ' + langName() + '. Ignore the language of this message.]'}); }
   const sources = [];
   let model = S.model;
   const call = async () => {
@@ -1189,7 +1247,8 @@ async function send(text, regen){
   text = (text || '').trim();
   if(!text && !pendingImg) return;
   if(busy) return;
-  if(pendingImg){ sessImg = pendingImg; pendingImg = null; $('qimg').classList.remove('on'); if(!text) text = 'Ei chhobi-ta ta bujhiye bolo, step by step.'; text = text + ' [chhobi]'; }
+  let bubbleImg = null;
+  if(pendingImg){ sessImg = pendingImg; bubbleImg = 'data:' + sessImg.mime + ';base64,' + sessImg.data; pendingImg = null; $('qimg').classList.remove('on'); hideImgPrev(); if(!text) text = pt('explain'); text = text + ' [chhobi]'; }
   if(!S.key){ addMsg('sys', ms('shuru')); openSettings(); return; }
   /* "limit koto?" type proshno: Google-er asol limit API theke pawa jay na, tai ami nijer hisab-tai bolbo */
   if(!regen && !pendingImg && text.length < 120 && /(limit|quota)/i.test(text) && /(koto|kotota|kotoi|baki|bakita|ache|kom|remain|current|ekhon|how much|left)/i.test(text)){
@@ -1205,7 +1264,7 @@ async function send(text, regen){
   }
   busy = true;
   stopListen();
-  if(!regen){ addMsg('you', text); history.push({role:'user', text}); }
+  if(!regen){ addMsg('you', text.replace(/ \[chhobi\]$/, ''), {img: bubbleImg}); history.push({role:'user', text}); }
   setStatus('bhabchhi...'); orb('thinking');
   const tp = addTyping();
   try{
@@ -1557,7 +1616,7 @@ function openSettings(){
 }
 function renderMem(){
   const box = $('memlist'); box.textContent = '';
-  if(!memory.length){ const n = document.createElement('div'); n.className = 'note'; n.textContent = 'Ekhono kichu nei. "Mone rekho..." bolle ekhane jomabe.'; box.appendChild(n); return; }
+  if(!memory.length){ const n = document.createElement('div'); n.className = 'note'; n.textContent = tr('Ekhono kichu nei. "Mone rekho..." bolle ekhane jomabe.'); box.appendChild(n); return; }
   memory.forEach((m, i) => {
     const r = document.createElement('div'); r.className = 'mem';
     const s = document.createElement('span'); s.textContent = m;
@@ -1612,12 +1671,14 @@ $('imgfile').onchange = async e => {
   try{
     pendingImg = await readImgFile(f);
     $('qimg').classList.add('on');
+    showImgPrev();
     addMsg('sys', ms('chhobiReady'));
   }catch(err){ addMsg('sys', ms('chhobiNite') + err.message); }
 };
-$('qgen').onclick = () => { $('txt').value = 'Ekta chhobi anko: '; $('txt').focus(); };
-$('qquiz').onclick = () => send(sessImg ? 'Ei chhobi/bishoy theke amake ekta quiz dao: 5ti MCQ, ekta ekta kore.' : 'Amake ekta chhoto quiz dao (5ti MCQ), ekta ekta kore. Ami uttor dile tarpor shikhiye dio.');
-$('clearchat').onclick = () => { history = []; sessImg = null; pendingImg = null; $('qimg').classList.remove('on'); $('msgs').textContent = ''; persist(); addMsg('sys', ms('chatClear')); };
+$('imgprevx').onclick = () => { pendingImg = null; $('qimg').classList.remove('on'); hideImgPrev(); };
+$('qgen').onclick = () => { $('txt').value = pt('gen'); $('txt').focus(); };
+$('qquiz').onclick = () => send(sessImg || pendingImg ? pt('quizImg') : pt('quiz'));
+$('clearchat').onclick = () => { history = []; sessImg = null; pendingImg = null; $('qimg').classList.remove('on'); hideImgPrev(); $('msgs').textContent = ''; persist(); addMsg('sys', ms('chatClear')); };
 $('send').onclick = () => { const t = $('txt').value; $('txt').value = ''; send(t); };
 $('txt').addEventListener('keydown', e => { if(e.key === 'Enter' && !e.shiftKey){ e.preventDefault(); $('send').click(); } });
 $('txt').addEventListener('input', e => { e.target.style.height = 'auto'; e.target.style.height = Math.min(e.target.scrollHeight, 120) + 'px'; });
@@ -1660,7 +1721,7 @@ function fillVoices(){
   });
   sel.value = (S.vmap && S.vmap[pre]) || '';
   if(sel.value !== ((S.vmap && S.vmap[pre]) || '')) sel.value = '';
-  $('vnote').textContent = VOICES.length ? ('Ei bhashay ' + (sel.options.length - 1) + 'ta voice pawa gelo. Meye-r golar ta na pele phone-er Settings > Text-to-speech e giye aro voice install koro.') : 'Voice list ekhono load hoy ni. Settings bondho kore abar kholo.';
+  $('vnote').textContent = VOICES.length ? ('Ei bhashay ' + (sel.options.length - 1) + 'ta voice pawa gelo. Meye-r golar ta na pele phone-er Settings > Text-to-speech e giye aro voice install koro.') : tr('Voice list ekhono load hoy ni. Settings bondho kore abar kholo.');
 }
 function loadVoices(){ if('speechSynthesis' in window){ VOICES = speechSynthesis.getVoices(); fillVoices(); } }
 if('speechSynthesis' in window){ speechSynthesis.onvoiceschanged = loadVoices; loadVoices(); }
@@ -1703,9 +1764,9 @@ $('vtest').onclick = () => {
 let ttsErrShown = false;
 window.onNativeTtsErr = m => { if(!ttsErrShown){ ttsErrShown = true; addMsg('sys', m); } };
 applyLook(); applyI18n();
-history.slice(-12).forEach(h => addMsg(h.role === 'user' ? 'you' : 'her', h.text));
+history.slice(-12).forEach(h => addMsg(h.role === 'user' ? 'you' : 'her', (h.text || '').replace(/ \[chhobi\]$/, '')));
 if(!history.length){
-  addMsg('her', (S.name ? S.name + ', ' : '') + tr('ami R.I.M.Y. Tomar ki khobor? Kotha bolo, ami shunchhi.'), {nobar:true});
+  { const g = addMsg('her', (S.name ? S.name + ', ' : '') + tr('ami R.I.M.Y. Tomar ki khobor? Kotha bolo, ami shunchhi.'), {nobar:true}); g.dataset.tr = 'ami R.I.M.Y. Tomar ki khobor? Kotha bolo, ami shunchhi.'; g.dataset.name = S.name || ''; }
 }
 if(!S.key){ addMsg('sys', ms('shuru')); }
 </script>
