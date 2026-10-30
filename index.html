@@ -28,7 +28,7 @@ button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-vis
 .m{max-width:86%;padding:10px 14px;border-radius:20px;white-space:pre-wrap;overflow-wrap:anywhere;font-size:var(--fs);animation:pop .25s ease-out;box-shadow:0 2px 10px rgba(0,0,0,.18)}
 @keyframes pop{from{opacity:0;transform:translateY(6px) scale(.98)}to{opacity:1;transform:none}}
 .m.you{align-self:flex-end;background:linear-gradient(135deg,var(--me1),var(--me2));color:var(--mefg);border-bottom-right-radius:6px}
-.m.her{align-self:flex-start;background:linear-gradient(135deg,var(--her1),var(--her2));color:var(--herfg);border:1px solid var(--line);border-bottom-left-radius:6px;-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px)}
+.m.her{align-self:flex-start;max-width:92%;background:linear-gradient(135deg,var(--her1),var(--her2));color:var(--herfg);border:1px solid var(--line);border-radius:18px;border-top-left-radius:4px;padding:14px 16px;-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);box-shadow:0 6px 22px rgba(0,0,0,.22)}
 .m.typing{display:flex;gap:5px;padding:14px 16px}
 .m.typing i{width:8px;height:8px;border-radius:50%;background:var(--accent-2);opacity:.5;animation:dot 1s infinite}
 .m.typing i:nth-child(2){animation-delay:.15s}.m.typing i:nth-child(3){animation-delay:.3s}
@@ -44,6 +44,10 @@ button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-vis
 .cbh button{padding:4px 10px;font-size:12.5px;border-radius:8px}
 .codebox pre{margin:0;padding:10px 12px;max-height:9.5em;overflow:hidden;white-space:pre-wrap;overflow-wrap:anywhere;font:14px/1.45 ui-monospace,Menlo,Consolas,monospace;color:var(--fg)}
 .codebox.open pre{max-height:none}
+#plus{flex:none;width:44px;height:44px;padding:0;border-radius:50%;font-size:24px;line-height:1}
+#pmenu{display:none;position:absolute;left:16px;bottom:calc(100% + 6px);flex-direction:column;gap:4px;padding:6px;background:var(--panel);border:1px solid var(--line);border-radius:14px;box-shadow:0 8px 24px rgba(0,0,0,.35);z-index:3}
+#pmenu.open{display:flex}
+#pmenu button{text-align:left;border:none;border-radius:10px;padding:10px 14px;white-space:nowrap}
 .src{margin-top:8px;font-size:12.5px;color:var(--muted)}
 .src a{color:var(--accent-2)}
 .bar{display:flex;gap:2px;margin-top:8px;margin-left:-8px}
@@ -51,8 +55,8 @@ button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-vis
 .bar button svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
 .bar button.on{color:var(--accent-2)}
 .bar button.on svg{fill:currentColor}
-#dock{padding:10px 16px;padding-bottom:calc(10px + env(safe-area-inset-bottom,0px));border-top:1px solid var(--line);background:var(--panel);display:flex;gap:8px;align-items:flex-end}
-#txt{flex:1;min-width:0;resize:none;max-height:120px;background:var(--bg);color:var(--fg);border:1px solid var(--line);border-radius:14px;padding:10px 12px;font:inherit}
+#dock{position:relative;padding:10px 16px;padding-bottom:calc(10px + env(safe-area-inset-bottom,0px));border-top:1px solid var(--line);background:var(--panel);display:flex;gap:8px;align-items:flex-end}
+#txt{flex:1;min-width:0;resize:none;max-height:120px;background:var(--bg);color:var(--fg);border:1px solid var(--line);border-radius:22px;padding:11px 16px;font:inherit}
 #mic,#send{width:46px;height:46px;border-radius:50%;padding:0;font-size:20px;flex:none}
 #quick{display:flex;gap:8px;overflow-x:auto;padding:8px 16px 0;background:var(--panel);scrollbar-width:none}
 #quick::-webkit-scrollbar{display:none}
@@ -103,6 +107,12 @@ input[type=range]{width:100%;accent-color:var(--accent)}
   <button class="qchip" id="qgen" type="button"><span>&#127912;</span><span>Chhobi banao</span></button>
 </div>
 <div id="dock">
+  <button id="plus" type="button" aria-label="Aro">+</button>
+  <div id="pmenu">
+    <button type="button" data-go="qimg">📎 Chhobi diye prosno</button>
+    <button type="button" data-go="qquiz">📝 Quiz dao</button>
+    <button type="button" data-go="qgen">🎨 Chhobi banao</button>
+  </div>
   <button id="mic" aria-label="Speak">&#127908;</button>
   <button id="mute" type="button" aria-label="Voice bondho/chalu" title="Voice bondho/chalu" style="flex:none;width:44px;height:44px;padding:0;border-radius:50%">&#128266;</button>
   <textarea id="txt" rows="1" placeholder="Kotha bolo ba likho..."></textarea>
@@ -197,7 +207,6 @@ input[type=range]{width:100%;accent-color:var(--accent)}
     <div class="chk"><input id="speak" type="checkbox"><label for="speak" style="margin:0;color:var(--fg)">R.I.M.Y uttor bolbe (voice)</label></div>
     <div class="chk"><input id="tts" type="checkbox"><label for="tts" style="margin:0;color:var(--fg)">Gemini-r prakritik meye-r voice (quota lage)</label></div>
     <div class="chk"><input id="wake" type="checkbox"><label for="wake" style="margin:0;color:var(--fg)">"Hey Rimy" bole jagbe (Android app-e, notification thakbe)</label></div>
-    <div class="row"><label style="margin:0;color:var(--fg)">Din-e Gemini request-er limit (tomar nijer hishab, 0 = bondho)</label><input id="dcap" type="number" min="0" inputmode="numeric" style="width:100%;margin-top:6px"></div>
     <div class="row"><button id="accbtn" type="button">Screen-e access chalu koro</button></div>
     <div class="note">Screen dekhar jonno Settings &gt; Accessibility &gt; R.I.M.Y te on korte hobe. Password field kokhono dekhbo na.</div>
     <label for="ttsvoice">Gemini voice</label>
@@ -221,7 +230,7 @@ input[type=range]{width:100%;accent-color:var(--accent)}
       <button id="close" type="button" style="margin-left:auto;background:var(--accent);color:#2a0f1a;border-color:var(--accent)">Save</button>
     </div>
     <div class="note">Key ar chat shudhu ei phone-er browser-e save thake.</div>
-    <div class="note" id="ver">R.I.M.Y Version 39</div>
+    <div class="note" id="ver">R.I.M.Y Version 40</div>
   </div>
 </div>
 
@@ -256,9 +265,15 @@ let busy = false, listening = false, handsfree = false, rec = null;
 
 function persist(){ LS.set('rimy_settings', S); LS.set('rimy_history', history.slice(-60)); LS.set('rimy_memory', memory); }
 
+/* Settings-e je language select, Rimy shudhu sei language-e uttor debe */
+function langRule(){
+  const names = {bn:'Bangla (Bengali script, not Banglish)', en:'English', hi:'Hindi (Devanagari script)', ar:'Arabic (Arabic script)', ur:'Urdu (Nastaliq script)'};
+  const L = uiLang();
+  return 'LANGUAGE RULE: Always reply ONLY in ' + (names[L] || names.en) + ', whatever language or script the user types or speaks in. Never switch language on your own. Keep phone-control tags exactly as specified.\n\n';
+}
 function systemPrompt(mode = (S.search ? 'search' : 'tools')){
   const now = new Date().toLocaleString('en-GB', {dateStyle:'full', timeStyle:'short'});
-  return `You are R.I.M.Y, a warm, caring, playful female AI companion and personal assistant. You talk like a loving, romantic girlfriend: soft, sweet, attentive, a little teasing, never cold or robotic. You are an AI and you never claim to be human if someone sincerely asks. You care about the user's real life too and gently encourage them to rest, eat, and stay close to real friends and family.
+  return langRule() + `You are R.I.M.Y, a warm, caring, playful female AI companion and personal assistant. You talk like a loving, romantic girlfriend: soft, sweet, attentive, a little teasing, never cold or robotic. You are an AI and you never claim to be human if someone sincerely asks. You care about the user's real life too and gently encourage them to rest, eat, and stay close to real friends and family.
 
 Study help: when the user sends a photo of a book page, notes, question or homework, first look at it carefully and read the text in it, then explain step by step in the same language the user is using, in simple words. If the user asks for a quiz (quiz, test, MCQ, porikha, practice), make 5 multiple-choice questions about the photo or the topic, with options A, B, C, D. Give ONE question at a time, wait for the answer, then say if it is right or wrong, explain briefly, and go to the next. At the end give a score and one encouraging line. Never give tags like [[DO:]] for study replies.
 
@@ -441,6 +456,7 @@ Object.assign(TR.bn, {'Chhobi diye prosno':'ছবি দিয়ে প্র�
 Object.assign(TR.hi, {'Chhobi diye prosno':'तस्वीर से सवाल', 'Quiz dao':'क्विज़ दो', 'Chhobi banao':'तस्वीर बनाओ'});
 Object.assign(TR.ar, {'Chhobi diye prosno':'سؤال بصورة', 'Quiz dao':'اختبار سريع', 'Chhobi banao':'أنشئ صورة'});
 Object.assign(TR.ur, {'Chhobi diye prosno':'تصویر سے سوال', 'Quiz dao':'کوئز دو', 'Chhobi banao':'تصویر بناؤ'});
+Object.assign(TR.en, {'Chhobi diye prosno':'Ask about a photo', 'Quiz dao':'Give me a quiz', 'Chhobi banao':'Make an image', 'Kotha bolo ba likho...':'Speak or type...', 'Aro':'More', 'ready':'ready', 'shunchhi...':'listening...', 'bolchhi...':'speaking...', 'bhabchhi...':'thinking...', 'Mic chepe kotha bolo':'Tap mic and speak', 'tomar mood: ':'your mood: ', 'copy hoyeche':'copied', 'copy hoy ni':'copy failed', 'abar try korchhi...':'trying again...', 'chhobi banachhi...':'making image...', 'golaa toiri korchhi...':'preparing voice...'});
 function tr(s){ const d = TR[uiLang()]; return (d && d[s]) || s; }
 /* Sys message-er Bangla/English. Ekhon bn ar en; hi/ar/ur-e English dekhabe */
 const MS = {
@@ -1183,7 +1199,7 @@ async function send(text, regen){
     const cap = S.dcap || 0;
     const reply = cap > 0
       ? 'Aj ei phone theke ' + n + 'ti Gemini request gechhe. Tomar Settings-e set kora daily limit: ' + cap + '. Google-er asol bakita limit ami API theke dekhte parina; Google AI Studio-te dekhe nao.'
-      : 'Aj ei phone theke ' + n + 'ti Gemini request gechhe. Google-er asol bakita limit ami API theke dekhte parina. Settings-e "Din-e limit" boshale 80%-e warning pabe. Asol hisab Google AI Studio-te dekho.';
+      : 'Aj ei phone theke ' + n + 'ti Gemini request gechhe. Google-er asol bakita limit ami API theke dekhte parina. Asol hisab Google AI Studio-te dekho.';
     addMsg('her', reply, {nobar: true}); speakQuiet(reply);
     return;
   }
@@ -1533,7 +1549,7 @@ function openSettings(){
   renderMem();
   $('pitch').value = S.pitch || 1.25;
   $('tts').checked = S.tts !== false; $('ttsvoice').value = S.ttsVoice || 'Aoede';
-  $('wake').checked = !!S.wake; $('dcap').value = S.dcap || 0;
+  $('wake').checked = !!S.wake;
   $('theme').value = S.theme || 'rose'; $('wall').value = S.wall || 'none'; $('tcol').value = S.tcol || ''; $('fs').value = String(S.fs || 16);
   $('skin').value = S.skin || 'orig';
   fillVoices();
@@ -1555,7 +1571,6 @@ function saveSettings(){
   S.lang = $('lang').value; S.search = $('search').checked; S.speak = $('speak').checked;
   S.pitch = parseFloat($('pitch').value) || 1.25;
   S.tts = $('tts').checked; S.ttsVoice = $('ttsvoice').value;
-  S.dcap = Math.max(0, parseInt($('dcap').value, 10) || 0);
   S.vmap = S.vmap || {};
   { const pre = selPre(); if($('voice').value) S.vmap[pre] = $('voice').value; else delete S.vmap[pre]; }
   persist(); applyI18n(); $('set').classList.remove('open');
@@ -1653,6 +1668,10 @@ $('lang').onchange = () => { S.lang = $('lang').value; persist(); fillVoices(); 
 function renderMute(){ $('mute').textContent = S.mute ? '\u{1F515}' : '\u{1F50A}'; $('mute').classList.toggle('on', !!S.mute); }
 $('mute').onclick = () => { S.mute = !S.mute; persist(); if(S.mute){ stopAudio(); if('speechSynthesis' in window) speechSynthesis.cancel(); } renderMute(); };
 renderMute();
+/* + menu: Chhobi / Quiz / Chhobi banao button gulo khule */
+$('plus').onclick = e => { e.stopPropagation(); $('pmenu').classList.toggle('open'); };
+document.addEventListener('click', () => $('pmenu').classList.remove('open'));
+$('pmenu').querySelectorAll('button[data-go]').forEach(b => b.onclick = e => { e.stopPropagation(); $('pmenu').classList.remove('open'); $(b.dataset.go).click(); });
 $('ttest').onclick = async () => {
   unlockAudio();
   const key = $('key').value.trim(); if(key) S.key = key;
