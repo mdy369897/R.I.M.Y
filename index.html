@@ -52,6 +52,30 @@ button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-vis
 #imgprev[hidden]{display:none}
 #imgprev img{width:64px;height:64px;object-fit:cover;border-radius:10px;display:block}
 #imgprevx{width:28px;height:28px;padding:0;border-radius:50%;font-size:18px;line-height:1}
+#imgprev[hidden]{display:none}
+.m img.pic{display:block;max-width:100%;max-height:260px;border-radius:14px;margin-bottom:6px;padding:6px;box-sizing:border-box;background:rgba(5,10,18,.85);cursor:zoom-in}
+#imgview,#lib{position:fixed;inset:0;z-index:60;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:16px;background:rgba(0,0,0,.92)}
+#imgview{z-index:70}
+#imgview[hidden],#lib[hidden]{display:none}
+#ivimg{max-width:100%;max-height:72vh;border-radius:14px;object-fit:contain}
+#ivx{position:absolute;top:12px;right:12px;width:42px;height:42px;border-radius:50%;font-size:24px;padding:0}
+#ivbar{position:absolute;bottom:22px;left:12px;right:12px;display:flex;gap:8px}
+#ivbar button{flex:1;padding:12px;border-radius:14px}
+#lib{background:var(--bg);justify-content:flex-start;align-items:stretch;padding:0}
+.libhead{display:flex;justify-content:space-between;align-items:center;padding:14px 16px;border-bottom:1px solid var(--line)}
+.libhead button{width:38px;height:38px;border-radius:50%;padding:0;font-size:22px}
+.libtabs{display:flex;gap:8px;padding:10px 16px}
+.libtabs button{flex:1;padding:10px;border-radius:12px}
+.libtabs button.on{background:linear-gradient(135deg,var(--me1),var(--me2));color:var(--mefg)}
+#libbody{flex:1;overflow-y:auto;padding:8px 16px 24px}
+.libitem{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:12px;margin-bottom:10px}
+.libmeta{font-size:12px;color:var(--muted);margin-bottom:4px}
+.libprev{margin-bottom:8px;word-break:break-word}
+.librow{display:flex;gap:8px}
+.librow button{padding:8px 14px;border-radius:12px}
+.libgrid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.libgrid img{width:100%;aspect-ratio:1;object-fit:cover;border-radius:12px;cursor:zoom-in}
+#libbody .m{max-width:100%}
 .src{margin-top:8px;font-size:12.5px;color:var(--muted)}
 .src a{color:var(--accent-2)}
 .bar{display:flex;gap:2px;margin-top:8px;margin-left:-8px}
@@ -105,6 +129,20 @@ input[type=range]{width:100%;accent-color:var(--accent)}
   <button id="gear" aria-label="Settings">&#9881;</button>
 </header>
 <div id="msgs" aria-live="polite"></div>
+<div id="imgview" hidden>
+  <button id="ivx" type="button" aria-label="Close">&times;</button>
+  <img id="ivimg" alt="chhobi">
+  <div id="ivbar">
+    <button id="ivcancel" type="button"><span>Cancel</span></button>
+    <button id="ivdl" type="button">&#11015; <span>Download</span></button>
+    <button id="ivedit" type="button">&#9999;&#65039; <span>Edit</span></button>
+  </div>
+</div>
+<div id="lib" hidden>
+  <div class="libhead"><b>Library</b><button id="libx" type="button" aria-label="Close">&times;</button></div>
+  <div class="libtabs"><button type="button" data-lt="chat" class="on">Chat</button><button type="button" data-lt="img">Chhobi</button></div>
+  <div id="libbody"></div>
+</div>
 <div id="quick">
   <button class="qchip" id="qimg" type="button"><span>&#128206;</span><span>Chhobi diye prosno</span></button>
   <button class="qchip" id="qquiz" type="button"><span>&#128221;</span><span>Quiz dao</span></button>
@@ -114,9 +152,11 @@ input[type=range]{width:100%;accent-color:var(--accent)}
   <div id="imgprev" hidden><img id="imgprevimg" alt="chhobi"><button id="imgprevx" type="button" aria-label="Muchho">&times;</button></div>
   <button id="plus" type="button" aria-label="Aro">+</button>
   <div id="pmenu">
-    <button type="button" data-go="qimg">📎 Chhobi diye prosno</button>
-    <button type="button" data-go="qquiz">📝 Quiz dao</button>
-    <button type="button" data-go="qgen">🎨 Chhobi banao</button>
+    <button type="button" data-go="qimg"><span>📎</span> <span>Chhobi diye prosno</span></button>
+    <button type="button" data-go="camfile"><span>📷</span> <span>Camera diye chhobi</span></button>
+    <button type="button" data-go="qquiz"><span>📝</span> <span>Quiz dao</span></button>
+    <button type="button" data-go="qgen"><span>🎨</span> <span>Chhobi banao</span></button>
+    <button type="button" id="pmlib"><span>📚</span> <span>Library</span></button>
   </div>
   <button id="mic" aria-label="Speak">&#127908;</button>
   <button id="mute" type="button" aria-label="Voice bondho/chalu" title="Voice bondho/chalu" style="flex:none;width:44px;height:44px;padding:0;border-radius:50%">&#128266;</button>
@@ -186,6 +226,7 @@ input[type=range]{width:100%;accent-color:var(--accent)}
     <div class="row" style="margin-top:8px"><button id="wallpick" type="button">Gallery theke chhobi nao</button><button id="wallclr" type="button">Muchho</button></div>
     <input id="wallfile" type="file" accept="image/*" style="display:none">
     <input id="imgfile" type="file" accept="image/*" style="display:none">
+    <input id="camfile" type="file" accept="image/*" capture="environment" style="display:none">
     <div class="note" id="wnote">Wallpaper-e "Nijer chhobi" bechhe gallery theke photo dao.</div>
     <label for="key">Gemini API key (Google AI Studio theke)</label>
     <input id="key" type="password" autocomplete="off" placeholder="AIza...">
@@ -913,13 +954,19 @@ function friendlyErr(m){
   if(/Failed to fetch/i.test(m)) return ms('net');
   return m;
 }
-function addMsg(role, text, extra){
+function addMsg(role, text, extra, target){
   const d = document.createElement('div');
   d.className = 'm ' + role;
   /* Sys message hole language change-e-o thik hobe: id ar vars mone rakhi */
   if(role === 'sys' && lastMsId){ const id = lastMsId, vv = lastMsVars; if(text === ms(id, vv)){ d.dataset.msid = id; if(vv) d.dataset.vars = JSON.stringify(vv); } lastMsId = null; lastMsVars = null; }
   if(role === 'her' && /^(?:```|~~~)/m.test(text)) renderRich(d, text); else d.textContent = text;
-  if(extra && extra.img){ const im = document.createElement('img'); im.src = extra.img; im.alt = 'chhobi'; im.style.cssText = 'display:block;max-width:100%;max-height:260px;border-radius:12px;margin-bottom:6px'; d.insertBefore(im, d.firstChild); }
+  if(extra && (extra.img || extra.imgKey)){
+    const im = document.createElement('img'); im.alt = 'chhobi'; im.className = 'pic';
+    if(extra.img) im.src = extra.img;
+    else getImg(extra.imgKey).then(s => { if(s) im.src = s; else im.remove(); });
+    im.onclick = () => openViewer(im.src);
+    d.insertBefore(im, d.firstChild);
+  }
   if(extra && extra.acts && extra.acts.length){
     const a = document.createElement('div'); a.className = 'acts';
     extra.acts.forEach(x => { const l = document.createElement('a'); l.href = x.href; l.textContent = x.label; if(x.href.startsWith('http')){ l.target = '_blank'; l.rel = 'noopener'; } a.appendChild(l); });
@@ -931,8 +978,8 @@ function addMsg(role, text, extra){
     d.appendChild(s);
   }
   if(role === 'her' && !(extra && extra.nobar)) addBar(d, text);
-  $('msgs').appendChild(d);
-  $('msgs').scrollTop = $('msgs').scrollHeight;
+  (target || $('msgs')).appendChild(d);
+  if(!target) $('msgs').scrollTop = $('msgs').scrollHeight;
   return d;
 }
 
@@ -1093,7 +1140,7 @@ async function askGemini(){
     /* Google Search-er quota na thakle free tool (weather, dam, Wikipedia, news) diye cholbe */
     if(mode === 'search'){
       mode = 'tools';
-      if(!gsqShown){ gsqShown = true; addMsg('sys', ms('gsq')); } speakQuiet(ms('gsq'));
+      if(!gsqShown){ gsqShown = true; addMsg('sys', ms('gsq')); speakQuiet(ms('gsq')); }
       ({r, j} = await call());
     }
     /* Tarpor-o quota na thakle halka (lite) model try kori */
@@ -1219,10 +1266,12 @@ function readImgFile(f){
     fr.readAsDataURL(f);
   });
 }
-async function genImage(prompt){
+async function genImage(prompt, inImg){
   const model = S.imgModel || 'gemini-2.5-flash-image';
   const url = 'https://generativelanguage.googleapis.com/v1beta/models/' + encodeURIComponent(model) + ':generateContent?key=' + encodeURIComponent(S.key);
-  const body = {contents:[{role:'user', parts:[{text:prompt}]}], generationConfig:{responseModalities:['TEXT','IMAGE']}};
+  const inParts = [{text: prompt}];
+  if(inImg) inParts.unshift({inlineData:{mimeType: inImg.mime, data: inImg.data}});
+  const body = {contents:[{role:'user', parts: inParts}], generationConfig:{responseModalities:['TEXT','IMAGE']}};
   const r = await fetch(url, {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(body)});
   const j = await r.json();
   if(!r.ok) throw new Error((j.error && j.error.message) || ('HTTP ' + r.status));
@@ -1231,15 +1280,15 @@ async function genImage(prompt){
   if(!p) throw new Error('chhobi ashe ni (quota ba safety filter)');
   return 'data:' + (p.inlineData.mimeType || 'image/png') + ';base64,' + p.inlineData.data;
 }
-function showImage(src){
-  const d = addMsg('her', '', {nobar:true});
-  const im = document.createElement('img');
-  im.src = src; im.alt = 'R.I.M.Y-r chhobi';
-  im.style.cssText = 'max-width:100%;border-radius:12px;display:block;margin-top:6px';
+const IMG_NOTE = '(chhobi)';
+async function showImage(src){
+  const key = await saveImg(src);
+  const d = addMsg('her', '', {nobar:true, img: src});
   const a = document.createElement('a');
   a.href = src; a.download = 'rimy-chhobi.png'; a.textContent = 'Save korun';
   a.style.cssText = 'display:inline-block;margin-top:6px;font-size:13px';
-  d.appendChild(im); d.appendChild(a);
+  d.appendChild(a);
+  history.push({role:'model', text: IMG_NOTE, imgKey: key}); persist();
   $('msgs').scrollTop = $('msgs').scrollHeight;
 }
 async function send(text, regen){
@@ -1247,8 +1296,22 @@ async function send(text, regen){
   text = (text || '').trim();
   if(!text && !pendingImg) return;
   if(busy) return;
+  /* Edit mode: chhobi-ta niye notun chhobi banano (Gemini image model) */
+  if(pendingImg && pendingEdit){
+    const ed = pendingImg, label = text || pt('edit');
+    const edSrc = 'data:' + ed.mime + ';base64,' + ed.data;
+    pendingImg = null; pendingEdit = false; $('qimg').classList.remove('on'); hideImgPrev();
+    addMsg('you', label, {img: edSrc});
+    history.push({role:'user', text: label, imgKey: await saveImg(edSrc)}); persist();
+    busy = true; setStatus('chhobi banachhi...'); orb('thinking');
+    try{ await showImage(await genImage(label, ed)); setStatus('ready'); }
+    catch(err){ addMsg('sys', ms('imgFail') + err.message); setStatus('ready'); }
+    finally{ busy = false; orb(''); }
+    return;
+  }
   let bubbleImg = null;
-  if(pendingImg){ sessImg = pendingImg; bubbleImg = 'data:' + sessImg.mime + ';base64,' + sessImg.data; pendingImg = null; $('qimg').classList.remove('on'); hideImgPrev(); if(!text) text = pt('explain'); text = text + ' [chhobi]'; }
+  if(pendingImg){ sessImg = pendingImg; bubbleImg = 'data:' + sessImg.mime + ';base64,' + sessImg.data; pendingImg = null; pendingEdit = false; $('qimg').classList.remove('on'); hideImgPrev(); if(!text) text = pt('explain'); text = text + ' [chhobi]'; }
+  const bubbleKey = bubbleImg ? await saveImg(bubbleImg) : null;
   if(!S.key){ addMsg('sys', ms('shuru')); openSettings(); return; }
   /* "limit koto?" type proshno: Google-er asol limit API theke pawa jay na, tai ami nijer hisab-tai bolbo */
   if(!regen && !pendingImg && text.length < 120 && /(limit|quota)/i.test(text) && /(koto|kotota|kotoi|baki|bakita|ache|kom|remain|current|ekhon|how much|left)/i.test(text)){
@@ -1264,7 +1327,7 @@ async function send(text, regen){
   }
   busy = true;
   stopListen();
-  if(!regen){ addMsg('you', text.replace(/ \[chhobi\]$/, ''), {img: bubbleImg}); history.push({role:'user', text}); }
+  if(!regen){ addMsg('you', text.replace(/ \[chhobi\]$/, ''), {img: bubbleImg}); history.push({role:'user', text, imgKey: bubbleKey || undefined}); }
   setStatus('bhabchhi...'); orb('thinking');
   const tp = addTyping();
   try{
@@ -1276,7 +1339,7 @@ async function send(text, regen){
     addMsg('her', clean || raw, {acts, sources});
     for(const pr of imgs || []){
       setStatus('chhobi banachhi...');
-      try{ showImage(await genImage(pr)); }
+      try{ await showImage(await genImage(pr)); }
       catch(err){ addMsg('sys', /quota|429|limit: 0/i.test(err.message) ? ms('imgLimit') : ms('imgFail') + err.message); }
     }
     setStatus(mood ? 'tomar mood: ' + mood : 'ready');
@@ -1666,19 +1729,155 @@ $('skin').onchange = () => {
 $('close').onclick = saveSettings;
 $('listm').onclick = listModels;
 $('qimg').onclick = () => $('imgfile').click();
-$('imgfile').onchange = async e => {
+let pendingEdit = false;
+async function pickImg(e){
   const f = e.target.files[0]; e.target.value = ''; if(!f) return;
   try{
-    pendingImg = await readImgFile(f);
+    pendingImg = await readImgFile(f); pendingEdit = false;
     $('qimg').classList.add('on');
     showImgPrev();
     addMsg('sys', ms('chhobiReady'));
   }catch(err){ addMsg('sys', ms('chhobiNite') + err.message); }
+}
+$('imgfile').onchange = pickImg;
+$('camfile').onchange = pickImg;
+
+/* ---- Chhobi save (IndexedDB) ---- */
+let IDBP = null;
+function idbDb(){
+  if(!IDBP) IDBP = new Promise((ok, no) => {
+    try{ const r = indexedDB.open('rimy', 1); r.onupgradeneeded = () => r.result.createObjectStore('imgs', {keyPath:'id'}); r.onsuccess = () => ok(r.result); r.onerror = () => no(r.error); }
+    catch(e){ no(e); }
+  });
+  return IDBP;
+}
+async function saveImg(src){
+  const id = 'i' + Date.now() + Math.random().toString(36).slice(2, 7);
+  try{ const db = await idbDb(); await new Promise((ok, no) => { const tx = db.transaction('imgs', 'readwrite'); tx.objectStore('imgs').put({id, src, at: Date.now()}); tx.oncomplete = ok; tx.onerror = () => no(tx.error); }); }
+  catch(e){}
+  return id;
+}
+async function getImg(id){
+  try{ const db = await idbDb(); return await new Promise((ok, no) => { const q = db.transaction('imgs').objectStore('imgs').get(id); q.onsuccess = () => ok(q.result ? q.result.src : null); q.onerror = () => no(q.error); }); }
+  catch(e){ return null; }
+}
+async function allImgs(){
+  try{ const db = await idbDb(); return await new Promise((ok, no) => { const q = db.transaction('imgs').objectStore('imgs').getAll(); q.onsuccess = () => ok(q.result || []); q.onerror = () => no(q.error); }); }
+  catch(e){ return []; }
+}
+
+/* ---- Chat archive + history render ---- */
+function archiveChat(){
+  if(!history.length) return;
+  const a = LS.get('rimy_archive', []) || [];
+  a.push({id: Date.now(), at: Date.now(), msgs: history.slice(-60)});
+  LS.set('rimy_archive', a.slice(-20));
+}
+function renderHistory(){
+  $('msgs').textContent = '';
+  history.slice(-40).forEach(h => {
+    const role = h.role === 'user' ? 'you' : 'her';
+    if(h.text === IMG_NOTE && h.imgKey){ addMsg('her', '', {nobar:true, imgKey: h.imgKey}); return; }
+    addMsg(role, (h.text || '').replace(/ \[chhobi\]$/, ''), h.imgKey ? {imgKey: h.imgKey} : undefined);
+  });
+}
+
+/* ---- Image viewer (×, Cancel, Download, Edit) ---- */
+let viewSrc = '';
+function openViewer(src){ if(!src) return; viewSrc = src; $('ivimg').src = src; $('imgview').hidden = false; }
+$('ivx').onclick = $('ivcancel').onclick = () => { $('imgview').hidden = true; };
+$('ivdl').onclick = () => { const a = document.createElement('a'); a.href = viewSrc; a.download = 'rimy-chhobi.png'; document.body.appendChild(a); a.click(); a.remove(); };
+$('ivedit').onclick = () => {
+  const m = /^data:(.*?);base64,(.*)$/.exec(viewSrc); if(!m) return;
+  $('imgview').hidden = true; $('lib').hidden = true;
+  pendingImg = {mime: m[1], data: m[2]}; pendingEdit = true;
+  $('qimg').classList.add('on'); showImgPrev(); addMsg('sys', ms('editMode')); $('txt').focus();
 };
-$('imgprevx').onclick = () => { pendingImg = null; $('qimg').classList.remove('on'); hideImgPrev(); };
+
+/* ---- Library: chat + chhobi ---- */
+function openLib(tab){ $('lib').hidden = false; libTab(tab || 'chat'); }
+function libTab(t){
+  document.querySelectorAll('[data-lt]').forEach(b => b.classList.toggle('on', b.dataset.lt === t));
+  const body = $('libbody'); body.textContent = '';
+  if(t === 'chat') libChats(body); else libImgs(body);
+}
+function fmtAt(at){ return new Date(at).toLocaleString('en-GB', {day:'2-digit', month:'short', hour:'2-digit', minute:'2-digit'}); }
+function libNote(body, txt){ const n = document.createElement('div'); n.className = 'note'; n.textContent = txt; body.appendChild(n); }
+function libChats(body){
+  const sessions = [{now:true, at: Date.now(), msgs: history}].concat((LS.get('rimy_archive', []) || []).slice().reverse());
+  sessions.forEach(s => {
+    const box = document.createElement('div'); box.className = 'libitem';
+    const first = (s.msgs.find(m => m.role === 'user') || {}).text || '';
+    const head = document.createElement('div'); head.className = 'libmeta';
+    head.textContent = (s.now ? tr('Ekhon-er chat') : fmtAt(s.at)) + ' · ' + s.msgs.length;
+    const pv = document.createElement('div'); pv.className = 'libprev';
+    pv.textContent = first.replace(/ \[chhobi\]$/, '').slice(0, 90) || '—';
+    const row = document.createElement('div'); row.className = 'librow';
+    const b1 = document.createElement('button'); b1.type = 'button'; b1.textContent = tr('Dekho');
+    b1.onclick = () => libView(s, body); row.appendChild(b1);
+    if(!s.now){ const b2 = document.createElement('button'); b2.type = 'button'; b2.textContent = tr('Phire ano'); b2.onclick = () => libRestore(s.id); row.appendChild(b2); }
+    box.append(head, pv, row); body.appendChild(box);
+  });
+  if(!history.length && sessions.length === 1) libNote(body, tr('Ekhono kono chat nei.'));
+}
+function libView(s, body){
+  body.textContent = '';
+  const back = document.createElement('button'); back.type = 'button'; back.textContent = tr('Band koro');
+  back.onclick = () => libTab('chat'); body.appendChild(back);
+  s.msgs.forEach(h => {
+    const role = h.role === 'user' ? 'you' : 'her';
+    if(h.text === IMG_NOTE && h.imgKey){ addMsg('her', '', {nobar:true, imgKey: h.imgKey}, body); return; }
+    addMsg(role, (h.text || '').replace(/ \[chhobi\]$/, ''), Object.assign({nobar:true}, h.imgKey ? {imgKey: h.imgKey} : {}), body);
+  });
+}
+function libRestore(id){
+  const s = (LS.get('rimy_archive', []) || []).find(x => x.id === id); if(!s) return;
+  archiveChat();
+  LS.set('rimy_archive', (LS.get('rimy_archive', []) || []).filter(x => x.id !== id));
+  history = s.msgs.slice(); sessImg = null;
+  persist(); renderHistory(); $('lib').hidden = true;
+}
+async function libImgs(body){
+  const list = (await allImgs()).sort((x, y) => y.at - x.at);
+  if(!list.length){ libNote(body, tr('Ekhono kono chhobi nei.')); return; }
+  const grid = document.createElement('div'); grid.className = 'libgrid';
+  list.forEach(x => { const im = document.createElement('img'); im.src = x.src; im.alt = 'chhobi'; im.onclick = () => openViewer(x.src); grid.appendChild(im); });
+  body.appendChild(grid);
+}
+$('pmlib').onclick = e => { e.stopPropagation(); $('pmenu').classList.remove('open'); openLib('chat'); };
+$('libx').onclick = () => { $('lib').hidden = true; };
+document.querySelectorAll('[data-lt]').forEach(b => b.onclick = () => libTab(b.dataset.lt));
+
+/* ---- Message texts + labels for the new parts ---- */
+MS.chatClear = {
+  bn:'চ্যাট মুছে ফেলেছি, তবে Library-তে জমা আছে। যা যা মনে রেখেছি সব আছে।',
+  en:'Chat cleared, but it is saved in Library. Everything I remember is still saved.',
+  hi:'चैट साफ़ कर दी है, पर Library में सेव है। जो याद है वो सब सेव है।',
+  ar:'تم مسح المحادثة، لكنها محفوظة في المكتبة. كل ما أتذكره ما زال محفوظًا.',
+  ur:'چیٹ صاف کر دی ہے، لیکن Library میں محفوظ ہے۔ جو یاد ہے وہ سب محفوظ ہے۔'
+};
+MS.editMode = {
+  bn:'এই ছবিটা edit হবে। কী বদলাতে চাও লেখো, তারপর Send দাও।',
+  en:'This picture will be edited. Write what to change, then send.',
+  hi:'इस तस्वीर को edit किया जाएगा। क्या बदलना है लिखो, फिर Send दो।',
+  ar:'سيتم تعديل هذه الصورة. اكتب ما تريد تغييره ثم أرسل.',
+  ur:'اس تصویر کو edit کیا جائے گا۔ کیا بدلنا ہے لکھو، پھر Send دو۔'
+};
+const PT_EDIT = {en:'Make a small improvement to this picture.', bn:'এই ছবিটা একটু সুন্দর করে দাও।', hi:'इस तस्वीर को थोड़ा सुंदर बनाओ।', ar:'حسّن هذه الصورة قليلاً.', ur:'اس تصویر کو تھوڑا بہتر بناؤ۔'};
+for(const L in PT_EDIT) PT[L].edit = PT_EDIT[L];
+const TR_NEW = {
+  en:{'Camera diye chhobi':'Take a photo','Library':'Library','Chat':'Chat','Chhobi':'Images','Dekho':'View','Phire ano':'Restore','Band koro':'Back','Ekhon-er chat':'Current chat','Ekhono kono chat nei.':'No chats yet.','Ekhono kono chhobi nei.':'No images yet.','Cancel':'Cancel','Download':'Download','Edit':'Edit'},
+  bn:{'Camera diye chhobi':'ক্যামেরা দিয়ে ছবি','Library':'Library','Chat':'চ্যাট','Chhobi':'ছবি','Dekho':'দেখো','Phire ano':'ফিরিয়ে আনো','Band koro':'বন্ধ করো','Ekhon-er chat':'এখনকার চ্যাট','Ekhono kono chat nei.':'এখনো কোনো চ্যাট নেই।','Ekhono kono chhobi nei.':'এখনো কোনো ছবি নেই।','Cancel':'বাতিল','Download':'ডাউনলোড','Edit':'এডিট'},
+  hi:{'Camera diye chhobi':'कैमरे से तस्वीर','Library':'लाइब्रेरी','Chat':'चैट','Chhobi':'तस्वीरें','Dekho':'देखो','Phire ano':'वापस लाओ','Band koro':'बंद करो','Ekhon-er chat':'अभी की चैट','Ekhono kono chat nei.':'अभी कोई चैट नहीं है।','Ekhono kono chhobi nei.':'अभी कोई तस्वीर नहीं है।','Cancel':'रद्द करो','Download':'डाउनलोड','Edit':'एडिट'},
+  ar:{'Camera diye chhobi':'صورة من الكاميرا','Library':'المكتبة','Chat':'المحادثات','Chhobi':'الصور','Dekho':'عرض','Phire ano':'استعادة','Band koro':'رجوع','Ekhon-er chat':'المحادثة الحالية','Ekhono kono chat nei.':'لا توجد محادثات بعد.','Ekhono kono chhobi nei.':'لا توجد صور بعد.','Cancel':'إلغاء','Download':'تنزيل','Edit':'تعديل'},
+  ur:{'Camera diye chhobi':'کیمرے سے تصویر','Library':'لائبریری','Chat':'چیٹ','Chhobi':'تصاویر','Dekho':'دیکھیں','Phire ano':'واپس لاؤ','Band koro':'بند کرو','Ekhon-er chat':'موجودہ چیٹ','Ekhono kono chat nei.':'ابھی کوئی چیٹ نہیں۔','Ekhono kono chhobi nei.':'ابھی کوئی تصویر نہیں۔','Cancel':'منسوخ','Download':'ڈاؤن لوڈ','Edit':'ایڈٹ'}
+};
+for(const L in TR_NEW) Object.assign(TR[L], TR_NEW[L]);
+/* Ekhon ei sob dhoray ki gelo: archive / image section */
+$('imgprevx').onclick = () => { pendingImg = null; pendingEdit = false; $('qimg').classList.remove('on'); hideImgPrev(); };
 $('qgen').onclick = () => { $('txt').value = pt('gen'); $('txt').focus(); };
 $('qquiz').onclick = () => send(sessImg || pendingImg ? pt('quizImg') : pt('quiz'));
-$('clearchat').onclick = () => { history = []; sessImg = null; pendingImg = null; $('qimg').classList.remove('on'); hideImgPrev(); $('msgs').textContent = ''; persist(); addMsg('sys', ms('chatClear')); };
+$('clearchat').onclick = () => { archiveChat(); history = []; sessImg = null; pendingImg = null; pendingEdit = false; $('qimg').classList.remove('on'); hideImgPrev(); $('msgs').textContent = ''; persist(); addMsg('sys', ms('chatClear')); };
 $('send').onclick = () => { const t = $('txt').value; $('txt').value = ''; send(t); };
 $('txt').addEventListener('keydown', e => { if(e.key === 'Enter' && !e.shiftKey){ e.preventDefault(); $('send').click(); } });
 $('txt').addEventListener('input', e => { e.target.style.height = 'auto'; e.target.style.height = Math.min(e.target.scrollHeight, 120) + 'px'; });
@@ -1764,7 +1963,7 @@ $('vtest').onclick = () => {
 let ttsErrShown = false;
 window.onNativeTtsErr = m => { if(!ttsErrShown){ ttsErrShown = true; addMsg('sys', m); } };
 applyLook(); applyI18n();
-history.slice(-12).forEach(h => addMsg(h.role === 'user' ? 'you' : 'her', (h.text || '').replace(/ \[chhobi\]$/, '')));
+renderHistory();
 if(!history.length){
   { const g = addMsg('her', (S.name ? S.name + ', ' : '') + tr('ami R.I.M.Y. Tomar ki khobor? Kotha bolo, ami shunchhi.'), {nobar:true}); g.dataset.tr = 'ami R.I.M.Y. Tomar ki khobor? Kotha bolo, ami shunchhi.'; g.dataset.name = S.name || ''; }
 }
