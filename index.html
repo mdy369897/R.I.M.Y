@@ -83,9 +83,28 @@ button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-vis
 .bar button svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
 .bar button.on{color:var(--accent-2)}
 .bar button.on svg{fill:currentColor}
-#dock{position:relative;padding:10px 16px;padding-bottom:calc(10px + env(safe-area-inset-bottom,0px));border-top:1px solid var(--line);background:var(--panel);display:flex;gap:8px;align-items:flex-end}
-#txt{flex:1;min-width:0;resize:none;max-height:120px;background:var(--bg);color:var(--fg);border:1px solid var(--line);border-radius:22px;padding:11px 16px;font:inherit}
-#mic,#send{width:46px;height:46px;border-radius:50%;padding:0;font-size:20px;flex:none}
+#dock{position:relative;padding:8px 12px;padding-bottom:calc(8px + env(safe-area-inset-bottom,0px));background:var(--bg)}
+.dockwrap{display:flex;align-items:center;gap:8px;padding:8px;border:1px solid var(--line);border-radius:32px;background:var(--panel);box-shadow:0 10px 30px rgba(0,0,0,.35)}
+.dockpill{flex:1;min-width:0;display:flex;align-items:center;gap:4px;padding:3px 5px 3px 14px;border-radius:26px;background:var(--bg);border:1px solid var(--line)}
+#txt{flex:1;min-width:0;resize:none;max-height:120px;background:transparent;color:var(--fg);border:none;outline:none;padding:9px 0;font:inherit}
+.dtool{flex:none;height:34px;min-width:34px;padding:0 9px;border-radius:17px;border:1px solid var(--line);background:transparent;color:var(--fg);font-size:14px;display:inline-flex;align-items:center;justify-content:center;gap:4px}
+#tools.on{background:var(--accent-2);color:#2a0f1a;border-color:var(--accent-2)}
+#mic.dtool{width:36px;padding:0;font-size:16px}
+#mute.dtool{width:32px;padding:0}
+#quick.hid{display:none}
+@media (max-width:460px){.dockpill .tl{display:none}#tools{padding:0 8px}}
+#annot{position:fixed;inset:0;z-index:80;display:flex;flex-direction:column;background:#0b0710;padding:12px}
+#annot[hidden]{display:none}
+.anbar{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:4px 0 10px}
+.anbar button{width:40px;height:40px;border-radius:50%;padding:0;font-size:20px}
+.antools{display:flex;gap:8px;align-items:center;padding-bottom:10px}
+.antools button{padding:6px 12px;border-radius:14px}
+.antools button.on{outline:2px solid var(--accent-2)}
+.ancv{flex:1;min-height:0;display:flex;align-items:center;justify-content:center;overflow:hidden}
+#ancan{max-width:100%;max-height:100%;touch-action:none;border-radius:12px;background:#000}
+.anfoot{display:flex;gap:8px;padding:12px 0 calc(8px + env(safe-area-inset-bottom,0px))}
+.anfoot button{flex:1;padding:12px;border-radius:14px}
+#send{width:46px;height:46px;border-radius:50%;padding:0;font-size:20px;flex:none}
 #quick{display:flex;gap:8px;overflow-x:auto;padding:8px 16px 0;background:var(--panel);scrollbar-width:none}
 #quick::-webkit-scrollbar{display:none}
 .qchip{flex:none;display:inline-flex;align-items:center;gap:6px;padding:7px 14px;border-radius:999px;border:1px solid var(--line);background:var(--her2);color:var(--fg);font-size:13px;white-space:nowrap;cursor:pointer}
@@ -138,6 +157,17 @@ input[type=range]{width:100%;accent-color:var(--accent)}
     <button id="ivedit" type="button">&#9999;&#65039; <span>Edit</span></button>
   </div>
 </div>
+<div id="annot" hidden>
+  <div class="anbar"><button id="anx" type="button" aria-label="Close">&times;</button><b class="antl">Highlight karo</b><button id="anundo" type="button" aria-label="Undo">&#8630;</button></div>
+  <div class="antools">
+    <button type="button" class="ancol on" data-col="#ff3b5c" aria-label="Red">&#128308;</button>
+    <button type="button" class="ancol" data-col="#ffd400" data-hl="1" aria-label="Highlighter">&#128993;</button>
+    <button type="button" class="ancol" data-col="#3bd1ff" aria-label="Blue">&#128309;</button>
+    <button id="anclear" type="button"><span class="acl">Clear</span></button>
+  </div>
+  <div class="ancv"><canvas id="ancan"></canvas></div>
+  <div class="anfoot"><button id="ancancel" type="button"><span class="acn">Cancel</span></button><button id="andone" type="button"><span class="adn">Done</span></button></div>
+</div>
 <div id="lib" hidden>
   <div class="libhead"><b>Library</b><button id="libx" type="button" aria-label="Close">&times;</button></div>
   <div class="libtabs"><button type="button" data-lt="chat" class="on">Chat</button><button type="button" data-lt="img">Chhobi</button></div>
@@ -150,18 +180,23 @@ input[type=range]{width:100%;accent-color:var(--accent)}
 </div>
 <div id="dock">
   <div id="imgprev" hidden><img id="imgprevimg" alt="chhobi"><button id="imgprevx" type="button" aria-label="Muchho">&times;</button></div>
-  <button id="plus" type="button" aria-label="Aro">+</button>
   <div id="pmenu">
-    <button type="button" data-go="qimg"><span>📎</span> <span>Chhobi diye prosno</span></button>
-    <button type="button" data-go="camfile"><span>📷</span> <span>Camera diye chhobi</span></button>
-    <button type="button" data-go="qquiz"><span>📝</span> <span>Quiz dao</span></button>
-    <button type="button" data-go="qgen"><span>🎨</span> <span>Chhobi banao</span></button>
-    <button type="button" id="pmlib"><span>📚</span> <span>Library</span></button>
+    <button type="button" data-go="qimg"><span>&#128206;</span> <span>Chhobi diye prosno</span></button>
+    <button type="button" id="pmcam"><span>&#128247;</span> <span>Camera diye chhobi</span></button>
+    <button type="button" data-go="qquiz"><span>&#128221;</span> <span>Quiz dao</span></button>
+    <button type="button" data-go="qgen"><span>&#127912;</span> <span>Chhobi banao</span></button>
+    <button type="button" id="pmlib"><span>&#128218;</span> <span>Library</span></button>
   </div>
-  <button id="mic" aria-label="Speak">&#127908;</button>
-  <button id="mute" type="button" aria-label="Voice bondho/chalu" title="Voice bondho/chalu" style="flex:none;width:44px;height:44px;padding:0;border-radius:50%">&#128266;</button>
-  <textarea id="txt" rows="1" placeholder="Kotha bolo ba likho..."></textarea>
-  <button id="send" aria-label="Send">&#10148;</button>
+  <div class="dockwrap">
+    <button id="plus" type="button" aria-label="Aro">+</button>
+    <div class="dockpill">
+      <textarea id="txt" rows="1" placeholder="Kotha bolo ba likho..."></textarea>
+      <button id="tools" class="dtool on" type="button" aria-label="Tools" title="Tools"><span>&#128736;</span><span class="tl">Tools</span></button>
+      <button id="mic" class="dtool" type="button" aria-label="Speak" title="Voice mode">&#127908;</button>
+      <button id="mute" class="dtool" type="button" aria-label="Voice bondho/chalu" title="Voice bondho/chalu">&#128266;</button>
+    </div>
+    <button id="send" aria-label="Send">&#10148;</button>
+  </div>
 </div>
 
 <div id="call" aria-live="polite">
@@ -1285,7 +1320,8 @@ async function showImage(src){
   const key = await saveImg(src);
   const d = addMsg('her', '', {nobar:true, img: src});
   const a = document.createElement('a');
-  a.href = src; a.download = 'rimy-chhobi.png'; a.textContent = 'Save korun';
+  a.href = '#'; a.textContent = 'Save korun';
+  a.onclick = e => { e.preventDefault(); saveDL(src); };
   a.style.cssText = 'display:inline-block;margin-top:6px;font-size:13px';
   d.appendChild(a);
   history.push({role:'model', text: IMG_NOTE, imgKey: key}); persist();
@@ -1296,19 +1332,6 @@ async function send(text, regen){
   text = (text || '').trim();
   if(!text && !pendingImg) return;
   if(busy) return;
-  /* Edit mode: chhobi-ta niye notun chhobi banano (Gemini image model) */
-  if(pendingImg && pendingEdit){
-    const ed = pendingImg, label = text || pt('edit');
-    const edSrc = 'data:' + ed.mime + ';base64,' + ed.data;
-    pendingImg = null; pendingEdit = false; $('qimg').classList.remove('on'); hideImgPrev();
-    addMsg('you', label, {img: edSrc});
-    history.push({role:'user', text: label, imgKey: await saveImg(edSrc)}); persist();
-    busy = true; setStatus('chhobi banachhi...'); orb('thinking');
-    try{ await showImage(await genImage(label, ed)); setStatus('ready'); }
-    catch(err){ addMsg('sys', ms('imgFail') + err.message); setStatus('ready'); }
-    finally{ busy = false; orb(''); }
-    return;
-  }
   let bubbleImg = null;
   if(pendingImg){ sessImg = pendingImg; bubbleImg = 'data:' + sessImg.mime + ';base64,' + sessImg.data; pendingImg = null; pendingEdit = false; $('qimg').classList.remove('on'); hideImgPrev(); if(!text) text = pt('explain'); text = text + ' [chhobi]'; }
   const bubbleKey = bubbleImg ? await saveImg(bubbleImg) : null;
@@ -1786,13 +1809,8 @@ function renderHistory(){
 let viewSrc = '';
 function openViewer(src){ if(!src) return; viewSrc = src; $('ivimg').src = src; $('imgview').hidden = false; }
 $('ivx').onclick = $('ivcancel').onclick = () => { $('imgview').hidden = true; };
-$('ivdl').onclick = () => { const a = document.createElement('a'); a.href = viewSrc; a.download = 'rimy-chhobi.png'; document.body.appendChild(a); a.click(); a.remove(); };
-$('ivedit').onclick = () => {
-  const m = /^data:(.*?);base64,(.*)$/.exec(viewSrc); if(!m) return;
-  $('imgview').hidden = true; $('lib').hidden = true;
-  pendingImg = {mime: m[1], data: m[2]}; pendingEdit = true;
-  $('qimg').classList.add('on'); showImgPrev(); addMsg('sys', ms('editMode')); $('txt').focus();
-};
+$('ivdl').onclick = () => saveDL(viewSrc);
+$('ivedit').onclick = () => { $('imgview').hidden = true; $('lib').hidden = true; openAnnot(viewSrc); };
 
 /* ---- Library: chat + chhobi ---- */
 function openLib(tab){ $('lib').hidden = false; libTab(tab || 'chat'); }
@@ -1845,6 +1863,84 @@ async function libImgs(body){
   body.appendChild(grid);
 }
 $('pmlib').onclick = e => { e.stopPropagation(); $('pmenu').classList.remove('open'); openLib('chat'); };
+$('pmcam').onclick = e => { e.stopPropagation(); $('pmenu').classList.remove('open'); if(nativeOk('openCamera')) RimyNative.openCamera(); else $('camfile').click(); };
+/* Native camera theke chhobi ase (Android) */
+window.onNativePhoto = u => {
+  const m = /^data:(.*?);base64,(.*)$/.exec(u || '');
+  if(!m){ return; }
+  pendingImg = {mime: m[1], data: m[2]}; pendingEdit = false;
+  $('qimg').classList.add('on'); showImgPrev(); addMsg('sys', ms('chhobiReady'));
+};
+/* ---- Native bridge helpers ---- */
+function nativeOk(n){ return !!(window.RimyNative && typeof RimyNative[n] === 'function'); }
+function saveDL(src){
+  if(!src) return;
+  if(nativeOk('saveImage')){
+    let r = 'ERR';
+    try{ r = RimyNative.saveImage(src); }catch(e){}
+    addMsg('sys', ms(r === 'ok' ? 'saved' : 'saveFail'));
+    return;
+  }
+  const a = document.createElement('a'); a.href = src; a.download = 'rimy-chhobi.png';
+  document.body.appendChild(a); a.click(); a.remove();
+}
+/* ---- Tools: quick chips toggle ---- */
+$('tools').onclick = () => { $('quick').classList.toggle('hid'); $('tools').classList.toggle('on', !$('quick').classList.contains('hid')); };
+/* ---- Highlight editor ---- */
+let anStrokes = [], anCur = null, anCol = '#ff3b5c', anHl = false, anImg = null;
+function openAnnot(src){
+  const im = new Image();
+  im.onload = () => {
+    const c = $('ancan');
+    const sc = Math.min(1, 1200 / Math.max(im.width, im.height));
+    c.width = Math.round(im.width * sc); c.height = Math.round(im.height * sc);
+    anImg = im; anStrokes = []; anCol = '#ff3b5c'; anHl = false;
+    document.querySelectorAll('.ancol').forEach(b => b.classList.toggle('on', b.dataset.col === anCol));
+    redrawAn(); $('annot').hidden = false;
+  };
+  im.src = src;
+}
+function drawAnStroke(x, s){
+  if(!s.pts.length) return;
+  const c = $('ancan');
+  x.save();
+  x.lineCap = 'round'; x.lineJoin = 'round';
+  x.strokeStyle = s.col; x.globalAlpha = s.hl ? 0.35 : 1;
+  x.lineWidth = s.hl ? Math.max(16, c.width / 30) : Math.max(4, c.width / 160);
+  x.beginPath(); x.moveTo(s.pts[0][0], s.pts[0][1]);
+  s.pts.forEach(p => x.lineTo(p[0], p[1]));
+  if(s.pts.length === 1) x.lineTo(s.pts[0][0] + 0.1, s.pts[0][1] + 0.1);
+  x.stroke(); x.restore();
+}
+function redrawAn(){
+  const c = $('ancan'), x = c.getContext('2d');
+  x.clearRect(0, 0, c.width, c.height);
+  x.drawImage(anImg, 0, 0, c.width, c.height);
+  anStrokes.forEach(s => drawAnStroke(x, s));
+}
+function anPos(e){
+  const c = $('ancan'), r = c.getBoundingClientRect();
+  return [(e.clientX - r.left) * c.width / r.width, (e.clientY - r.top) * c.height / r.height];
+}
+const anCv = $('ancan');
+anCv.addEventListener('pointerdown', e => { anCv.setPointerCapture(e.pointerId); anCur = {col: anCol, hl: anHl, pts: [anPos(e)]}; anStrokes.push(anCur); redrawAn(); e.preventDefault(); });
+anCv.addEventListener('pointermove', e => { if(!anCur) return; anCur.pts.push(anPos(e)); redrawAn(); e.preventDefault(); });
+const anEnd = () => { anCur = null; };
+anCv.addEventListener('pointerup', anEnd); anCv.addEventListener('pointercancel', anEnd);
+document.querySelectorAll('.ancol').forEach(b => b.onclick = () => {
+  anCol = b.dataset.col; anHl = !!b.dataset.hl;
+  document.querySelectorAll('.ancol').forEach(x => x.classList.toggle('on', x === b));
+});
+$('anundo').onclick = () => { anStrokes.pop(); redrawAn(); };
+$('anclear').onclick = () => { anStrokes = []; redrawAn(); };
+$('anx').onclick = $('ancancel').onclick = () => { $('annot').hidden = true; };
+$('andone').onclick = () => {
+  const m = /^data:(.*?);base64,(.*)$/.exec($('ancan').toDataURL('image/jpeg', 0.88)); if(!m) return;
+  pendingImg = {mime: m[1], data: m[2]}; pendingEdit = false;
+  $('annot').hidden = true;
+  $('qimg').classList.add('on'); showImgPrev(); addMsg('sys', ms('annotReady'));
+  $('txt').focus();
+};
 $('libx').onclick = () => { $('lib').hidden = true; };
 document.querySelectorAll('[data-lt]').forEach(b => b.onclick = () => libTab(b.dataset.lt));
 
@@ -1856,6 +1952,9 @@ MS.chatClear = {
   ar:'تم مسح المحادثة، لكنها محفوظة في المكتبة. كل ما أتذكره ما زال محفوظًا.',
   ur:'چیٹ صاف کر دی ہے، لیکن Library میں محفوظ ہے۔ جو یاد ہے وہ سب محفوظ ہے۔'
 };
+MS.saved = {bn:'ছবি Downloads ফোল্ডারে সেভ হয়েছে।', en:'Picture saved to Downloads.', hi:'तस्वीर Downloads में सेव हो गई।', ar:'تم حفظ الصورة في التنزيلات.', ur:'تصویر Downloads میں محفوظ ہو گئی۔'};
+MS.saveFail = {bn:'ছবি সেভ করতে পারলাম না।', en:'Could not save the picture.', hi:'तस्वीर सेव नहीं हो पाई।', ar:'تعذر حفظ الصورة.', ur:'تصویر محفوظ نہیں ہو سکی۔'};
+MS.annotReady = {bn:'ছবিতে highlight করা হয়েছে। এখন কী জানতে চাও লেখো, বা Send দাও।', en:'Highlighted picture is ready. Write what you want to know, or send.', hi:'हाइलाइट की गई तस्वीर तैयार है। अब क्या जानना है लिखो या Send दो।', ar:'الصورة المعلَّمة جاهزة. اكتب ما تريد معرفته أو أرسل.', ur:'ہائی لائٹ کی گئی تصویر تیار ہے۔ اب جو جاننا ہے لکھو یا Send دو۔'};
 MS.editMode = {
   bn:'এই ছবিটা edit হবে। কী বদলাতে চাও লেখো, তারপর Send দাও।',
   en:'This picture will be edited. Write what to change, then send.',
@@ -1873,6 +1972,10 @@ const TR_NEW = {
   ur:{'Camera diye chhobi':'کیمرے سے تصویر','Library':'لائبریری','Chat':'چیٹ','Chhobi':'تصاویر','Dekho':'دیکھیں','Phire ano':'واپس لاؤ','Band koro':'بند کرو','Ekhon-er chat':'موجودہ چیٹ','Ekhono kono chat nei.':'ابھی کوئی چیٹ نہیں۔','Ekhono kono chhobi nei.':'ابھی کوئی تصویر نہیں۔','Cancel':'منسوخ','Download':'ڈاؤن لوڈ','Edit':'ایڈٹ'}
 };
 for(const L in TR_NEW) Object.assign(TR[L], TR_NEW[L]);
+Object.assign(TR.bn, {'Highlight karo':'Highlight করো', 'Clear':'মুছো', 'Done':'হয়েছে', 'Cancel':'বাতিল', 'Download':'ডাউনলোড'});
+Object.assign(TR.hi, {'Highlight karo':'हाइलाइट करो', 'Clear':'साफ़ करो', 'Done':'हो गया', 'Cancel':'रद्द करो'});
+Object.assign(TR.ar, {'Highlight karo':'تعليم', 'Clear':'مسح', 'Done':'تم', 'Cancel':'إلغاء'});
+Object.assign(TR.ur, {'Highlight karo':'ہائی لائٹ کرو', 'Clear':'صاف کرو', 'Done':'ہو گیا', 'Cancel':'منسوخ'});
 /* Ekhon ei sob dhoray ki gelo: archive / image section */
 $('imgprevx').onclick = () => { pendingImg = null; pendingEdit = false; $('qimg').classList.remove('on'); hideImgPrev(); };
 $('qgen').onclick = () => { $('txt').value = pt('gen'); $('txt').focus(); };
