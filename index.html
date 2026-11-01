@@ -93,6 +93,16 @@ button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-vis
 #mute.dtool{width:32px;padding:0}
 #quick.hid{display:none}
 @media (max-width:460px){.dockpill .tl{display:none}#tools{padding:0 8px}}
+#imgview{overflow:hidden}
+#ivimg{touch-action:none;transform-origin:center center;transition:transform .12s ease-out}
+#ivzoom{position:absolute;top:12px;left:12px;display:flex;gap:6px}
+#ivzoom button{width:42px;height:42px;border-radius:50%;padding:0;font-size:20px}
+#cfm{position:fixed;inset:0;z-index:90;background:rgba(0,0,0,.6);display:flex;align-items:center;justify-content:center;padding:20px}
+#cfm[hidden]{display:none}
+.cfmbox{background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:18px;max-width:340px;width:100%}
+.cfmbox p{margin:0 0 4px;font-size:15px;line-height:1.5}
+.cfmbtns{display:flex;gap:8px;margin-top:14px}
+.cfmbtns button{flex:1;padding:11px;border-radius:12px}
 #annot{position:fixed;inset:0;z-index:80;display:flex;flex-direction:column;background:#0b0710;padding:12px}
 #annot[hidden]{display:none}
 .anbar{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:4px 0 10px}
@@ -151,11 +161,15 @@ input[type=range]{width:100%;accent-color:var(--accent)}
 <div id="imgview" hidden>
   <button id="ivx" type="button" aria-label="Close">&times;</button>
   <img id="ivimg" alt="chhobi">
+  <div id="ivzoom"><button id="izp" type="button" aria-label="Zoom in">+</button><button id="izm" type="button" aria-label="Zoom out">&minus;</button><button id="izr" type="button" aria-label="Reset">1:1</button></div>
   <div id="ivbar">
     <button id="ivcancel" type="button"><span>Cancel</span></button>
     <button id="ivdl" type="button">&#11015; <span>Download</span></button>
     <button id="ivedit" type="button">&#9999;&#65039; <span>Edit</span></button>
   </div>
+</div>
+<div id="cfm" hidden>
+  <div class="cfmbox"><p id="cfmtxt"></p><div class="cfmbtns"><button id="cfmno" type="button"></button><button id="cfmyes" type="button"></button></div></div>
 </div>
 <div id="annot" hidden>
   <div class="anbar"><button id="anx" type="button" aria-label="Close">&times;</button><b class="antl">Highlight karo</b><button id="anundo" type="button" aria-label="Undo">&#8630;</button></div>
@@ -1807,11 +1821,53 @@ function renderHistory(){
 
 /* ---- Image viewer (×, Cancel, Download, Edit) ---- */
 let viewSrc = '';
-function openViewer(src){ if(!src) return; viewSrc = src; $('ivimg').src = src; $('imgview').hidden = false; }
+function openViewer(src){ if(!src) return; viewSrc = src; ivReset(); $('ivimg').src = src; $('imgview').hidden = false; }
+/* ---- Zoom: + / - / 1:1, pinch, drag, double-tap ---- */
+let ivZ = 1, ivX = 0, ivY = 0;
+function ivApply(){ $('ivimg').style.transform = 'translate(' + ivX + 'px,' + ivY + 'px) scale(' + ivZ + ')'; }
+function ivReset(){ ivZ = 1; ivX = 0; ivY = 0; ivApply(); }
+function ivZoom(f){ ivZ = Math.min(5, Math.max(1, ivZ * f)); if(ivZ === 1){ ivX = 0; ivY = 0; } ivApply(); }
+$('izp').onclick = () => ivZoom(1.5);
+$('izm').onclick = () => ivZoom(1 / 1.5);
+$('izr').onclick = ivReset;
+$('ivimg').ondblclick = () => { if(ivZ > 1) ivReset(); else ivZoom(2); };
+const ivPtrs = new Map(); let ivPinch = null;
+$('ivimg').addEventListener('pointerdown', e => {
+  ivPtrs.set(e.pointerId, [e.clientX, e.clientY]);
+  try{ $('ivimg').setPointerCapture(e.pointerId); }catch(err){}
+  if(ivPtrs.size === 2){ const [a, b] = [...ivPtrs.values()]; ivPinch = {d: Math.hypot(a[0] - b[0], a[1] - b[1]), z: ivZ}; }
+});
+$('ivimg').addEventListener('pointermove', e => {
+  if(!ivPtrs.has(e.pointerId)) return;
+  const prev = ivPtrs.get(e.pointerId); ivPtrs.set(e.pointerId, [e.clientX, e.clientY]);
+  if(ivPtrs.size === 1 && ivZ > 1){ ivX += e.clientX - prev[0]; ivY += e.clientY - prev[1]; ivApply(); }
+  else if(ivPtrs.size === 2 && ivPinch && ivPinch.d > 0){
+    const [a, b] = [...ivPtrs.values()];
+    ivZ = Math.min(5, Math.max(1, ivPinch.z * Math.hypot(a[0] - b[0], a[1] - b[1]) / ivPinch.d));
+    if(ivZ === 1){ ivX = 0; ivY = 0; }
+    ivApply();
+  }
+});
+const ivUp = e => { ivPtrs.delete(e.pointerId); if(ivPtrs.size < 2) ivPinch = null; };
+$('ivimg').addEventListener('pointerup', ivUp);
+$('ivimg').addEventListener('pointercancel', ivUp);
 $('ivx').onclick = $('ivcancel').onclick = () => { $('imgview').hidden = true; };
 $('ivdl').onclick = () => saveDL(viewSrc);
 $('ivedit').onclick = () => { $('imgview').hidden = true; $('lib').hidden = true; openAnnot(viewSrc); };
 
+/* ---- In-app confirm (Android WebView-te window.confirm kaj kore na) ---- */
+const CF = {bn:{y:'হ্যাঁ, মুছো', n:'না', q:'চ্যাট মুছবে? (Library-তে থেকে যাবে)'}, en:{y:'Yes, clear', n:'No', q:'Clear chat? (It stays saved in Library)'}, hi:{y:'हाँ, साफ़ करो', n:'नहीं', q:'चैट साफ़ करें? (Library में सेव रहेगी)'}, ar:{y:'نعم، امسح', n:'لا', q:'مسح المحادثة؟ (ستبقى محفوظة في المكتبة)'}, ur:{y:'ہاں، صاف کرو', n:'نہیں', q:'چیٹ صاف کریں؟ (Library میں محفوظ رہے گی)'}};
+function askConfirm(q, y, n){
+  return new Promise(res => {
+    $('cfmtxt').textContent = q;
+    $('cfmyes').textContent = y; $('cfmno').textContent = n;
+    $('cfm').hidden = false;
+    const done = v => { $('cfm').hidden = true; $('cfmyes').onclick = null; $('cfmno').onclick = null; res(v); };
+    $('cfmyes').onclick = () => done(true);
+    $('cfmno').onclick = () => done(false);
+  });
+}
+function cfT(){ const c = CF[uiLang()] || CF.en; return c; }
 /* ---- Library: chat + chhobi ---- */
 function openLib(tab){ $('lib').hidden = false; libTab(tab || 'chat'); }
 function libTab(t){
@@ -1980,7 +2036,7 @@ Object.assign(TR.ur, {'Highlight karo':'ہائی لائٹ کرو', 'Clear':'صا
 $('imgprevx').onclick = () => { pendingImg = null; pendingEdit = false; $('qimg').classList.remove('on'); hideImgPrev(); };
 $('qgen').onclick = () => { $('txt').value = pt('gen'); $('txt').focus(); };
 $('qquiz').onclick = () => send(sessImg || pendingImg ? pt('quizImg') : pt('quiz'));
-$('clearchat').onclick = () => { archiveChat(); history = []; sessImg = null; pendingImg = null; pendingEdit = false; $('qimg').classList.remove('on'); hideImgPrev(); $('msgs').textContent = ''; persist(); addMsg('sys', ms('chatClear')); };
+$('clearchat').onclick = async () => { const c = cfT(); if(!(await askConfirm(c.q, c.y, c.n))) return; archiveChat(); history = []; sessImg = null; pendingImg = null; pendingEdit = false; $('qimg').classList.remove('on'); hideImgPrev(); $('msgs').textContent = ''; persist(); addMsg('sys', ms('chatClear')); };
 $('send').onclick = () => { const t = $('txt').value; $('txt').value = ''; send(t); };
 $('txt').addEventListener('keydown', e => { if(e.key === 'Enter' && !e.shiftKey){ e.preventDefault(); $('send').click(); } });
 $('txt').addEventListener('input', e => { e.target.style.height = 'auto'; e.target.style.height = Math.min(e.target.scrollHeight, 120) + 'px'; });
