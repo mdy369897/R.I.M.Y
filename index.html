@@ -383,10 +383,9 @@ html[data-look="rimy"][data-vstate="thinking"] .vring{animation:vringspin 6s lin
 @keyframes vringspin{to{transform:translate(-50%,-50%) rotate(360deg)}}
 
 /* header avatar follows the chosen skin, same face framing as the big card */
-.hdav{display:none}
-html[data-look="rimy"] header .orb{position:relative}
-html[data-look="rimy"] #av{display:none}
-html[data-look="rimy"] .hdav{display:block;position:absolute;inset:0;border-radius:50%;background-image:var(--face);background-size:var(--bs);background-position:var(--ox) var(--oy);background-repeat:no-repeat}
+header .orb{position:relative}
+#av{display:none!important}
+.hdav{display:block;position:absolute;inset:0;border-radius:50%;background-image:var(--face);background-size:var(--bs);background-position:var(--ox) var(--oy);background-repeat:no-repeat}
 /* feathered edge: the jaw patch blends into the photo at rest, so no outline shows */
 html[data-look="rimy"] #vorb .vjaw{-webkit-mask-image:radial-gradient(closest-side,#000 72%,transparent 100%);mask-image:radial-gradient(closest-side,#000 72%,transparent 100%)}
 html[data-look="rimy"] #vorb .vcov{opacity:0;-webkit-mask-image:radial-gradient(closest-side,#000 60%,transparent 100%);mask-image:radial-gradient(closest-side,#000 60%,transparent 100%)}
@@ -593,7 +592,7 @@ html[data-look="rimy"] #vorb .vcov{display:none}
       <button id="close" type="button" style="margin-left:auto;background:var(--accent);color:#2a0f1a;border-color:var(--accent)">Save</button>
     </div>
     <div class="note">Key ar chat shudhu ei phone-er browser-e save thake.</div>
-    <div class="note" id="ver">R.I.M.Y Version 42</div>
+    <div class="note" id="ver">R.I.M.Y Version 43</div>
   </div>
 </div>
 
@@ -672,7 +671,7 @@ ${S.name ? 'The user\'s name is ' + S.name + '.' : ''}`;
 
 /* ---------- bhasha: Settings + status Bangla / English / Hindi / Arabic / Urdu ---------- */
 const TR = {
- en: {
+ en: {'Save hoyeche':'Saved','shunchhi...':'Listening...','bhabchhi...':'Thinking...','Mic chepe kotha bolo':'Tap the mic and speak',
   'R.I.M.Y Settings':'R.I.M.Y Settings','Dekhte kemon (Look)':'Appearance','Theme':'Theme',
   'Gulabi (rose)':'Rose','Shondhya (sunset)':'Sunset','Shagor (ocean)':'Ocean','Aurora':'Aurora','Raat (midnight)':'Midnight','Halka (light)':'Light',
   'Chat wallpaper':'Chat wallpaper','Shada':'Plain','Shondhya':'Sunset','Shagor':'Ocean','Hridoy':'Hearts','Tara':'Stars','Dheu':'Waves','Nijer chhobi':'My photo',
@@ -697,7 +696,7 @@ const TR = {
   'ready':'ready','shunchhi...':'listening...','bolchhi...':'speaking...','bhabchhi...':'thinking...','Mic chepe kotha bolo':'Tap the mic and speak','Kotha bolo ba likho...':'Speak or type...','golaa toiri korchhi...':'preparing voice...',
   'ami R.I.M.Y. Tomar ki khobor? Kotha bolo, ami shunchhi.':'I am R.I.M.Y. What is new with you? Tell me, I am listening.'
  },
- hi: {
+ hi: {'Save hoyeche':'सेव हो गया','shunchhi...':'सुन रहा हूँ...','bhabchhi...':'सोच रहा हूँ...','Mic chepe kotha bolo':'माइक दबाकर बोलें',
   'R.I.M.Y Settings':'R.I.M.Y सेटिंग्स','Dekhte kemon (Look)':'दिखावट','Theme':'थीम',
   'Gulabi (rose)':'गुलाबी','Shondhya (sunset)':'सूर्यास्त','Shagor (ocean)':'समुद्र','Aurora':'ऑरोरा','Raat (midnight)':'आधी रात','Halka (light)':'हल्का',
   'Chat wallpaper':'चैट वॉलपेपर','Shada':'सादा','Shondhya':'सूर्यास्त','Shagor':'समुद्र','Hridoy':'दिल','Tara':'तारे','Dheu':'लहरें','Nijer chhobi':'मेरी फ़ोटो',
@@ -722,7 +721,7 @@ const TR = {
   'ready':'तैयार','shunchhi...':'सुन रही हूँ...','bolchhi...':'बोल रही हूँ...','bhabchhi...':'सोच रही हूँ...','Mic chepe kotha bolo':'माइक दबाकर बोलें','Kotha bolo ba likho...':'बोलें या लिखें...','golaa toiri korchhi...':'आवाज़ तैयार हो रही है...',
   'ami R.I.M.Y. Tomar ki khobor? Kotha bolo, ami shunchhi.':'मैं R.I.M.Y हूँ। आज क्या ख़बर है? बोलो, मैं सुन रही हूँ।'
  },
- ar: {
+ ar: {'Save hoyeche':'تم الحفظ','shunchhi...':'أستمع...','bhabchhi...':'أفكر...','Mic chepe kotha bolo':'اضغط الميكروفون وتكلم',
   'R.I.M.Y Settings':'إعدادات R.I.M.Y','Dekhte kemon (Look)':'المظهر','Theme':'السمة',
   'Gulabi (rose)':'وردي','Shondhya (sunset)':'غروب','Shagor (ocean)':'محيط','Aurora':'شفق','Raat (midnight)':'منتصف الليل','Halka (light)':'فاتح',
   'Chat wallpaper':'خلفية المحادثة','Shada':'بسيطة','Shondhya':'غروب','Shagor':'محيط','Hridoy':'قلوب','Tara':'نجوم','Dheu':'أمواج','Nijer chhobi':'صورتي',
@@ -747,7 +746,7 @@ const TR = {
   'ready':'جاهزة','shunchhi...':'أستمع...','bolchhi...':'أتكلم...','bhabchhi...':'أفكر...','Mic chepe kotha bolo':'اضغط الميكروفون وتكلم','Kotha bolo ba likho...':'تكلم أو اكتب...','golaa toiri korchhi...':'جاري تجهيز الصوت...',
   'ami R.I.M.Y. Tomar ki khobor? Kotha bolo, ami shunchhi.':'أنا R.I.M.Y. ما الجديد عندك؟ قل لي، أنا أستمع.'
  },
- ur: {
+ ur: {'Save hoyeche':'محفوظ ہو گیا','shunchhi...':'سن رہا ہوں...','bhabchhi...':'سوچ رہا ہوں...','Mic chepe kotha bolo':'مائیک دبائیں اور بولیں',
   'R.I.M.Y Settings':'R.I.M.Y ترتیبات','Dekhte kemon (Look)':'ظاہری شکل','Theme':'تھیم',
   'Gulabi (rose)':'گلابی','Shondhya (sunset)':'غروب آفتاب','Shagor (ocean)':'سمندر','Aurora':'شفق','Raat (midnight)':'آدھی رات','Halka (light)':'ہلکا',
   'Chat wallpaper':'چیٹ وال پیپر','Shada':'سادہ','Shondhya':'غروب آفتاب','Shagor':'سمندر','Hridoy':'دل','Tara':'ستارے','Dheu':'لہریں','Nijer chhobi':'میری تصویر',
@@ -775,6 +774,7 @@ const TR = {
 };
 /* Bangla select korle UI Bengali script-e (বাংলা অক্ষরে) */
 TR.bn = {
+'Save hoyeche':'সেভ হয়েছে','shunchhi...':'শুনছি...','bhabchhi...':'ভাবছি...','Mic chepe kotha bolo':'মাইক চেপে কথা বলুন',
   'R.I.M.Y Settings':'R.I.M.Y সেটিংস','Avatar skin':'অবতার স্কিন','Original (anime)':'Original (anime)','Dark Purple Villain':'ডার্ক পার্পল ভিলেন','Pink-Blue Cyber':'পিঙ্ক-ব্লু সাইবার','Golden Angel':'গোল্ডেন এঞ্জেল','Green Matrix Hacker':'গ্রিন ম্যাট্রিক্স হ্যাকার','Nijer chhobi':'নিজের ছবি','Dekhte kemon (Look)':'চেহারা (Look)','Theme':'থিম',
   'Gulabi (rose)':'গোলাপি (rose)','Shondhya (sunset)':'সন্ধ্যা (sunset)','Shagor (ocean)':'সাগর (ocean)','Aurora':'Aurora','Raat (midnight)':'রাত (midnight)','Halka (light)':'হালকা (light)','Neon Purple (purple)':'নিয়ন বেগুনি (purple)',
   'Chat wallpaper':'চ্যাটের ওয়ালপেপার','Shada':'সাদা','Shondhya':'সন্ধ্যা','Shagor':'সাগর','Hridoy':'হৃদয়','Tara':'তারা','Dheu':'ঢেউ','Nijer chhobi':'নিজের ছবি',
@@ -996,7 +996,6 @@ function layoutAvatar(card, src, W, H, F){
 function applyAv(src, W, H, F){ layoutAvatar($('vorb'), src, W, H, F); layoutAvatar($('hdav'), src, W, H, F); }
 function setCallBg(){
   const c = $('call'), card = $('vorb'); if(!c || !card) return;
-  if(document.documentElement.dataset.look !== 'rimy'){ card.style.removeProperty('--face'); return; }
   let key = 'rimy', src = '';
   try{
     if(S.skin === 'custom'){ src = LS.get('rimy_wall', ''); if(src) key = 'custom'; }
@@ -1012,8 +1011,8 @@ function setCallBg(){
   applyAv(src, F.w, F.h, F);
 }
 window.addEventListener('resize', () => { if(callOpen) setCallBg(); });
-function openCall(){ if(callOpen) return; callOpen = true; sizeBig(); $('call').classList.add('open'); setCallBg(); setNav('home'); callState(); }
-function closeCall(){ callOpen = false; $('call').classList.remove('open'); setNav('chat'); /* background wake-er por abar "Hey Rimy" shunte shuru korbe */ try{ if(window.RimyNative && RimyNative.wakeIdle) RimyNative.wakeIdle(); }catch(e){} }
+function openCall(){ if(callOpen) return; callOpen = true; sizeBig(); $('call').classList.add('open'); applyLook('rimy'); setNav('home'); callState(); }
+function closeCall(){ callOpen = false; $('call').classList.remove('open'); applyLook(); setNav('chat'); /* background wake-er por abar "Hey Rimy" shunte shuru korbe */ try{ if(window.RimyNative && RimyNative.wakeIdle) RimyNative.wakeIdle(); }catch(e){} }
 var lastCallTxt = '';
 function callTxt(t){ lastCallTxt = t || ''; renderCallTxt(); }
 /* rimy: listening/thinking words show in the glass card; speaking shows the reply word by word */
@@ -2058,14 +2057,16 @@ const WALLS = {
   waves:() => [svgUrl(120, 36, '<path d="M0 18 Q15 4 30 18 T60 18 T90 18 T120 18" fill="none" stroke="rgba(255,255,255,.12)" stroke-width="2"/>'), '120px 36px'],
   custom:() => { const u = LS.get('rimy_wall', ''); return u ? ['linear-gradient(rgba(10,5,14,.42),rgba(10,5,14,.42)),url(' + u + ')', 'cover'] : ['', '']; }
 };
-function applyLook(){
+function applyLook(force){
   if(!S.lookRimy){ S.lookRimy = 1; S.theme = 'rimy'; if(S.wall === 'aurora') S.wall = 'none'; persist(); }
-  document.documentElement.dataset.look = S.theme === 'rimy' ? 'rimy' : '';
+  if(!S.lookRimy2){ S.lookRimy2 = 1; S.theme = 'rimy'; persist(); }
+  const th = force || S.theme;
+  document.documentElement.dataset.look = th === 'rimy' ? 'rimy' : '';
   setCallBg();
-  const r = document.documentElement.style, t = THEMES[S.theme] || THEMES.rose;
+  const r = document.documentElement.style, t = THEMES[th] || THEMES.rose;
   for(const k in t) r.setProperty('--' + k, t[k]);
   r.setProperty('--me', t.me1);
-  r.setProperty('--herfg', (S.theme === 'rimy' ? t.herfg : (S.tcol || t.herfg)));
+  r.setProperty('--herfg', (th === 'rimy' ? t.herfg : (S.tcol || t.herfg)));
   r.setProperty('--fs', (S.fs || 16) + 'px');
   r.setProperty('color-scheme', S.theme === 'light' ? 'light' : 'dark');
   const mt = document.querySelector('meta[name=theme-color]'); if(mt) mt.content = t.bg;
@@ -2156,11 +2157,14 @@ $('wallfile').onchange = e => { pickWall(e.target.files[0]); e.target.value = ''
 $('wallclr').onclick = () => { try{ localStorage.removeItem('rimy_wall'); }catch(e){} if(S.wall === 'custom') S.wall = 'none'; if(S.skin === 'custom') S.skin = 'orig'; $('wall').value = S.wall; $('skin').value = S.skin || 'orig'; persist(); applyLook(); $('wnote').textContent = 'Nijer chhobi muchhe feleche.'; };
 $('skin').onchange = () => {
   S.skin = $('skin').value;
-  if(S.skin !== 'orig' && S.skin !== 'custom') S.theme = S.skin;
   if(S.skin !== 'orig') loadSkin(S.skin);
   persist(); applyLook();
 };
 $('close').onclick = saveSettings;
+$('search').addEventListener('change', () => { S.search = $('search').checked; persist(); });
+$('speak').addEventListener('change', () => { S.speak = $('speak').checked; persist(); });
+$('tts').addEventListener('change', () => { S.tts = $('tts').checked; persist(); });
+$('pitch').addEventListener('input', () => { S.pitch = parseFloat($('pitch').value) || 1.25; persist(); });
 $('listm').onclick = listModels;
 $('qimg').onclick = () => $('imgfile').click();
 let pendingEdit = false;
