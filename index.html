@@ -401,6 +401,71 @@ html[data-look="rimy"] #vwave{display:none!important}
 /* dissolve dots */
 .dsv .dd{position:fixed;border-radius:50%;background:radial-gradient(circle,#fff 0,#00f2ff 40%,#a855f7 100%);box-shadow:0 0 8px rgba(0,242,255,.9),0 0 14px rgba(168,85,247,.7);opacity:0;animation:ddfly var(--t) cubic-bezier(.45,.05,.35,1) var(--d) forwards}
 @keyframes ddfly{0%{opacity:0;transform:translate(0,0) scale(.4)}12%{opacity:1;transform:translate(0,0) scale(1)}85%{opacity:1}100%{opacity:0;transform:translate(var(--x),var(--y)) scale(.5)}}
+
+/* v45: voice page = video avatar only (intro / listening / talking), no photo, no English/gear/nav; chat dock = camera only */
+#plus,#mic,#quick,#pmenu{display:none!important}
+#clang,#cgear{display:none!important}
+html[data-look="rimy"] #cnav{display:none!important}
+html[data-look="rimy"] #vorb{overflow:hidden;background:#0b0814!important;background-image:none!important}
+html[data-look="rimy"] #vorb .vbars,html[data-look="rimy"] #vorb .vcov,html[data-look="rimy"] #vorb .vjaw,html[data-look="rimy"] #vorb .vlid{display:none!important}
+html[data-look="rimy"] #vorb .avv{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;border-radius:50%;display:block;pointer-events:none;transition:opacity .25s ease}
+html[data-look="rimy"] #vorb .vlisten{opacity:1}
+html[data-look="rimy"] #vorb .vtalk{opacity:0}
+html[data-look="rimy"] #vorb .vintro{opacity:0;z-index:3}
+html[data-look="rimy"] #vorb .vintro.on{opacity:1}
+html[data-look="rimy"][data-vstate="speaking"] #vorb .vtalk{opacity:1}
+html[data-look="rimy"][data-vstate="speaking"] #vorb .vlisten{opacity:0}
+html[data-look="rimy"] #chtog{display:block;margin:2px auto 12px;height:26px;min-width:64px;padding:0 14px;border-radius:999px;border:1px solid var(--line);background:rgba(255,255,255,.05);color:#D9CFFF;font-size:13px;line-height:1;transition:transform .25s ease}
+body.callchat #chtog{transform:rotate(180deg)}
+body.callchat #msgs{display:flex!important;position:fixed;left:12px;right:12px;top:110px;bottom:270px;z-index:6;background:rgba(13,13,13,.94);border:1px solid rgba(255,255,255,.14);border-radius:20px;padding:12px;overflow-y:auto;box-shadow:0 14px 34px rgba(0,0,0,.5)}
+html[data-look="rimy"] #callmic{position:relative;overflow:visible}
+html[data-look="rimy"] #callmic.muted{background:radial-gradient(circle at 35% 30%,#666,#2a2a2a 70%)!important;box-shadow:0 0 0 6px rgba(255,77,109,.18)!important}
+html[data-look="rimy"] #callmic.muted::after{content:'';position:absolute;left:50%;top:-8px;width:4px;height:calc(100% + 16px);margin-left:-2px;background:#ff4d6d;border-radius:2px;transform:rotate(-40deg)}
+/* v45b: Tools box opens from the bottom nav (where Settings was) */
+#tbox{display:none;position:fixed;right:14px;bottom:150px;z-index:7;flex-direction:column;gap:4px;padding:6px;background:var(--panel);border:1px solid var(--line);border-radius:14px;box-shadow:0 10px 26px rgba(0,0,0,.45)}
+#tbox.open{display:flex}
+#tbox button{display:flex;align-items:center;gap:8px;text-align:left;border:none;border-radius:10px;padding:10px 14px;white-space:nowrap;background:transparent;color:var(--fg);font-size:14px}
+html[data-look="rimy"] #tbox{background:rgba(22,18,44,.96);border-color:rgba(255,255,255,.14);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px)}
+html[data-look="rimy"] #tbox button{color:#EDE9FF}
+
+/* v45c: Tools box grid + tool sheet */
+#tbox{left:50%;right:auto;transform:translateX(-50%);width:min(92vw,340px);display:none;grid-template-columns:repeat(3,1fr);gap:6px;padding:10px}
+#tbox.open{display:grid!important}
+#tbox button{flex-direction:column;align-items:center;justify-content:center;gap:4px;padding:10px 4px;font-size:12px;text-align:center;white-space:normal;min-height:64px}
+#tbox button span:first-child{font-size:20px;line-height:1}
+#tool[hidden]{display:none!important}
+#tool{position:fixed;inset:0;z-index:8;display:flex;flex-direction:column;background:#0d0d0d;padding:calc(env(safe-area-inset-top,0px) + 12px) 16px calc(env(safe-area-inset-bottom,0px) + 16px);color:#EDE9FF}
+.tlhead{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+.tlhead b{font-size:18px}
+#tlx{width:40px;height:40px;border-radius:50%;border:1px solid var(--line);background:rgba(255,255,255,.06);color:#EDE9FF;font-size:22px;line-height:1}
+#tlbody{flex:1;overflow-y:auto;display:flex;flex-direction:column;gap:10px;min-height:0}
+.tbrow{display:flex;gap:8px;align-items:center}
+.tbta{width:100%;min-height:140px;border-radius:14px;padding:12px;background:rgba(255,255,255,.05);border:1px solid var(--line);color:#EDE9FF;font-size:15px}
+.tbin{flex:1;min-width:0;height:42px;border-radius:12px;padding:0 12px;background:rgba(255,255,255,.05);border:1px solid var(--line);color:#EDE9FF;font-size:15px}
+.tbtime{flex:0 0 118px}
+.tbbtn{height:42px;padding:0 14px;border-radius:12px;border:1px solid var(--line);background:rgba(138,43,226,.4);color:#fff;font-size:14px;display:inline-flex;align-items:center;justify-content:center;text-decoration:none;flex:none}
+.tbmuted{color:#9C93C2;font-size:14px;margin:6px 0}
+.tbitem{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:12px;background:rgba(255,255,255,.05);border:1px solid var(--line)}
+.tbitem.done .tbtxt{text-decoration:line-through;opacity:.6}
+.tbtxt{flex:1;min-width:0;word-break:break-word}
+.tbdel{border:none;background:none;color:#ff8fa3;font-size:22px;padding:0 4px;line-height:1}
+.calcd{padding:18px 14px;border-radius:16px;background:rgba(255,255,255,.05);border:1px solid var(--line);text-align:right;font-size:34px;min-height:40px;word-break:break-all}
+.calcg{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+.tbkey{height:58px;border-radius:16px;border:1px solid var(--line);background:rgba(255,255,255,.06);color:#EDE9FF;font-size:20px}
+.tbkey.eq{background:linear-gradient(135deg,#00f2ff,#8a2be2);color:#fff;border:none}
+.calh{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.calh b{font-size:17px}
+.calwk,.calgrid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;text-align:center}
+.calwk span{font-size:12px;color:#9C93C2;padding:4px 0}
+.caldy{height:40px;border:none;border-radius:10px;background:transparent;color:#EDE9FF;font-size:15px;position:relative}
+.caldy.today{box-shadow:inset 0 0 0 1px #00f2ff}
+.caldy.on{background:linear-gradient(135deg,#00f2ff,#8a2be2);color:#fff}
+.caldy.dot::after{content:'';position:absolute;left:50%;bottom:4px;width:5px;height:5px;margin-left:-2.5px;border-radius:50%;background:#ec4899}
+.dcv{width:100%;max-width:440px;aspect-ratio:1/1;align-self:center;border-radius:14px;border:1px solid var(--line);background:#0d0d0d}
+.dcols{justify-content:center}
+.dcol{width:34px;height:34px;border-radius:50%;border:2px solid rgba(255,255,255,.3);padding:0}
+
+.rt30{width:100%;flex:none}
 </style>
 </head>
 <body>
@@ -457,8 +522,8 @@ html[data-look="rimy"] #vwave{display:none!important}
   <div class="dockwrap">
     <button id="plus" type="button" aria-label="Aro">+</button>
     <div class="dockpill">
-      <textarea id="txt" rows="1" placeholder="Kotha bolo ba likho..."></textarea>
-      <button id="tools" class="dtool on" type="button" aria-label="Tools" title="Tools"><span>&#128736;</span><span class="tl">Tools</span></button>
+      <textarea id="txt" rows="1" placeholder="Ask to R.I.M.Y. Type...."></textarea>
+      <button id="tools" class="dtool on" type="button" aria-label="Take a photo" title="Take a photo"><span>&#128247;</span></button>
       <button id="mic" class="dtool" type="button" aria-label="Speak" title="Voice mode">&#127908;</button>
       <button id="mute" class="dtool" type="button" aria-label="Voice bondho/chalu" title="Voice bondho/chalu">&#128266;</button>
     </div>
@@ -466,11 +531,26 @@ html[data-look="rimy"] #vwave{display:none!important}
   </div>
 </div>
 
+<div id="tbox" role="menu">
+  <button type="button" data-tb="cam" role="menuitem"><span>&#128247;</span><span>Take a photo</span></button>
+  <button type="button" data-tb="qimg" role="menuitem"><span>&#128206;</span><span>Ask about photo</span></button>
+  <button type="button" data-tb="quiz" role="menuitem"><span>&#128221;</span><span>Quiz</span></button>
+  <button type="button" data-tb="gen" role="menuitem"><span>&#127912;</span><span>Make image</span></button>
+  <button type="button" data-tb="note" role="menuitem"><span>&#128211;</span><span>Notebook</span></button>
+  <button type="button" data-tb="calc" role="menuitem"><span>&#129518;</span><span>Calculator</span></button>
+  <button type="button" data-tb="cal" role="menuitem"><span>&#128197;</span><span>Calendar</span></button>
+  <button type="button" data-tb="draw" role="menuitem"><span>&#9999;&#65039;</span><span>Drawing</span></button>
+  <button type="button" data-tb="routine" role="menuitem"><span>&#9200;</span><span>Routine</span></button>
+</div>
+<div id="tool" hidden>
+  <div class="tlhead"><b id="tltitle"></b><button id="tlx" type="button" aria-label="Close">&times;</button></div>
+  <div id="tlbody"></div>
+</div>
 <nav class="bnav" id="mnav" aria-label="Menu">
   <button type="button" data-nav="home"><i><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11 12 3l9 8v9a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z" fill="currentColor" stroke="none"/></svg></i><span>Home</span></button>
   <button type="button" data-nav="chat" class="on"><i><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a8 8 0 0 1-11.6 7.1L4 20l1-4.6A8 8 0 1 1 21 12z"/></svg></i><span>Chat</span></button>
   <button type="button" data-nav="hist"><i><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg></i><span>History</span></button>
-  <button type="button" data-nav="set"><i><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg></i><span>Settings</span></button>
+  <button type="button" id="navtools" data-nav="tools"><i><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a4 4 0 0 0-5.4 5.4L3 18l3 3 6.3-6.3a4 4 0 0 0 5.4-5.4l-2.5 2.5-2.4-.6-.6-2.4z"/></svg></i><span>Tools</span></button>
 </nav>
 
 <div id="call" aria-live="polite">
@@ -480,15 +560,15 @@ html[data-look="rimy"] #vwave{display:none!important}
     <canvas id="vwave" aria-hidden="true"></canvas>
     <div id="vgreet"><h2 class="hw">Hi, I'm<br>R.I.M.Y &#9825;</h2><p id="vsub">I'm listening to you...</p></div>
     <div class="vring r1" aria-hidden="true"></div><div class="vring r2" aria-hidden="true"></div><div class="vring r3" aria-hidden="true"></div>
-    <div id="vorb" aria-hidden="true"><div class="vbars"></div><video id="vtalk" class="vtalk" src="rimy-talk.mp4" muted playsinline loop preload="auto" onerror="this.style.display='none'"></video><span class="vcov"></span><span class="vjaw"></span><span class="vlid vl1"></span><span class="vlid vl2"></span></div>
+    <div id="vorb" aria-hidden="true"><video id="vlisten" class="avv vlisten" src="rimy-listen.mp4" muted playsinline loop preload="auto" onerror="this.style.display='none'"></video><video id="vtalk" class="avv vtalk" src="rimy-talk.mp4" muted playsinline loop preload="auto" onerror="this.style.display='none'"></video><video id="vintro" class="avv vintro" src="rimy-intro-bn.mp4" playsinline preload="auto"></video><div class="vbars"></div><span class="vcov"></span><span class="vjaw"></span><span class="vlid vl1"></span><span class="vlid vl2"></span></div>
     <div id="callst">Mic chepe kotha bolo</div>
   </div>
   <div class="callui">
-    <div id="calltxt"></div>
+    <div id="calltxt"></div><button id="chtog" class="chtog" type="button" aria-label="Chat dekho / luko">&#9652;</button>
     <div id="callbtns">
       <button id="ctype" class="cpill" type="button"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="12" rx="3"/><path d="M8 21l4-4 4 4"/></svg><span>Tap to type</span></button>
       <button id="callmic" class="cbtn" type="button" aria-label="Mic"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" aria-hidden="true"><rect x="9" y="2" width="6" height="12" rx="3" fill="#fff"/><path d="M5.5 10.5a6.5 6.5 0 0 0 13 0" stroke="#fff" stroke-width="2" stroke-linecap="round"/><path d="M12 17v3.5M8.5 21h7" stroke="#fff" stroke-width="2" stroke-linecap="round"/></svg></button>
-      <button id="cmode" class="cpill" type="button"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12h2M7 8v8M11 5v14M15 9v6M19 11v2"/></svg><span>Listening Mode</span></button>
+      <button id="cmode" class="cpill" type="button"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12h2M7 8v8M11 5v14M15 9v6M19 11v2"/></svg><span>Voice to text</span></button>
       <button id="callx" class="cbtn" type="button" aria-label="Bondho">&#10005;</button>
     </div>
   </div>
@@ -496,7 +576,7 @@ html[data-look="rimy"] #vwave{display:none!important}
   <button type="button" data-nav="home" class="on"><i><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11 12 3l9 8v9a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z" fill="currentColor" stroke="none"/></svg></i><span>Home</span></button>
   <button type="button" data-nav="chat"><i><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a8 8 0 0 1-11.6 7.1L4 20l1-4.6A8 8 0 1 1 21 12z"/></svg></i><span>Chat</span></button>
   <button type="button" data-nav="hist"><i><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg></i><span>History</span></button>
-  <button type="button" data-nav="set"><i><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg></i><span>Settings</span></button>
+  <button type="button" id="navtools" data-nav="tools"><i><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a4 4 0 0 0-5.4 5.4L3 18l3 3 6.3-6.3a4 4 0 0 0 5.4-5.4l-2.5 2.5-2.4-.6-.6-2.4z"/></svg></i><span>Tools</span></button>
 </nav>
 </div>
 
@@ -599,7 +679,7 @@ html[data-look="rimy"] #vwave{display:none!important}
       <button id="close" type="button" style="margin-left:auto;background:var(--accent);color:#2a0f1a;border-color:var(--accent)">Save</button>
     </div>
     <div class="note">Key ar chat shudhu ei phone-er browser-e save thake.</div>
-    <div class="note" id="ver">R.I.M.Y Version 44</div>
+    <div class="note" id="ver">R.I.M.Y Version 45</div>
   </div>
 </div>
 
@@ -631,6 +711,7 @@ async function autoPickModel(lite, opts){
 let history = LS.get('rimy_history', []);
 let memory = LS.get('rimy_memory', []);
 let busy = false, listening = false, handsfree = false, rec = null;
+let callMuted = false, v2t = false, micTapT = 0;  /* v45: mic mute (double tap), voice-to-text, tap timer */
 
 function persist(){ LS.set('rimy_settings', S); LS.set('rimy_history', history.slice(-60)); LS.set('rimy_memory', memory); }
 
@@ -700,7 +781,7 @@ const TR = {
   'Voice-er list tomar phone-er installed voice theke ashe. Upore je bhasha bachho, sei bhashar voice dekhabe.':'Voices come from your phone and match the language chosen above.',
   'Ja ja mone rekheche':'Things I remember','Chat muchho':'Clear chat','Save':'Save',
   'Key ar chat shudhu ei phone-er browser-e save thake.':'Key and chat are saved only in this phone\'s browser.',
-  'ready':'ready','shunchhi...':'listening...','bolchhi...':'speaking...','bhabchhi...':'thinking...','Mic chepe kotha bolo':'Tap the mic and speak','Kotha bolo ba likho...':'Speak or type...','golaa toiri korchhi...':'preparing voice...',
+  'ready':'ready','shunchhi...':'listening...','bolchhi...':'speaking...','bhabchhi...':'thinking...','Mic chepe kotha bolo':'Tap the mic and speak','Kotha bolo ba likho...':'Ask to R.I.M.Y. Type....','golaa toiri korchhi...':'preparing voice...',
   'ami R.I.M.Y. Tomar ki khobor? Kotha bolo, ami shunchhi.':'I am R.I.M.Y. What is new with you? Tell me, I am listening.'
  },
  hi: {'Save hoyeche':'सेव हो गया','shunchhi...':'सुन रहा हूँ...','bhabchhi...':'सोच रहा हूँ...','Mic chepe kotha bolo':'माइक दबाकर बोलें',
@@ -824,7 +905,7 @@ Object.assign(TR.bn, {'Chhobi diye prosno':'ছবি দিয়ে প্র�
 Object.assign(TR.hi, {'Chhobi diye prosno':'तस्वीर से सवाल', 'Quiz dao':'क्विज़ दो', 'Chhobi banao':'तस्वीर बनाओ'});
 Object.assign(TR.ar, {'Chhobi diye prosno':'سؤال بصورة', 'Quiz dao':'اختبار سريع', 'Chhobi banao':'أنشئ صورة'});
 Object.assign(TR.ur, {'Chhobi diye prosno':'تصویر سے سوال', 'Quiz dao':'کوئز دو', 'Chhobi banao':'تصویر بناؤ'});
-Object.assign(TR.en, {'Chhobi diye prosno':'Ask about a photo', 'Quiz dao':'Give me a quiz', 'Chhobi banao':'Make an image', 'Kotha bolo ba likho...':'Speak or type...', 'Aro':'More', 'ready':'ready', 'shunchhi...':'listening...', 'bolchhi...':'speaking...', 'bhabchhi...':'thinking...', 'Mic chepe kotha bolo':'Tap mic and speak', 'tomar mood: ':'your mood: ', 'copy hoyeche':'copied', 'copy hoy ni':'copy failed', 'abar try korchhi...':'trying again...', 'chhobi banachhi...':'making image...', 'golaa toiri korchhi...':'preparing voice...'});
+Object.assign(TR.en, {'Chhobi diye prosno':'Ask about a photo', 'Quiz dao':'Give me a quiz', 'Chhobi banao':'Make an image', 'Kotha bolo ba likho...':'Ask to R.I.M.Y. Type....', 'Aro':'More', 'ready':'ready', 'shunchhi...':'listening...', 'bolchhi...':'speaking...', 'bhabchhi...':'thinking...', 'Mic chepe kotha bolo':'Tap mic and speak', 'tomar mood: ':'your mood: ', 'copy hoyeche':'copied', 'copy hoy ni':'copy failed', 'abar try korchhi...':'trying again...', 'chhobi banachhi...':'making image...', 'golaa toiri korchhi...':'preparing voice...'});
 function tr(s){ const d = TR[uiLang()]; return (d && d[s]) || s; }
 /* Sys message-er Bangla/English. Ekhon bn ar en; hi/ar/ur-e English dekhabe */
 const MS = {
@@ -1014,7 +1095,7 @@ function setCallBg(){
 }
 window.addEventListener('resize', () => { if(callOpen) setCallBg(); });
 function openCall(){ if(callOpen) return; callOpen = true; sizeBig(); $('call').classList.add('open'); applyLook('rimy'); setNav('home'); callState(); }
-function closeCall(){ callOpen = false; try{ $('vtalk').pause(); }catch(e){} $('call').classList.remove('open'); applyLook(); setNav('chat'); /* background wake-er por abar "Hey Rimy" shunte shuru korbe */ try{ if(window.RimyNative && RimyNative.wakeIdle) RimyNative.wakeIdle(); }catch(e){} }
+function closeCall(){ callOpen = false; callMuted = false; document.body.classList.remove('callchat'); stopIntro(); try{ $('vtalk').pause(); $('vlisten').pause(); }catch(e){} $('call').classList.remove('open'); applyLook(); setNav('chat'); /* background wake-er por abar "Hey Rimy" shunte shuru korbe */ try{ if(window.RimyNative && RimyNative.wakeIdle) RimyNative.wakeIdle(); }catch(e){} }
 var lastCallTxt = '';
 function callTxt(t){ lastCallTxt = t || ''; renderCallTxt(); }
 /* rimy: listening/thinking words show in the glass card; speaking shows the reply word by word */
@@ -1057,9 +1138,11 @@ function dissolveUp(text){
 }
 /* talking video: play while speaking, back to the photo when she stops */
 function syncTalk(){
-  const v = $('vtalk'); if(!v) return;
+  const v = $('vtalk'), l = $('vlisten'); if(!v || !l) return;
   if(avState === 'speaking'){ if(v.paused){ const p = v.play(); if(p && p.catch) p.catch(() => {}); } }
   else if(!v.paused){ v.pause(); v.currentTime = 0; }
+  if(avState === 'listening' || avState === 'thinking'){ if(l.paused){ const p = l.play(); if(p && p.catch) p.catch(() => {}); } }
+  else if(!l.paused){ l.pause(); l.currentTime = 0; }
 }
 /* toast */
 let toastT = 0;
@@ -1089,7 +1172,7 @@ function fsStep(){
 }
 function callState(){ renderCallTxt(); syncTalk();
   const m = {listening:tr('shunchhi...'), thinking:tr('bhabchhi...'), speaking:tr('bolchhi...')}[avState] || tr('Mic chepe kotha bolo');
-  $('callst').textContent = m; $('callmic').classList.toggle('on', avState === 'listening');
+  $('callst').textContent = callMuted ? tr('Mic mute') : m; $('callmic').classList.toggle('on', avState === 'listening' && !callMuted); $('callmic').classList.toggle('muted', callMuted);
   const sub = {listening:"I'm listening to you...", thinking:'Let me process that...', speaking:"Here's what I think..."}[avState] || 'Tap mic to start...';
   $('vsub').textContent = tr(sub);
   $('clangtxt').textContent = S.lang === 'en-US' ? 'English' : 'বাংলা';
@@ -1980,10 +2063,11 @@ function sendPending(){
   const t = (pending + ' ' + heard).trim(); pending = ''; heard = ''; manual = false;
   if(rec && listening){ rec.onend = micOff; try{ rec.stop(); }catch(e){} }
   micOff(); setStatus('ready'); $('txt').value = '';
+  if(v2t){ v2t = false; $('txt').value = t; callTxt(''); closeCall(); $('txt').focus(); return; }
   if(t) send(t); else if(handsfree && !busy) setTimeout(startListen, 400);
 }
 function nativeListen(){
-  if(listening || busy) return;
+  if(listening || busy || callMuted) return; stopIntro();
   stopAudio();
   if('speechSynthesis' in window) speechSynthesis.cancel();
   listening = true; $('mic').classList.add('on'); orb('listening'); setStatus('shunchhi...');
@@ -1991,6 +2075,7 @@ function nativeListen(){
     window.onNativeSpeech = null;
     listening = false; $('mic').classList.remove('on'); orb(''); setStatus('ready');
     const txt = (t || '').trim();
+    if(v2t){ v2t = false; closeCall(); $('txt').value = txt || ''; $('txt').focus(); return; }
     if(txt){ $('txt').value = ''; callTxt(txt); send(txt); }
     else if(handsfree && !busy) setTimeout(startListen, 400);
     else closeCall();
@@ -2003,6 +2088,7 @@ function nativeListen(){
   try{ RimyNative.listen(recLang(), S.lang === 'auto'); }catch(e){ window.onNativeSpeech(''); }
 }
 function startListen(){
+  if(callMuted) return; stopIntro();
   if(!SR && window.RimyNative){ nativeListen(); return; }
   if(!SR){ addMsg('sys', ms('noVoice')); handsfree = false; $('handsfree').style.background = ''; return; }
   if(listening || busy) return;
@@ -2351,7 +2437,7 @@ function saveDL(src){
   document.body.appendChild(a); a.click(); a.remove();
 }
 /* ---- Tools: quick chips toggle ---- */
-$('tools').onclick = () => { $('quick').classList.toggle('hid'); $('tools').classList.toggle('on', !$('quick').classList.contains('hid')); };
+
 /* ---- Highlight editor ---- */
 let anStrokes = [], anCur = null, anCol = '#ff3b5c', anHl = false, anImg = null;
 function openAnnot(src){
@@ -2451,7 +2537,21 @@ $('send').onclick = () => { const t = $('txt').value; $('txt').value = ''; send(
 $('txt').addEventListener('keydown', e => { if(e.key === 'Enter' && !e.shiftKey){ e.preventDefault(); $('send').click(); } });
 $('txt').addEventListener('input', e => { e.target.style.height = 'auto'; e.target.style.height = Math.min(e.target.scrollHeight, 120) + 'px'; });
 $('mic').onclick = () => { unlockAudio(); if(listening || pending){ finishListen(); } else { openCall(); callTxt(''); startListen(); } };
-$('callmic').onclick = () => { unlockAudio(); if(listening || pending){ finishListen(); } else { stopAudio(); if('speechSynthesis' in window) speechSynthesis.cancel(); callTxt(''); startListen(); } };
+$('callmic').onclick = () => {
+  unlockAudio();
+  if(micTapT){ clearTimeout(micTapT); micTapT = 0; setMicMute(!callMuted); return; }   /* 2 tap = mute / unmute */
+  micTapT = setTimeout(() => { micTapT = 0; micSingle(); }, 300);
+};
+function setMicMute(on){
+  callMuted = !!on;
+  if(callMuted){ stopIntro(); stopListen(); micOff(); }
+  callState();
+}
+function micSingle(){
+  if(callMuted) callMuted = false;
+  if(listening || pending){ finishListen(); callState(); return; }
+  stopAudio(); if('speechSynthesis' in window) speechSynthesis.cancel(); callTxt(''); startListen(); callState();
+}
 $('callx').onclick = () => { handsfree = false; $('handsfree').style.background = ''; $('handsfree').style.color = ''; stopListen(); stopAudio(); if('speechSynthesis' in window) speechSynthesis.cancel(); orb(''); closeCall(); };
 $('wake').onchange = () => {
   S.wake = $('wake').checked; persist();
@@ -2469,13 +2569,7 @@ window.onWake = () => {
   speakBrowser(greet); /* native voice; bola sesh holei afterSpeak() mic chalu korbe */
 };
 if(S.wake){ try{ if(window.RimyNative && RimyNative.setWake) RimyNative.setWake(true); }catch(e){} }
-$('handsfree').onclick = () => {
-  unlockAudio();
-  handsfree = !handsfree;
-  $('handsfree').style.background = handsfree ? 'var(--accent-2)' : '';
-  $('handsfree').style.color = handsfree ? '#2a0f1a' : '';
-  if(handsfree){ openCall(); callTxt(''); startListen(); } else { stopListen(); closeCall(); }
-};
+
 let VOICES = [];
 function fillVoices(){
   const sel = $('voice'); if(!sel) return;
@@ -2549,15 +2643,289 @@ function moveSpot(nav){
   sp.classList.remove('sw'); void sp.offsetWidth; sp.classList.add('sw');
 }
 window.addEventListener('resize', () => document.querySelectorAll('.bnav').forEach(moveSpot));
-document.querySelectorAll('.bnav [data-nav]').forEach(b => b.onclick = () => {
+window.addEventListener('load', () => document.querySelectorAll('.bnav').forEach(moveSpot));
+setTimeout(() => document.querySelectorAll('.bnav').forEach(moveSpot), 80);
+document.querySelectorAll('.bnav [data-nav]').forEach(b => b.onclick = e => {
   const k = b.dataset.nav;
+  if(k === 'tools'){ if(e) e.stopPropagation(); $('tbox').classList.toggle('open'); return; }
   if(k === 'home'){ openCall(); }
   else if(k === 'chat'){ closeCall(); $('txt').focus(); }
   else if(k === 'hist'){ openLib('chat'); }
   else if(k === 'set'){ openSettings(); }
+  $('tbox').classList.remove('open');
 });
+document.addEventListener('click', () => $('tbox').classList.remove('open'));
 $('ctype').onclick = () => { closeCall(); $('txt').focus(); };
-$('cmode').onclick = () => { $('handsfree').click(); };
+$('cmode').onclick = () => {
+  unlockAudio();
+  if(listening || pending){ finishListen(); return; }
+  handsfree = false; $('handsfree').style.background = ''; $('handsfree').style.color = '';
+  v2t = true; callMuted = false; callTxt(''); startListen(); callState();
+};
+/* Live: Bangla = intro video (with voice); other languages = greeting spoken in that language; then listening */
+const GREET = {
+  en: "Hi, I'm Rimy. How can I help you today?",
+  hi: 'हाय, मैं रिमी हूँ। आज मैं आपकी कैसे मदद कर सकती हूँ?',
+  ar: 'مرحبًا، أنا ريمي. كيف يمكنني مساعدتك اليوم؟',
+  ur: 'ہائے، میں ریمی ہوں۔ آج میں آپ کی کیسے مدد کر سکتی ہوں؟'
+};
+function stopIntro(){
+  const v = $('vintro'); if(!v) return;
+  v.onended = null; v.onerror = null; try{ v.pause(); }catch(e){}
+  v.classList.remove('on');
+}
+function playIntro(){
+  const v = $('vintro'); if(!v){ startListen(); return; }
+  const done = () => { v.onended = null; v.onerror = null; v.classList.remove('on'); if(handsfree && !busy && !callMuted) startListen(); };
+  v.onended = done; v.onerror = done;
+  v.muted = !!S.mute || !S.speak;
+  try{ v.currentTime = 0; }catch(e){}
+  v.classList.add('on');
+  const p = v.play(); if(p && p.catch) p.catch(done);
+}
+function greetThenListen(){
+  const L = S.lang === 'auto' ? uiLang() : String(S.lang || 'bn-BD').slice(0, 2);
+  if(L === 'bn'){ playIntro(); return; }
+  const g = GREET[L] || GREET.en;
+  callTxt(g);
+  speak(g);   /* afterSpeak() starts listening again when hands-free is on */
+}
+$('handsfree').onclick = () => {
+  unlockAudio();
+  handsfree = !handsfree;
+  $('handsfree').style.background = handsfree ? 'var(--accent-2)' : '';
+  $('handsfree').style.color = handsfree ? '#2a0f1a' : '';
+  if(handsfree){ v2t = false; callMuted = false; openCall(); callTxt(''); greetThenListen(); } else { stopListen(); closeCall(); }
+};
+
+/* ---- v45c: Tools box (9 tools). Every item works. ---- */
+function tbEsc(x){ return String(x).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+function tbDate(d){ return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0'); }
+function openTool(title, fn){
+  $('tltitle').textContent = title; const b = $('tlbody'); b.innerHTML = ''; $('tool').hidden = false; fn(b);
+}
+function closeTool(){ $('tool').hidden = true; $('tlbody').innerHTML = ''; }
+$('tlx').onclick = closeTool;
+const TB = {
+  cam(){ if(nativeOk('openCamera')) RimyNative.openCamera(); else $('camfile').click(); },
+  qimg(){ $('qimg').click(); },
+  quiz(){ $('qquiz').click(); },
+  gen(){ $('qgen').click(); },
+  note(){ openTool('Notebook', renderNotes); },
+  calc(){ openTool('Calculator', renderCalc); },
+  cal(){ openTool('Calendar', renderCal); },
+  draw(){ openTool('Drawing', renderDraw); },
+  routine(){ openTool('Routine', renderRoutine); }
+};
+document.querySelectorAll('#tbox [data-tb]').forEach(b => b.onclick = e => {
+  e.stopPropagation(); $('tbox').classList.remove('open'); TB[b.dataset.tb]();
+});
+
+/* Notebook: notes saved on this phone */
+function renderNotes(b){
+  b.innerHTML = '<textarea id="nbNew" class="tbta" placeholder="Notun note likho..."></textarea><div class="tbrow"><button type="button" id="nbAdd" class="tbbtn">Save</button></div><div id="nbList"></div>';
+  const list = b.querySelector('#nbList');
+  const draw = () => {
+    const n = LS.get('rimy_notes', []);
+    list.innerHTML = '';
+    if(!n.length){ list.innerHTML = '<p class="tbmuted">Ekhono kono note nei.</p>'; return; }
+    n.slice().reverse().forEach(x => {
+      const d = document.createElement('div'); d.className = 'tbitem';
+      const t = document.createElement('div'); t.className = 'tbtxt'; t.textContent = x.t;
+      const del = document.createElement('button'); del.type = 'button'; del.className = 'tbdel'; del.innerHTML = '&times;';
+      del.onclick = () => { LS.set('rimy_notes', LS.get('rimy_notes', []).filter(y => y.id !== x.id)); draw(); };
+      d.appendChild(t); d.appendChild(del); list.appendChild(d);
+    });
+  };
+  b.querySelector('#nbAdd').onclick = () => {
+    const ta = b.querySelector('#nbNew'), t = ta.value.trim(); if(!t) return;
+    const n = LS.get('rimy_notes', []); n.push({id: Date.now(), t}); LS.set('rimy_notes', n); ta.value = ''; draw();
+  };
+  draw();
+}
+
+/* Calculator */
+function renderCalc(b){
+  let expr = '', fresh = false;
+  b.innerHTML = '<div class="calcd"><div id="cres">0</div></div><div class="calcg"></div>';
+  const g = b.querySelector('.calcg'), out = b.querySelector('#cres');
+  const show = v => { out.textContent = v || '0'; };
+  const evalExpr = () => {
+    const c = expr.replace(/×/g, '*').replace(/÷/g, '/').replace(/−/g, '-');
+    if(!c || !/^[0-9+\-*/(). ]+$/.test(c)) return 'Error';
+    try{ const v = Function('"use strict";return (' + c + ')')(); return isFinite(v) ? String(Math.round(v * 1e10) / 1e10) : 'Error'; }catch(e){ return 'Error'; }
+  };
+  const keys = [['C','C'],['(','('],[')',')'],['⌫','⌫'],
+                ['7','7'],['8','8'],['9','9'],['÷','÷'],
+                ['4','4'],['5','5'],['6','6'],['×','×'],
+                ['1','1'],['2','2'],['3','3'],['−','−'],
+                ['0','0'],['.','.'],['=','='],['+','+']];
+  keys.forEach(([label, v]) => {
+    const k = document.createElement('button'); k.type = 'button'; k.textContent = label;
+    k.className = 'tbkey' + (v === '=' ? ' eq' : '');
+    k.onclick = () => {
+      if(v === 'C'){ expr = ''; fresh = false; show(''); return; }
+      if(v === '⌫'){ if(!fresh) expr = expr.slice(0, -1); show(expr); return; }
+      if(v === '='){ const r = evalExpr(); show(r); expr = r === 'Error' ? '' : r; fresh = true; return; }
+      if(fresh && /[0-9.(]/.test(v)){ expr = ''; }
+      fresh = false;
+      expr += v; show(expr);
+    };
+    g.appendChild(k);
+  });
+}
+
+/* Calendar: month view, events saved on this phone */
+function renderCal(b){
+  const now = new Date(); let y = now.getFullYear(), mo = now.getMonth(), sel = tbDate(now);
+  b.innerHTML = '<div class="calh"><button type="button" class="tbbtn" id="cpv">&lsaquo;</button><b id="cmon"></b><button type="button" class="tbbtn" id="cnx">&rsaquo;</button></div>' +
+    '<div class="calwk"><span>Sun</span><span>Mon</span><span>Tue</span><span>Wed</span><span>Thu</span><span>Fri</span><span>Sat</span></div><div class="calgrid"></div>' +
+    '<div class="tbmuted" id="cseld"></div><div id="cevs"></div>' +
+    '<div class="tbrow"><input id="cevt" class="tbin" placeholder="Event likho..."><button type="button" class="tbbtn" id="cadd">Add</button></div>';
+  const months = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+  const draw = () => {
+    b.querySelector('#cmon').textContent = months[mo] + ' ' + y;
+    const grid = b.querySelector('.calgrid'); grid.innerHTML = '';
+    const evs = LS.get('rimy_events', []);
+    const first = new Date(y, mo, 1).getDay(), days = new Date(y, mo + 1, 0).getDate();
+    for(let i = 0; i < first; i++){ grid.appendChild(document.createElement('span')); }
+    for(let d = 1; d <= days; d++){
+      const key = y + '-' + String(mo + 1).padStart(2, '0') + '-' + String(d).padStart(2, '0');
+      const btn = document.createElement('button'); btn.type = 'button'; btn.className = 'caldy';
+      btn.textContent = d;
+      if(key === tbDate(now)) btn.classList.add('today');
+      if(key === sel) btn.classList.add('on');
+      if(evs.some(e => e.d === key)) btn.classList.add('dot');
+      btn.onclick = () => { sel = key; draw(); };
+      grid.appendChild(btn);
+    }
+    b.querySelector('#cseld').textContent = sel;
+    const list = b.querySelector('#cevs'); list.innerHTML = '';
+    const mine = evs.filter(e => e.d === sel);
+    if(!mine.length){ list.innerHTML = '<p class="tbmuted">Ei din-e kichu nei.</p>'; }
+    mine.forEach(x => {
+      const d = document.createElement('div'); d.className = 'tbitem';
+      const t = document.createElement('div'); t.className = 'tbtxt'; t.textContent = x.t;
+      const del = document.createElement('button'); del.type = 'button'; del.className = 'tbdel'; del.innerHTML = '&times;';
+      del.onclick = () => { LS.set('rimy_events', LS.get('rimy_events', []).filter(e => e.id !== x.id)); draw(); };
+      d.appendChild(t); d.appendChild(del); list.appendChild(d);
+    });
+  };
+  b.querySelector('#cpv').onclick = () => { mo--; if(mo < 0){ mo = 11; y--; } draw(); };
+  b.querySelector('#cnx').onclick = () => { mo++; if(mo > 11){ mo = 0; y++; } draw(); };
+  b.querySelector('#cadd').onclick = () => {
+    const ti = b.querySelector('#cevt'), t = ti.value.trim(); if(!t) return;
+    const ev = LS.get('rimy_events', []); ev.push({id: Date.now(), d: sel, t}); LS.set('rimy_events', ev); ti.value = ''; draw();
+  };
+  draw();
+}
+
+/* Drawing: draw, download, or send the picture to chat */
+function renderDraw(b){
+  b.innerHTML = '<canvas id="dcv" width="600" height="600" class="dcv"></canvas>' +
+    '<div class="tbrow dcols"><button type="button" class="dcol" data-c="#ffffff" style="background:#fff"></button><button type="button" class="dcol" data-c="#00f2ff" style="background:#00f2ff"></button><button type="button" class="dcol" data-c="#c084fc" style="background:#c084fc"></button><button type="button" class="dcol" data-c="#f472b6" style="background:#f472b6"></button><button type="button" class="dcol" data-c="#fde047" style="background:#fde047"></button></div>' +
+    '<div class="tbrow"><button type="button" class="tbbtn" id="dclr">Clear</button><a class="tbbtn" id="ddl" download="rimy-drawing.png">Download</a><button type="button" class="tbbtn" id="dchat">Chat-e pathao</button></div>';
+  const cv = b.querySelector('#dcv'), ctx = cv.getContext('2d');
+  const bg = () => { ctx.fillStyle = '#0d0d0d'; ctx.fillRect(0, 0, cv.width, cv.height); };
+  bg();
+  let col = '#ffffff', down = false, last = null;
+  const pos = e => { const r = cv.getBoundingClientRect(); return [(e.clientX - r.left) * cv.width / r.width, (e.clientY - r.top) * cv.height / r.height]; };
+  cv.style.touchAction = 'none';
+  cv.onpointerdown = e => { down = true; last = pos(e); try{ cv.setPointerCapture(e.pointerId); }catch(_){} };
+  cv.onpointermove = e => {
+    if(!down) return; const p = pos(e);
+    ctx.strokeStyle = col; ctx.lineWidth = 8; ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+    ctx.beginPath(); ctx.moveTo(last[0], last[1]); ctx.lineTo(p[0], p[1]); ctx.stroke(); last = p;
+  };
+  const up = () => { down = false; };
+  cv.onpointerup = up; cv.onpointercancel = up;
+  b.querySelectorAll('.dcol').forEach(c => c.onclick = () => { col = c.dataset.c; });
+  b.querySelector('#dclr').onclick = bg;
+  b.querySelector('#ddl').href = cv.toDataURL('image/png');
+  b.querySelector('#dchat').onclick = () => {
+    const m = /^data:(.*?);base64,(.*)$/.exec(cv.toDataURL('image/png'));
+    if(!m) return;
+    pendingImg = {mime: m[1], data: m[2]}; pendingEdit = false;
+    $('qimg').classList.add('on'); showImgPrev(); addMsg('sys', ms('chhobiReady'));
+    closeTool();
+  };
+}
+
+/* Routine: daily tasks with time and done tick */
+function renderRoutine(b){
+  b.innerHTML = '<div class="tbrow"><input type="time" id="rtt" class="tbin tbtime"><input id="rtx" class="tbin" placeholder="Kaj ki?"><button type="button" class="tbbtn" id="rta">Add</button></div><div class="tbrow"><button type="button" class="tbbtn rt30" id="rt30">30 min pore janiye dao</button></div><div id="rtl"></div>';
+  const list = b.querySelector('#rtl');
+  const draw = () => {
+    const r = LS.get('rimy_routine', []).slice().sort((a, c) => (a.time || '99:99').localeCompare(c.time || '99:99'));
+    list.innerHTML = '';
+    if(!r.length){ list.innerHTML = '<p class="tbmuted">Ekhono kono kaj nei.</p>'; return; }
+    r.forEach(x => {
+      const dn = x.doneOn === tbDate(new Date());
+      const d = document.createElement('div'); d.className = 'tbitem' + (dn ? ' done' : '');
+      const cb = document.createElement('input'); cb.type = 'checkbox'; cb.checked = dn;
+      cb.onchange = () => { const all = LS.get('rimy_routine', []); const it = all.find(y => y.id === x.id); if(it) it.doneOn = cb.checked ? tbDate(new Date()) : null; LS.set('rimy_routine', all); draw(); };
+      const t = document.createElement('div'); t.className = 'tbtxt'; t.textContent = (x.time ? x.time + '  ' : '') + x.t;
+      const del = document.createElement('button'); del.type = 'button'; del.className = 'tbdel'; del.innerHTML = '&times;';
+      del.onclick = () => { LS.set('rimy_routine', LS.get('rimy_routine', []).filter(y => y.id !== x.id)); draw(); };
+      d.appendChild(cb); d.appendChild(t); d.appendChild(del); list.appendChild(d);
+    });
+  };
+  b.querySelector('#rta').onclick = () => {
+    const tx = b.querySelector('#rtx'), t = tx.value.trim(); if(!t) return;
+    const r = LS.get('rimy_routine', []); r.push({id: Date.now(), time: b.querySelector('#rtt').value, t});
+    LS.set('rimy_routine', r); tx.value = ''; draw();
+  };
+  b.querySelector('#rt30').onclick = () => {
+    const tx = b.querySelector('#rtx'), t = tx.value.trim() || 'Kaj';
+    const at = new Date(Date.now() + 30 * 60000);
+    const r = LS.get('rimy_routine', []); r.push({id: Date.now(), time: String(at.getHours()).padStart(2, '0') + ':' + String(at.getMinutes()).padStart(2, '0'), t, once: true});
+    LS.set('rimy_routine', r); tx.value = ''; draw();
+  };
+  draw();
+}
+
+
+/* ---- v45d: routine reminders. Rimy speaks in the app language (Gemini voice when key is set) ---- */
+function remindText(time, t){
+  const L = S.lang === 'auto' ? uiLang() : String(S.lang || 'bn-BD').slice(0, 2);
+  const T = {
+    bn: 'এখন ' + time + '। ' + t + ' — সময় হয়েছে।',
+    en: "It's " + time + '. Time for: ' + t + '.',
+    hi: 'अभी ' + time + ' बजे हैं। ' + t + ' का समय हो गया है।',
+    ar: 'الساعة الآن ' + time + '. حان وقت: ' + t + '.',
+    ur: 'اب ' + time + ' بجے ہیں۔ ' + t + ' کا وقت ہو گیا ہے۔'
+  };
+  return T[L] || T.en;
+}
+function checkRoutine(){
+  const now = new Date(), nm = now.getHours() * 60 + now.getMinutes(), today = tbDate(now);
+  let list = LS.get('rimy_routine', []), changed = false;
+  const fired = [];
+  list.forEach(x => {
+    if(!x.time || x.lastFired === today) return;
+    const p = x.time.split(':').map(Number), tm = p[0] * 60 + p[1];
+    if(nm >= tm && nm - tm <= 5){ x.lastFired = today; changed = true; fired.push(x); }
+  });
+  if(!changed) return;
+  list = list.filter(x => !(x.once && x.lastFired === today));
+  LS.set('rimy_routine', list);
+  const msg = fired.map(x => remindText(x.time, x.t)).join(' ');
+  addMsg('sys', '⏰ ' + msg);
+  speak(msg);
+}
+setInterval(checkRoutine, 15000);
+setTimeout(checkRoutine, 1500);
+
+/* chat-er upore click: message panel khule/bondho */
+Object.assign(TR.en, {'Mic mute':'Mic muted (double tap to unmute)'});
+Object.assign(TR.bn, {'Mic mute':'মাইক বন্ধ (দুইবার চাপো, চালু হবে)'});
+Object.assign(TR.hi, {'Mic mute':'माइक बंद (दो बार टैप करो)'});
+Object.assign(TR.ar, {'Mic mute':'الميكروفون مكتوم (انقر مرتين للتشغيل)'});
+Object.assign(TR.ur, {'Mic mute':'مائیک بند (دو بار ٹیپ کرو)'});
+$('chtog').onclick = e => { e.stopPropagation(); document.body.classList.toggle('callchat'); };
+$('calltxt').onclick = () => document.body.classList.toggle('callchat');
+/* chat dock: camera button (tools place) */
+$('tools').onclick = e => { e.stopPropagation(); if(nativeOk('openCamera')) RimyNative.openCamera(); else $('camfile').click(); };
 $('cgear').onclick = openSettings;
 const VW = $('vwave'), VC = VW.getContext('2d');
 function drawVWave(ts){
