@@ -470,6 +470,11 @@ html[data-look="rimy"] #tbox button{color:#EDE9FF}
 /* v45e: captions toggle + Voice to text pressed state */
 body.nocap #calltxt{visibility:hidden}
 html[data-look="rimy"] #cmode.on{border-color:#00f2ff!important;color:#00f2ff!important;box-shadow:0 0 14px rgba(0,242,255,.35)}
+/* v45f: mic on/off chip beside the chat grip */
+.chrow{display:flex;align-items:center;justify-content:center;gap:10px}
+.chrow #chtog{margin:2px 0 12px}
+.micsw{height:26px;padding:0 12px;border-radius:999px;border:1px solid rgba(0,242,255,.5);background:rgba(0,242,255,.1);color:#9ff6ff;font-size:13px;line-height:1;margin-bottom:12px}
+.micsw.off{border-color:rgba(255,77,109,.6);background:rgba(255,77,109,.14);color:#ffb3c1}
 </style>
 </head>
 <body>
@@ -551,7 +556,7 @@ html[data-look="rimy"] #cmode.on{border-color:#00f2ff!important;color:#00f2ff!im
   <div id="tlbody"></div>
 </div>
 <nav class="bnav" id="mnav" aria-label="Menu">
-  <button type="button" data-nav="home"><i><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11 12 3l9 8v9a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z" fill="currentColor" stroke="none"/></svg></i><span>Home</span></button>
+  <button type="button" data-nav="home" id="navlive"><i><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M4 12v0M8 8v8M12 4v16M16 8v8M20 12v0"/></svg></i><span>Live</span></button>
   <button type="button" data-nav="chat" class="on"><i><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a8 8 0 0 1-11.6 7.1L4 20l1-4.6A8 8 0 1 1 21 12z"/></svg></i><span>Chat</span></button>
   <button type="button" data-nav="hist"><i><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg></i><span>History</span></button>
   <button type="button" id="navtools" data-nav="tools"><i><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a4 4 0 0 0-5.4 5.4L3 18l3 3 6.3-6.3a4 4 0 0 0 5.4-5.4l-2.5 2.5-2.4-.6-.6-2.4z"/></svg></i><span>Tools</span></button>
@@ -568,7 +573,7 @@ html[data-look="rimy"] #cmode.on{border-color:#00f2ff!important;color:#00f2ff!im
     <div id="callst">Mic chepe kotha bolo</div>
   </div>
   <div class="callui">
-    <div id="calltxt"></div><button id="chtog" class="chtog" type="button" aria-label="Chat dekho / luko">&#9652;</button>
+    <div id="calltxt"></div><div class="chrow"><button id="micsw" class="micsw" type="button" aria-pressed="true">Mic ON</button><button id="chtog" class="chtog" type="button" aria-label="Chat dekho / luko">&#9652;</button></div>
     <div id="callbtns">
       <button id="ctype" class="cpill" type="button"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="12" rx="3"/><path d="M8 21l4-4 4 4"/></svg><span>Tap to type</span></button>
       <button id="callmic" class="cbtn" type="button" aria-label="Mic"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" aria-hidden="true"><rect x="9" y="2" width="6" height="12" rx="3" fill="#fff"/><path d="M5.5 10.5a6.5 6.5 0 0 0 13 0" stroke="#fff" stroke-width="2" stroke-linecap="round"/><path d="M12 17v3.5M8.5 21h7" stroke="#fff" stroke-width="2" stroke-linecap="round"/></svg></button>
@@ -659,6 +664,7 @@ html[data-look="rimy"] #cmode.on{border-color:#00f2ff!important;color:#00f2ff!im
     <div class="chk"><input id="search" type="checkbox"><label for="search" style="margin:0;color:var(--fg)">Google Search (billing lagbe; bondho thakle free weather, dam, Wikipedia, news cholbe)</label></div>
     <div class="chk"><input id="speak" type="checkbox"><label for="speak" style="margin:0;color:var(--fg)">R.I.M.Y uttor bolbe (voice)</label></div>
     <div class="chk"><input id="tts" type="checkbox"><label for="tts" style="margin:0;color:var(--fg)">Gemini-r prakritik meye-r voice (quota lage)</label></div>
+    <div class="chk"><input id="openlive" type="checkbox"><label for="openlive" style="margin:0;color:var(--fg)">App khulei direct Live voice page</label></div>
     <div class="chk"><input id="wake" type="checkbox"><label for="wake" style="margin:0;color:var(--fg)">"Hey Rimy" bole jagbe (Android app-e, notification thakbe)</label></div>
     <div class="row"><button id="accbtn" type="button">Screen-e access chalu koro</button></div>
     <div class="note">Screen dekhar jonno Settings &gt; Accessibility &gt; R.I.M.Y te on korte hobe. Password field kokhono dekhbo na.</div>
@@ -1099,7 +1105,7 @@ function setCallBg(){
 }
 window.addEventListener('resize', () => { if(callOpen) setCallBg(); });
 function openCall(){ if(callOpen) return; callOpen = true; sizeBig(); $('call').classList.add('open'); applyLook('rimy'); setNav('home'); callState(); }
-function closeCall(){ callOpen = false; callMuted = false; document.body.classList.remove('callchat'); stopIntro(); try{ $('vtalk').pause(); $('vlisten').pause(); }catch(e){} $('call').classList.remove('open'); applyLook(); setNav('chat'); /* background wake-er por abar "Hey Rimy" shunte shuru korbe */ try{ if(window.RimyNative && RimyNative.wakeIdle) RimyNative.wakeIdle(); }catch(e){} }
+function closeCall(){ callOpen = false; callMuted = false; handsfree = false; $('handsfree').style.background = ''; $('handsfree').style.color = ''; document.body.classList.remove('callchat'); stopIntro(); try{ $('vtalk').pause(); $('vlisten').pause(); }catch(e){} $('call').classList.remove('open'); applyLook(); setNav('chat'); /* background wake-er por abar "Hey Rimy" shunte shuru korbe */ try{ if(window.RimyNative && RimyNative.wakeIdle) RimyNative.wakeIdle(); }catch(e){} }
 var lastCallTxt = '';
 function callTxt(t){ lastCallTxt = t || ''; renderCallTxt(); }
 /* rimy: listening/thinking words show in the glass card; speaking shows the reply word by word */
@@ -1176,7 +1182,7 @@ function fsStep(){
 }
 function callState(){ renderCallTxt(); syncTalk();
   const m = {listening:tr('shunchhi...'), thinking:tr('bhabchhi...'), speaking:tr('bolchhi...')}[avState] || tr('Mic chepe kotha bolo');
-  $('callst').textContent = callMuted ? tr('Mic mute') : m; $('callmic').classList.toggle('on', avState === 'listening' && !callMuted); $('callmic').classList.toggle('muted', callMuted);
+  $('callst').textContent = callMuted ? tr('Mic mute') : m; $('callmic').classList.toggle('on', avState === 'listening' && !callMuted); $('callmic').classList.toggle('muted', callMuted); updMicSw();
   const sub = {listening:"I'm listening to you...", thinking:'Let me process that...', speaking:"Here's what I think..."}[avState] || 'Tap mic to start...';
   $('vsub').textContent = tr(sub);
   $('clangtxt').textContent = S.lang === 'en-US' ? 'English' : 'বাংলা';
@@ -2204,6 +2210,7 @@ function openSettings(){
   $('pitch').value = S.pitch || 1.25;
   $('tts').checked = S.tts !== false; $('ttsvoice').value = S.ttsVoice || 'Aoede';
   $('wake').checked = !!S.wake;
+  $('openlive').checked = !!S.openLive;
   $('theme').value = S.theme || 'rose'; $('wall').value = S.wall || 'none'; $('tcol').value = S.tcol || ''; $('fs').value = String(S.fs || 16);
   $('skin').value = S.skin || 'orig';
   fillVoices();
@@ -2558,6 +2565,7 @@ function micSingle(){
   stopAudio(); if('speechSynthesis' in window) speechSynthesis.cancel(); callTxt(''); startListen(); callState();
 }
 $('callx').onclick = () => { handsfree = false; $('handsfree').style.background = ''; $('handsfree').style.color = ''; stopListen(); stopAudio(); if('speechSynthesis' in window) speechSynthesis.cancel(); orb(''); closeCall(); };
+$('openlive').onchange = () => { S.openLive = $('openlive').checked; persist(); };
 $('wake').onchange = () => {
   S.wake = $('wake').checked; persist();
   try{ if(window.RimyNative && RimyNative.setWake) RimyNative.setWake(S.wake); }catch(e){}
@@ -2566,9 +2574,9 @@ $('accbtn').onclick = () => { try{ RimyNative.openAccess(); }catch(e){ addMsg('s
 /* Hey Rimy theke khule: Rimy nijei "Ji, bolo" bole shunbe */
 window.onWake = () => {
   unlockAudio();
-  if(busy || listening) return;
-  openCall();
+  if(busy || listening || callOpen) return;
   wakeListen = true;
+  openCall();
   greetThenListen();
 };
 if(S.wake){ try{ if(window.RimyNative && RimyNative.setWake) RimyNative.setWake(true); }catch(e){} }
@@ -2651,7 +2659,7 @@ setTimeout(() => document.querySelectorAll('.bnav').forEach(moveSpot), 80);
 document.querySelectorAll('.bnav [data-nav]').forEach(b => b.onclick = e => {
   const k = b.dataset.nav;
   if(k === 'tools'){ if(e) e.stopPropagation(); if($('tbox').classList.contains('open')) closeTbox(); else openTbox(); return; }
-  if(k === 'home'){ openCall(); }
+  if(k === 'home'){ openLiveNow(); }
   else if(k === 'chat'){ closeCall(); $('txt').focus(); }
   else if(k === 'hist'){ openLib('chat'); }
   else if(k === 'set'){ openSettings(); }
@@ -2670,6 +2678,7 @@ $('cmode').onclick = () => { S.cap = S.cap === false ? true : false; persist(); 
 applyCap();
 /* Live: Bangla = intro video (with voice); other languages = greeting spoken in that language; then listening */
 const GREET = {
+  bn: 'হাই, আমি রিমি। আজ তোমাকে কীভাবে সাহায্য করতে পারি?',
   en: "Hi, I'm Rimy. How can I help you today?",
   hi: 'हाय, मैं रिमी हूँ। आज मैं आपकी कैसे मदद कर सकती हूँ?',
   ar: 'مرحبًا، أنا ريمي. كيف يمكنني مساعدتك اليوم؟',
@@ -2685,16 +2694,36 @@ function introDone(){
   if(handsfree || wakeListen){ wakeListen = false; startListen(); }
 }
 function playIntro(){
-  const v = $('vintro'); if(!v){ introDone(); return; }
-  let wd = null;
-  const finish = () => { clearTimeout(wd); v.onended = null; v.onerror = null; v.classList.remove('on'); introDone(); };
-  v.onended = finish; v.onerror = finish;
+  const v = $('vintro');
+  let wd = null, playing = false;
+  const clean = () => { clearTimeout(wd); v.onended = null; v.onerror = null; v.onplaying = null; v.classList.remove('on'); };
+  const finish = () => { clean(); introDone(); };
+  const fallback = () => { if(playing){ finish(); return; } clean(); speak(GREET.bn); };  /* afterSpeak() starts the mic */
+  if(!v){ fallback(); return; }
+  v.onended = finish; v.onerror = fallback;
+  v.onplaying = () => { playing = true; v.classList.add('on'); };
   v.muted = !!S.mute || !S.speak;
   try{ v.currentTime = 0; }catch(e){}
-  v.classList.add('on');
-  wd = setTimeout(() => { if(v.currentTime < 0.05) finish(); }, 6000);
-  const p = v.play(); if(p && p.catch) p.catch(finish);
+  callTxt(GREET.bn);
+  wd = setTimeout(() => { if(!playing) fallback(); }, 7000);
+  const p = v.play(); if(p && p.catch) p.catch(fallback);
 }
+function openLiveNow(){
+  if(callOpen) return;
+  unlockAudio(); handsfree = true; v2t = false; callMuted = false;
+  $('handsfree').style.background = 'var(--accent-2)'; $('handsfree').style.color = '#2a0f1a';
+  openCall(); callTxt(''); greetThenListen();
+}
+/* Settings-e "App khulei direct Live" on thakle app khulei voice page */
+setTimeout(() => { if(S.openLive) openLiveNow(); }, 1200);
+/* Mic ON / OFF chip */
+function updMicSw(){ const b = $('micsw'); if(!b) return; b.textContent = callMuted ? 'Mic OFF' : 'Mic ON'; b.classList.toggle('off', callMuted); b.setAttribute('aria-pressed', String(!callMuted)); }
+$('micsw').onclick = () => {
+  unlockAudio();
+  if(callMuted){ setMicMute(false); if(callOpen && !busy && !listening && !pending) startListen(); }
+  else { setMicMute(true); }
+  updMicSw();
+};
 function greetThenListen(){
   const L = S.lang === 'auto' ? uiLang() : String(S.lang || 'bn-BD').slice(0, 2);
   if(L === 'bn'){ playIntro(); return; }
