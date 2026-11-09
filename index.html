@@ -417,6 +417,9 @@ html[data-look="rimy"] #vorb .vintro.on{opacity:1}
 html[data-look="rimy"][data-vstate="speaking"] #vorb .vtalk{opacity:1}
 html[data-look="rimy"][data-vstate="speaking"] #vorb .vlisten{opacity:0}
 html[data-look="rimy"][data-vstate="thinking"] #vorb .vlisten{opacity:0}
+html[data-look="rimy"] #vorb .vthink{opacity:0}
+html[data-look="rimy"][data-vstate="thinking"] #vorb .vthink{opacity:1}
+html[data-look="rimy"][data-vstate="thinking"] #vorb .vtalk{opacity:0}
 html[data-look="rimy"] #chtog{display:block;margin:2px auto 12px;height:26px;min-width:64px;padding:0 14px;border-radius:999px;border:1px solid var(--line);background:rgba(255,255,255,.05);color:#D9CFFF;font-size:13px;line-height:1;transition:transform .25s ease}
 body.callchat #chtog{transform:rotate(180deg)}
 body.callchat #msgs{display:flex!important;position:fixed;left:12px;right:12px;top:110px;bottom:270px;z-index:6;background:rgba(13,13,13,.94);border:1px solid rgba(255,255,255,.14);border-radius:20px;padding:12px;overflow-y:auto;box-shadow:0 14px 34px rgba(0,0,0,.5)}
@@ -478,6 +481,7 @@ html[data-look="rimy"] #cmode.on{border-color:#00f2ff!important;color:#00f2ff!im
 #camov button{flex:1;height:48px;border-radius:14px;border:1px solid rgba(255,255,255,.2);background:rgba(255,255,255,.08);color:#fff;font-size:16px}
 #camov #camsnap{background:linear-gradient(135deg,#00f2ff,#8a2be2);border:none;font-weight:600}
 #callmic{-webkit-tap-highlight-color:transparent;-webkit-touch-callout:none;user-select:none;-webkit-user-select:none}
+/* v45i: thinking video */
 </style>
 </head>
 <body>
@@ -572,7 +576,7 @@ html[data-look="rimy"] #cmode.on{border-color:#00f2ff!important;color:#00f2ff!im
     <canvas id="vwave" aria-hidden="true"></canvas>
     <div id="vgreet"><h2 class="hw">Hi, I'm<br>R.I.M.Y &#9825;</h2><p id="vsub">I'm listening to you...</p></div>
     <div class="vring r1" aria-hidden="true"></div><div class="vring r2" aria-hidden="true"></div><div class="vring r3" aria-hidden="true"></div>
-    <div id="vorb" aria-hidden="true"><video id="vlisten" class="avv vlisten" src="rimy-listen.mp4" muted playsinline loop preload="auto" onerror="this.style.display='none'"></video><video id="vtalk" class="avv vtalk" src="rimy-talk.mp4" muted playsinline loop preload="auto" onerror="this.style.display='none'"></video><video id="vintro" class="avv vintro" src="rimy-intro-bn.mp4" playsinline preload="auto"></video><div class="vbars"></div><span class="vcov"></span><span class="vjaw"></span><span class="vlid vl1"></span><span class="vlid vl2"></span></div>
+    <div id="vorb" aria-hidden="true"><video id="vlisten" class="avv vlisten" src="rimy-listen.mp4" muted playsinline loop preload="auto" onerror="this.style.display='none'"></video><video id="vthink" class="avv vthink" src="rimy-think.mp4" muted playsinline loop preload="auto" onerror="this.style.display='none'"></video><video id="vtalk" class="avv vtalk" src="rimy-talk.mp4" muted playsinline loop preload="auto" onerror="this.style.display='none'"></video><video id="vintro" class="avv vintro" src="rimy-intro-bn.mp4" playsinline preload="auto"></video><div class="vbars"></div><span class="vcov"></span><span class="vjaw"></span><span class="vlid vl1"></span><span class="vlid vl2"></span></div>
     <div id="callst">Mic chepe kotha bolo</div>
   </div>
   <div class="callui">
@@ -1151,11 +1155,12 @@ function dissolveUp(text){
 }
 /* talking video: play while speaking, back to the photo when she stops */
 function syncTalk(){
-  const v = $('vtalk'), l = $('vlisten'); if(!v || !l) return;
-  if(avState === 'speaking'){ if(v.paused){ const p = v.play(); if(p && p.catch) p.catch(() => {}); } }
-  else if(!v.paused){ v.pause(); v.currentTime = 0; }
-  if(avState === 'listening'){ if(l.paused){ const p = l.play(); if(p && p.catch) p.catch(() => {}); } }
-  else if(!l.paused){ l.pause(); l.currentTime = 0; }
+  const v = $('vtalk'), l = $('vlisten'), t = $('vthink'); if(!v || !l || !t) return;
+  const play = el => { if(el.paused){ const p = el.play(); if(p && p.catch) p.catch(() => {}); } };
+  const stop = el => { if(!el.paused){ el.pause(); el.currentTime = 0; } };
+  if(avState === 'speaking') play(v); else stop(v);
+  if(avState === 'listening') play(l); else stop(l);
+  if(avState === 'thinking') play(t); else stop(t);
 }
 /* toast */
 let toastT = 0;
