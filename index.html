@@ -696,7 +696,7 @@ html[data-look="rimy"] #cmode.on{border-color:#00f2ff!important;color:#00f2ff!im
       <button id="close" type="button" style="margin-left:auto;background:var(--accent);color:#2a0f1a;border-color:var(--accent)">Save</button>
     </div>
     <div class="note">Key ar chat shudhu ei phone-er browser-e save thake.</div>
-    <div class="note" id="ver">R.I.M.Y Version 45l</div>
+    <div class="note" id="ver">R.I.M.Y Version 45m</div>
     <div class="note" id="vdbg" style="font-size:11px;opacity:.75;word-break:break-all"></div>
   </div>
 </div>
@@ -2091,7 +2091,7 @@ function buildHeard(res){
   }
   return parts.join(' ');
 }
-function micOff(){ listening = false; $('mic').classList.remove('on'); orb(''); }
+function micOff(){ listening = false; $('mic').classList.remove('on'); if(avState === 'listening') orb(''); }
 function sendPending(){
   clearTimeout(sendT); sendT = null;
   const t = (pending + ' ' + heard).trim(); pending = ''; heard = ''; manual = false;
@@ -2107,7 +2107,7 @@ function nativeListen(){
   listening = true; $('mic').classList.add('on'); orb('listening'); setStatus('shunchhi...');
   window.onNativeSpeech = t => {
     window.onNativeSpeech = null;
-    listening = false; $('mic').classList.remove('on'); orb(''); setStatus('ready');
+    listening = false; $('mic').classList.remove('on'); if(avState === 'listening') orb(''); setStatus('ready');
     const txt = (t || '').trim();
     if(v2t){ v2t = false; closeCall(); $('txt').value = txt || ''; $('txt').focus(); return; }
     if(txt){ $('txt').value = ''; callTxt(txt); send(txt); }
