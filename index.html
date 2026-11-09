@@ -696,7 +696,7 @@ html[data-look="rimy"] #cmode.on{border-color:#00f2ff!important;color:#00f2ff!im
       <button id="close" type="button" style="margin-left:auto;background:var(--accent);color:#2a0f1a;border-color:var(--accent)">Save</button>
     </div>
     <div class="note">Key ar chat shudhu ei phone-er browser-e save thake.</div>
-    <div class="note" id="ver">R.I.M.Y Version 45k</div>
+    <div class="note" id="ver">R.I.M.Y Version 45l</div>
     <div class="note" id="vdbg" style="font-size:11px;opacity:.75;word-break:break-all"></div>
   </div>
 </div>
@@ -1896,6 +1896,7 @@ async function send(text, regen){
     persist();
     speak(clean || raw);
   }catch(e){
+    dbgErr = 'send: ' + String(e && e.message || e).slice(0, 160); showDbg();
     tp.remove(); orb(''); closeCall();
     if(!regen) history.pop();
     addMsg('sys', ms('shomossha') + friendlyErr(e.message) + (/not found|404/i.test(e.message) ? ms('modelList') : ''));
