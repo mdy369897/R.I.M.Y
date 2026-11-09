@@ -421,7 +421,6 @@ body.callchat #chtog{transform:rotate(180deg)}
 body.callchat #msgs{display:flex!important;position:fixed;left:12px;right:12px;top:110px;bottom:270px;z-index:6;background:rgba(13,13,13,.94);border:1px solid rgba(255,255,255,.14);border-radius:20px;padding:12px;overflow-y:auto;box-shadow:0 14px 34px rgba(0,0,0,.5)}
 html[data-look="rimy"] #callmic{position:relative;overflow:visible}
 html[data-look="rimy"] #callmic.muted{background:radial-gradient(circle at 35% 30%,#666,#2a2a2a 70%)!important;box-shadow:0 0 0 6px rgba(255,77,109,.18)!important}
-html[data-look="rimy"] #callmic.muted::after{content:'';position:absolute;left:50%;top:-8px;width:4px;height:calc(100% + 16px);margin-left:-2px;background:#ff4d6d;border-radius:2px;transform:rotate(-40deg)}
 /* v45b: Tools box opens from the bottom nav (where Settings was) */
 #tbox{display:none;position:fixed;right:14px;bottom:150px;z-index:7;flex-direction:column;gap:4px;padding:6px;background:var(--panel);border:1px solid var(--line);border-radius:14px;box-shadow:0 10px 26px rgba(0,0,0,.45)}
 #tbox.open{display:flex}
@@ -470,11 +469,7 @@ html[data-look="rimy"] #tbox button{color:#EDE9FF}
 /* v45e: captions toggle + Voice to text pressed state */
 body.nocap #calltxt{visibility:hidden}
 html[data-look="rimy"] #cmode.on{border-color:#00f2ff!important;color:#00f2ff!important;box-shadow:0 0 14px rgba(0,242,255,.35)}
-/* v45f: mic on/off chip beside the chat grip */
-.chrow{display:flex;align-items:center;justify-content:center;gap:10px}
-.chrow #chtog{margin:2px 0 12px}
-.micsw{height:26px;padding:0 12px;border-radius:999px;border:1px solid rgba(0,242,255,.5);background:rgba(0,242,255,.1);color:#9ff6ff;font-size:13px;line-height:1;margin-bottom:12px}
-.micsw.off{border-color:rgba(255,77,109,.6);background:rgba(255,77,109,.14);color:#ffb3c1}
+/* v45g: mic icon shows mute */
 </style>
 </head>
 <body>
@@ -573,7 +568,7 @@ html[data-look="rimy"] #cmode.on{border-color:#00f2ff!important;color:#00f2ff!im
     <div id="callst">Mic chepe kotha bolo</div>
   </div>
   <div class="callui">
-    <div id="calltxt"></div><div class="chrow"><button id="micsw" class="micsw" type="button" aria-pressed="true">Mic ON</button><button id="chtog" class="chtog" type="button" aria-label="Chat dekho / luko">&#9652;</button></div>
+    <div id="calltxt"></div><div class="chrow"><button id="chtog" class="chtog" type="button" aria-label="Chat dekho / luko">&#9652;</button></div>
     <div id="callbtns">
       <button id="ctype" class="cpill" type="button"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="12" rx="3"/><path d="M8 21l4-4 4 4"/></svg><span>Tap to type</span></button>
       <button id="callmic" class="cbtn" type="button" aria-label="Mic"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" aria-hidden="true"><rect x="9" y="2" width="6" height="12" rx="3" fill="#fff"/><path d="M5.5 10.5a6.5 6.5 0 0 0 13 0" stroke="#fff" stroke-width="2" stroke-linecap="round"/><path d="M12 17v3.5M8.5 21h7" stroke="#fff" stroke-width="2" stroke-linecap="round"/></svg></button>
@@ -2717,13 +2712,14 @@ function openLiveNow(){
 /* Settings-e "App khulei direct Live" on thakle app khulei voice page */
 setTimeout(() => { if(S.openLive) openLiveNow(); }, 1200);
 /* Mic ON / OFF chip */
-function updMicSw(){ const b = $('micsw'); if(!b) return; b.textContent = callMuted ? 'Mic OFF' : 'Mic ON'; b.classList.toggle('off', callMuted); b.setAttribute('aria-pressed', String(!callMuted)); }
-$('micsw').onclick = () => {
-  unlockAudio();
-  if(callMuted){ setMicMute(false); if(callOpen && !busy && !listening && !pending) startListen(); }
-  else { setMicMute(true); }
-  updMicSw();
-};
+/* Mic icon itself shows mute: mic = listening, mic with red slash = muted */
+function micSvg(off){ return off ? ('<svg width="30" height="30" viewBox="0 0 24 24" fill="none" aria-hidden="true"><rect x="9" y="2" width="6" height="12" rx="3" fill="#fff" opacity=".45"/><path d="M5.5 10.5a6.5 6.5 0 0 0 13 0" stroke="#fff" stroke-width="2" stroke-linecap="round" opacity=".45"/><path d="M12 17v3.5M8.5 21h7" stroke="#fff" stroke-width="2" stroke-linecap="round" opacity=".45"/><path d="M4 4l16 16" stroke="#ff4d6d" stroke-width="2.4" stroke-linecap="round"/></svg>') : ('<svg width="30" height="30" viewBox="0 0 24 24" fill="none" aria-hidden="true"><rect x="9" y="2" width="6" height="12" rx="3" fill="#fff"/><path d="M5.5 10.5a6.5 6.5 0 0 0 13 0" stroke="#fff" stroke-width="2" stroke-linecap="round"/><path d="M12 17v3.5M8.5 21h7" stroke="#fff" stroke-width="2" stroke-linecap="round"/></svg>'); }
+function updMicSw(){
+  const m = $('callmic'); if(!m) return;
+  if(m.dataset.ic !== (callMuted ? 'off' : 'on')){ m.innerHTML = micSvg(callMuted); m.dataset.ic = callMuted ? 'off' : 'on'; }
+  m.setAttribute('aria-label', callMuted ? 'Mic off (mute)' : 'Mic on');
+  m.setAttribute('aria-pressed', String(!callMuted));
+}
 function greetThenListen(){
   const L = S.lang === 'auto' ? uiLang() : String(S.lang || 'bn-BD').slice(0, 2);
   if(L === 'bn'){ playIntro(); return; }
