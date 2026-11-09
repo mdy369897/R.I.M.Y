@@ -408,7 +408,8 @@ html[data-look="rimy"] #vwave{display:none!important}
 html[data-look="rimy"] #cnav{display:none!important}
 html[data-look="rimy"] #vorb{overflow:hidden;background:#0b0814!important;background-image:none!important}
 html[data-look="rimy"] #vorb .vbars,html[data-look="rimy"] #vorb .vcov,html[data-look="rimy"] #vorb .vjaw,html[data-look="rimy"] #vorb .vlid{display:none!important}
-html[data-look="rimy"] #vorb .avv{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;border-radius:50%;display:block;pointer-events:none;transition:opacity .25s ease}
+html[data-look="rimy"] #vorb .avv{position:absolute!important;left:0!important;top:0!important;right:0!important;bottom:0!important;width:100%!important;height:100%!important;max-width:none!important;max-height:none!important;margin:0!important;transform:none!important;object-fit:cover;object-position:50% 40%;border-radius:50%;display:block;pointer-events:none;transition:opacity .25s ease}
+html[data-look="rimy"] #vorb .vtalk{transform:scale(1.1)!important}
 html[data-look="rimy"] #vorb .vlisten{opacity:1}
 html[data-look="rimy"] #vorb .vtalk{opacity:0}
 html[data-look="rimy"] #vorb .vintro{opacity:0;z-index:3}
@@ -466,6 +467,9 @@ html[data-look="rimy"] #tbox button{color:#EDE9FF}
 .dcol{width:34px;height:34px;border-radius:50%;border:2px solid rgba(255,255,255,.3);padding:0}
 
 .rt30{width:100%;flex:none}
+/* v45e: captions toggle + Voice to text pressed state */
+body.nocap #calltxt{visibility:hidden}
+html[data-look="rimy"] #cmode.on{border-color:#00f2ff!important;color:#00f2ff!important;box-shadow:0 0 14px rgba(0,242,255,.35)}
 </style>
 </head>
 <body>
@@ -1427,13 +1431,14 @@ function addTyping(){
   const d = document.createElement('div'); d.className = 'm her typing'; d.innerHTML = '<i></i><i></i><i></i>';
   $('msgs').appendChild(d); $('msgs').scrollTop = $('msgs').scrollHeight; return d;
 }
+function flashBtn(b, ms = 1400){ b.classList.add('on'); clearTimeout(b._t); b._t = setTimeout(() => b.classList.remove('on'), ms); }
 function addBar(d, text){
   document.querySelectorAll('.bar .rg').forEach(b => b.remove());
   const bar = document.createElement('div'); bar.className = 'bar';
   const mk = (k, label, fn, cls) => { const b = document.createElement('button'); b.type = 'button'; b.title = label; b.setAttribute('aria-label', label); if(cls) b.className = cls; b.innerHTML = '<svg viewBox="0 0 24 24">' + IC[k] + '</svg>'; b.onclick = () => fn(b); bar.appendChild(b); return b; };
-  mk('copy', 'Copy', b => { copyText(text).then(() => setStatus('copy hoyeche')).catch(() => setStatus('copy hoy ni')); });
-  mk('share', 'Share', () => { if(navigator.share){ navigator.share({text}).catch(() => {}); } else { copyText(text).then(() => setStatus('copy hoyeche (share nei)')); } });
-  mk('speak', 'Shuno', () => { unlockAudio(); stopAudio(); if('speechSynthesis' in window) speechSynthesis.cancel(); speak(text); });
+  mk('copy', 'Copy', b => { flashBtn(b); copyText(text).then(() => setStatus('copy hoyeche')).catch(() => setStatus('copy hoy ni')); });
+  mk('share', 'Share', b => { flashBtn(b); if(navigator.share){ navigator.share({text}).catch(() => {}); } else { copyText(text).then(() => setStatus('copy hoyeche (share nei)')); } });
+  mk('speak', 'Shuno', b => { flashBtn(b, 6000); unlockAudio(); stopAudio(); if('speechSynthesis' in window) speechSynthesis.cancel(); speak(text); });
   const lk = mk('like', 'Bhalo laglo', b => { const on = !b.classList.contains('on'); b.classList.toggle('on', on); dk.classList.remove('on'); saveFeedback(text, on ? 'like' : ''); });
   const dk = mk('dislike', 'Bhalo lage ni', b => { const on = !b.classList.contains('on'); b.classList.toggle('on', on); lk.classList.remove('on'); saveFeedback(text, on ? 'dislike' : ''); });
   mk('redo', 'Abar uttor dao', () => { if(busy) return; const last = history[history.length - 1], u = history[history.length - 2]; if(!last || last.role !== 'model' || !u || u.role !== 'user') return; history.pop(); d.remove(); send(u.text, true); }, 'rg');
@@ -2563,10 +2568,8 @@ window.onWake = () => {
   unlockAudio();
   if(busy || listening) return;
   openCall();
-  const greet = 'জি, বলো...';
-  callTxt(greet);
   wakeListen = true;
-  speakBrowser(greet); /* native voice; bola sesh holei afterSpeak() mic chalu korbe */
+  greetThenListen();
 };
 if(S.wake){ try{ if(window.RimyNative && RimyNative.setWake) RimyNative.setWake(true); }catch(e){} }
 
@@ -2647,21 +2650,24 @@ window.addEventListener('load', () => document.querySelectorAll('.bnav').forEach
 setTimeout(() => document.querySelectorAll('.bnav').forEach(moveSpot), 80);
 document.querySelectorAll('.bnav [data-nav]').forEach(b => b.onclick = e => {
   const k = b.dataset.nav;
-  if(k === 'tools'){ if(e) e.stopPropagation(); $('tbox').classList.toggle('open'); return; }
+  if(k === 'tools'){ if(e) e.stopPropagation(); if($('tbox').classList.contains('open')) closeTbox(); else openTbox(); return; }
   if(k === 'home'){ openCall(); }
   else if(k === 'chat'){ closeCall(); $('txt').focus(); }
   else if(k === 'hist'){ openLib('chat'); }
   else if(k === 'set'){ openSettings(); }
   $('tbox').classList.remove('open');
 });
-document.addEventListener('click', () => $('tbox').classList.remove('open'));
+document.addEventListener('click', () => closeTbox());
 $('ctype').onclick = () => { closeCall(); $('txt').focus(); };
-$('cmode').onclick = () => {
-  unlockAudio();
-  if(listening || pending){ finishListen(); return; }
-  handsfree = false; $('handsfree').style.background = ''; $('handsfree').style.color = '';
-  v2t = true; callMuted = false; callTxt(''); startListen(); callState();
-};
+/* Voice to text = Rimy's spoken reply shows as text (on/off, remembered) */
+function applyCap(){
+  const on = S.cap !== false;
+  document.body.classList.toggle('nocap', !on);
+  $('cmode').classList.toggle('on', on);
+  $('cmode').setAttribute('aria-pressed', String(on));
+}
+$('cmode').onclick = () => { S.cap = S.cap === false ? true : false; persist(); applyCap(); };
+applyCap();
 /* Live: Bangla = intro video (with voice); other languages = greeting spoken in that language; then listening */
 const GREET = {
   en: "Hi, I'm Rimy. How can I help you today?",
@@ -2674,21 +2680,27 @@ function stopIntro(){
   v.onended = null; v.onerror = null; try{ v.pause(); }catch(e){}
   v.classList.remove('on');
 }
+function introDone(){
+  if(busy || callMuted || !callOpen) { wakeListen = false; return; }
+  if(handsfree || wakeListen){ wakeListen = false; startListen(); }
+}
 function playIntro(){
-  const v = $('vintro'); if(!v){ startListen(); return; }
-  const done = () => { v.onended = null; v.onerror = null; v.classList.remove('on'); if(handsfree && !busy && !callMuted) startListen(); };
-  v.onended = done; v.onerror = done;
+  const v = $('vintro'); if(!v){ introDone(); return; }
+  let wd = null;
+  const finish = () => { clearTimeout(wd); v.onended = null; v.onerror = null; v.classList.remove('on'); introDone(); };
+  v.onended = finish; v.onerror = finish;
   v.muted = !!S.mute || !S.speak;
   try{ v.currentTime = 0; }catch(e){}
   v.classList.add('on');
-  const p = v.play(); if(p && p.catch) p.catch(done);
+  wd = setTimeout(() => { if(v.currentTime < 0.05) finish(); }, 6000);
+  const p = v.play(); if(p && p.catch) p.catch(finish);
 }
 function greetThenListen(){
   const L = S.lang === 'auto' ? uiLang() : String(S.lang || 'bn-BD').slice(0, 2);
   if(L === 'bn'){ playIntro(); return; }
   const g = GREET[L] || GREET.en;
   callTxt(g);
-  speak(g);   /* afterSpeak() starts listening again when hands-free is on */
+  speak(g);   /* afterSpeak() starts listening again (hands-free or wake) */
 }
 $('handsfree').onclick = () => {
   unlockAudio();
@@ -2699,6 +2711,16 @@ $('handsfree').onclick = () => {
 };
 
 /* ---- v45c: Tools box (9 tools). Every item works. ---- */
+let navPrev = 'chat';
+function openTbox(){
+  const cur = document.querySelector('#mnav button.on');
+  navPrev = cur && cur.dataset.nav !== 'tools' ? cur.dataset.nav : 'chat';
+  $('tbox').classList.add('open'); setNav('tools');
+}
+function closeTbox(){
+  if(!$('tbox').classList.contains('open')) return;
+  $('tbox').classList.remove('open'); setNav(navPrev);
+}
 function tbEsc(x){ return String(x).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
 function tbDate(d){ return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0'); }
 function openTool(title, fn){
@@ -2718,7 +2740,7 @@ const TB = {
   routine(){ openTool('Routine', renderRoutine); }
 };
 document.querySelectorAll('#tbox [data-tb]').forEach(b => b.onclick = e => {
-  e.stopPropagation(); $('tbox').classList.remove('open'); TB[b.dataset.tb]();
+  e.stopPropagation(); closeTbox(); TB[b.dataset.tb]();
 });
 
 /* Notebook: notes saved on this phone */
