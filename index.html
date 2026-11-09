@@ -696,7 +696,8 @@ html[data-look="rimy"] #cmode.on{border-color:#00f2ff!important;color:#00f2ff!im
       <button id="close" type="button" style="margin-left:auto;background:var(--accent);color:#2a0f1a;border-color:var(--accent)">Save</button>
     </div>
     <div class="note">Key ar chat shudhu ei phone-er browser-e save thake.</div>
-    <div class="note" id="ver">R.I.M.Y Version 45i</div>
+    <div class="note" id="ver">R.I.M.Y Version 45j</div>
+    <div class="note" id="vdbg" style="font-size:11px;opacity:.75;word-break:break-all"></div>
   </div>
 </div>
 
@@ -1156,12 +1157,21 @@ function dissolveUp(text){
 /* talking video: play while speaking, back to the photo when she stops */
 function syncTalk(){
   const v = $('vtalk'), l = $('vlisten'), t = $('vthink'); if(!v || !l || !t) return;
-  const play = el => { if(el.paused){ const p = el.play(); if(p && p.catch) p.catch(() => {}); } };
+  const play = el => { if(el.paused){ const p = el.play(); if(p && p.catch) p.catch(e => { dbgErr = (el.id || '?') + ' ' + (e && e.name) + ' ' + (e && e.message || ''); showDbg(); }); } };
   const stop = el => { if(!el.paused){ el.pause(); el.currentTime = 0; } };
   if(avState === 'speaking') play(v); else stop(v);
   if(avState === 'listening') play(l); else stop(l);
   if(avState === 'thinking') play(t); else stop(t);
+  showDbg();
 }
+/* Diagnostic: Settings-er niche dekhay video kon obostha-y ache (thinking video debug) */
+let dbgErr = '';
+function showDbg(){
+  const d = $('vdbg'); if(!d) return;
+  const row = id => { const e = $(id); if(!e) return id + ':none'; const err = e.error ? ' err' + e.error.code : ''; return id + ' rs' + e.readyState + (e.paused ? ' paused' : ' PLAY') + ' op' + getComputedStyle(e).opacity + err; };
+  d.textContent = 'state=' + avState + ' | ' + row('vthink') + ' | ' + row('vlisten') + ' | ' + row('vtalk') + (dbgErr ? ' | play-err: ' + dbgErr : '');
+}
+setTimeout(showDbg, 2500);
 /* toast */
 let toastT = 0;
 function toast(msg){
