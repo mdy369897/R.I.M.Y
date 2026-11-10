@@ -696,7 +696,7 @@ html[data-look="rimy"] #cmode.on{border-color:#00f2ff!important;color:#00f2ff!im
       <button id="close" type="button" style="margin-left:auto;background:var(--accent);color:#2a0f1a;border-color:var(--accent)">Save</button>
     </div>
     <div class="note">Key ar chat shudhu ei phone-er browser-e save thake.</div>
-    <div class="note" id="ver">R.I.M.Y Version 45r</div>
+    <div class="note" id="ver">R.I.M.Y Version 45s</div>
     <div class="note" id="vdbg" style="font-size:11px;opacity:.75;word-break:break-all"></div>
   </div>
 </div>
@@ -2751,6 +2751,7 @@ function bootLive(tries){
   if(!S.openLive) return;
   const iv = $('vintro');
   if(((iv && iv.readyState < 2) || document.visibilityState !== 'visible') && tries < 25){ setTimeout(() => bootLive(tries + 1), 200); return; }
+  if(callOpen){ unlockAudio(); handsfree = true; callMuted = false; dbgNote('boot: call aage theke khola, greet'); callTxt(''); greetThenListen(); return; }
   openLiveNow();
 }
 /* video-r prothom frame jeno paint hoy: load korano + ektu seek (Android WebView-te na korle grey play icon thake) */
