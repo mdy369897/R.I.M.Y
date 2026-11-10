@@ -696,7 +696,7 @@ html[data-look="rimy"] #cmode.on{border-color:#00f2ff!important;color:#00f2ff!im
       <button id="close" type="button" style="margin-left:auto;background:var(--accent);color:#2a0f1a;border-color:var(--accent)">Save</button>
     </div>
     <div class="note">Key ar chat shudhu ei phone-er browser-e save thake.</div>
-    <div class="note" id="ver">R.I.M.Y Version 45p</div>
+    <div class="note" id="ver">R.I.M.Y Version 45q</div>
     <div class="note" id="vdbg" style="font-size:11px;opacity:.75;word-break:break-all"></div>
   </div>
 </div>
@@ -1171,12 +1171,12 @@ function showDbg(){
   const pl = id => { const e = $(id); if(!e) return '-'; return (e.paused ? 'pause' : 'PLAY') + (e.error ? ' E' + e.error.code : ''); };
   const n = new Date(), ts = n.getMinutes() + ':' + String(n.getSeconds()).padStart(2, '0');
   dbgLog.push(ts + ' ' + (avState || 'idle') + ' | think ' + pl('vthink') + ' | listen ' + pl('vlisten') + ' | talk ' + pl('vtalk') + (dbgErr ? ' | ERR ' + dbgErr : ''));
-  if(dbgLog.length > 8) dbgLog.shift();
+  if(dbgLog.length > 20) dbgLog.shift();
   d.style.whiteSpace = 'pre-line';
   d.textContent = dbgLog.join('\n');
 }
 setTimeout(showDbg, 2500);
-function dbgNote(t){ const n = new Date(), ts = n.getMinutes() + ':' + String(n.getSeconds()).padStart(2, '0'); dbgLog.push(ts + ' NOTE ' + t); if(dbgLog.length > 8) dbgLog.shift(); const d = $('vdbg'); if(d){ d.style.whiteSpace = 'pre-line'; d.textContent = dbgLog.join('\n'); } }
+function dbgNote(t){ const n = new Date(), ts = n.getMinutes() + ':' + String(n.getSeconds()).padStart(2, '0'); dbgLog.push(ts + ' NOTE ' + t); if(dbgLog.length > 20) dbgLog.shift(); const d = $('vdbg'); if(d){ d.style.whiteSpace = 'pre-line'; d.textContent = dbgLog.join('\n'); } }
 /* toast */
 let toastT = 0;
 function toast(msg){
