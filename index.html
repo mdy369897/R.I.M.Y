@@ -696,7 +696,7 @@ html[data-look="rimy"] #cmode.on{border-color:#00f2ff!important;color:#00f2ff!im
       <button id="close" type="button" style="margin-left:auto;background:var(--accent);color:#2a0f1a;border-color:var(--accent)">Save</button>
     </div>
     <div class="note">Key ar chat shudhu ei phone-er browser-e save thake.</div>
-    <div class="note" id="ver">R.I.M.Y Version 45z</div>
+    <div class="note" id="ver">R.I.M.Y Version 1.4.5.1</div>
     <div class="note" id="vdbg" style="font-size:11px;opacity:.75;word-break:break-all"></div>
   </div>
 </div>
@@ -2761,19 +2761,25 @@ function bootLive(tries){
   /* app khulle splash video cholbe; voice page + intro video ready holei splash sorbe */
   let sp = $('vsplash');
   if(!sp){
+    /* kalo wrapper: video prothom frame na esha porjonto grey icon dekhbe na */
+    const wrap = document.createElement('div');
+    wrap.id = 'vsplashwrap';
+    wrap.style.cssText = 'position:fixed;inset:0;background:#0b0814;z-index:99999';
     sp = document.createElement('video');
     sp.id = 'vsplash'; sp.src = 'rimy-splash.mp4'; sp.muted = true; sp.preload = 'auto';
     sp.setAttribute('playsinline', '');
-    sp.style.cssText = 'position:fixed;inset:0;width:100%;height:100%;object-fit:cover;background:#0b0814;z-index:99999';
-    sp.onerror = () => { try{ sp.remove(); }catch(err){} };
-    document.body.appendChild(sp);
+    sp.style.cssText = 'position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:0;transition:opacity .25s';
+    sp.onloadeddata = () => { sp.style.opacity = '1'; };
+    sp.onerror = () => { try{ wrap.remove(); }catch(err){} };
+    wrap.appendChild(sp);
+    document.body.appendChild(wrap);
   }
   try{ const p = sp.play(); if(p && p.catch) p.catch(() => {}); }catch(err){}
   unlockAudio(); handsfree = true; v2t = false; callMuted = false;
   $('handsfree').style.background = 'var(--accent-2)'; $('handsfree').style.color = '#2a0f1a';
   openCall(); callTxt('');
   /* splash puro sesh hole (ba 7 second por) voice page + intro shuru */
-  const hideSplash = () => { const s2 = $('vsplash'); if(s2){ try{ s2.pause(); }catch(err){} s2.remove(); } };
+  const hideSplash = () => { const s2 = $('vsplash'); if(s2){ try{ s2.pause(); }catch(err){} } const w2 = $('vsplashwrap'); if(w2){ w2.remove(); } };
   const L2 = S.lang === 'auto' ? uiLang() : String(S.lang || 'bn-BD').slice(0, 2);
   const wait = k => {
     const v = $('vintro');
