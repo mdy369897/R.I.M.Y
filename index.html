@@ -696,7 +696,7 @@ html[data-look="rimy"] #cmode.on{border-color:#00f2ff!important;color:#00f2ff!im
       <button id="close" type="button" style="margin-left:auto;background:var(--accent);color:#2a0f1a;border-color:var(--accent)">Save</button>
     </div>
     <div class="note">Key ar chat shudhu ei phone-er browser-e save thake.</div>
-    <div class="note" id="ver">R.I.M.Y Version 45n</div>
+    <div class="note" id="ver">R.I.M.Y Version 45o</div>
     <div class="note" id="vdbg" style="font-size:11px;opacity:.75;word-break:break-all"></div>
   </div>
 </div>
@@ -2751,7 +2751,16 @@ function bootLive(tries){
   if(((iv && iv.readyState < 2) || document.visibilityState !== 'visible') && tries < 25){ setTimeout(() => bootLive(tries + 1), 200); return; }
   openLiveNow();
 }
-setTimeout(() => bootLive(0), 1200);
+/* video-r prothom frame jeno paint hoy: load korano + ektu seek (Android WebView-te na korle grey play icon thake) */
+function primeVideos(){
+  ['vlisten', 'vintro', 'vthink', 'vtalk'].forEach(id => {
+    const e = $(id); if(!e) return;
+    const seekFrame = () => { try{ if(e.currentTime === 0) e.currentTime = 0.1; }catch(err){} };
+    if(e.readyState >= 2) seekFrame(); else e.addEventListener('loadeddata', seekFrame, { once: true });
+    if(e.readyState === 0){ try{ e.load(); }catch(err){} }
+  });
+}
+setTimeout(() => { primeVideos(); bootLive(0); }, 1200);
 /* Mic ON / OFF chip */
 /* Mic icon itself shows mute: mic = listening, mic with red slash = muted */
 function micSvg(off){ return off ? ('<svg width="30" height="30" viewBox="0 0 24 24" fill="none" aria-hidden="true"><rect x="9" y="2" width="6" height="12" rx="3" fill="#fff" opacity=".45"/><path d="M5.5 10.5a6.5 6.5 0 0 0 13 0" stroke="#fff" stroke-width="2" stroke-linecap="round" opacity=".45"/><path d="M12 17v3.5M8.5 21h7" stroke="#fff" stroke-width="2" stroke-linecap="round" opacity=".45"/><path d="M4 4l16 16" stroke="#ff4d6d" stroke-width="2.4" stroke-linecap="round"/></svg>') : ('<svg width="30" height="30" viewBox="0 0 24 24" fill="none" aria-hidden="true"><rect x="9" y="2" width="6" height="12" rx="3" fill="#fff"/><path d="M5.5 10.5a6.5 6.5 0 0 0 13 0" stroke="#fff" stroke-width="2" stroke-linecap="round"/><path d="M12 17v3.5M8.5 21h7" stroke="#fff" stroke-width="2" stroke-linecap="round"/></svg>'); }
