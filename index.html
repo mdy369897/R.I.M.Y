@@ -696,7 +696,7 @@ html[data-look="rimy"] #cmode.on{border-color:#00f2ff!important;color:#00f2ff!im
       <button id="close" type="button" style="margin-left:auto;background:var(--accent);color:#2a0f1a;border-color:var(--accent)">Save</button>
     </div>
     <div class="note">Key ar chat shudhu ei phone-er browser-e save thake.</div>
-    <div class="note" id="ver">R.I.M.Y Version 45y</div>
+    <div class="note" id="ver">R.I.M.Y Version 45z</div>
     <div class="note" id="vdbg" style="font-size:11px;opacity:.75;word-break:break-all"></div>
   </div>
 </div>
@@ -2772,19 +2772,22 @@ function bootLive(tries){
   unlockAudio(); handsfree = true; v2t = false; callMuted = false;
   $('handsfree').style.background = 'var(--accent-2)'; $('handsfree').style.color = '#2a0f1a';
   openCall(); callTxt('');
+  /* splash puro sesh hole (ba 7 second por) voice page + intro shuru */
+  const hideSplash = () => { const s2 = $('vsplash'); if(s2){ try{ s2.pause(); }catch(err){} s2.remove(); } };
+  const L2 = S.lang === 'auto' ? uiLang() : String(S.lang || 'bn-BD').slice(0, 2);
+  const wait = k => {
+    const v = $('vintro');
+    if(L2 === 'bn' && v && !v.classList.contains('on') && k < 25){ setTimeout(() => wait(k + 1), 150); return; }
+    setTimeout(hideSplash, 150);
+  };
+  let started = false;
+  const startAfter = () => { if(started) return; started = true; greetThenListen(); wait(0); };
   const go = n => {
     const iv = $('vintro');
     if(((iv && iv.readyState < 2) || document.visibilityState !== 'visible') && n < 40){ setTimeout(() => go(n + 1), 200); return; }
-    /* splash tokhoni sorbe jokhon intro video sotti dekha jay (grey icon er bodole) */
-    const hideSplash = () => { const s2 = $('vsplash'); if(s2){ try{ s2.pause(); }catch(err){} s2.remove(); } };
-    const L2 = S.lang === 'auto' ? uiLang() : String(S.lang || 'bn-BD').slice(0, 2);
-    greetThenListen();
-    const wait = k => {
-      const v = $('vintro');
-      if(L2 === 'bn' && v && !v.classList.contains('on') && k < 25){ setTimeout(() => wait(k + 1), 150); return; }
-      setTimeout(hideSplash, 150);
-    };
-    wait(0);
+    const sp2 = $('vsplash');
+    if(sp2 && !sp2.ended){ sp2.onended = startAfter; setTimeout(startAfter, 7000); }
+    else startAfter();
   };
   go(0);
 }
