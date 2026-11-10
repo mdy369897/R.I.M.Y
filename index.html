@@ -696,7 +696,7 @@ html[data-look="rimy"] #cmode.on{border-color:#00f2ff!important;color:#00f2ff!im
       <button id="close" type="button" style="margin-left:auto;background:var(--accent);color:#2a0f1a;border-color:var(--accent)">Save</button>
     </div>
     <div class="note">Key ar chat shudhu ei phone-er browser-e save thake.</div>
-    <div class="note" id="ver">R.I.M.Y Version 45u</div>
+    <div class="note" id="ver">R.I.M.Y Version 45w</div>
     <div class="note" id="vdbg" style="font-size:11px;opacity:.75;word-break:break-all"></div>
   </div>
 </div>
@@ -2108,8 +2108,17 @@ function nativeListen(){
   listening = true; $('mic').classList.add('on'); orb('listening'); setStatus('shunchhi...');
   window.onNativeSpeech = t => {
     window.onNativeSpeech = null;
+    const txt0 = (t || '').trim();
+    if(txt0) window.__emptyRuns = 0;
+    /* handsfree-te kono kotha na shunle chupchap abar shuru: mic on/off dekhabe na */
+    if(!txt0 && handsfree && !busy && !v2t){
+      window.__emptyRuns = (window.__emptyRuns | 0) + 1;
+      if(window.__emptyRuns < 4){ listening = false; setTimeout(() => { if(callOpen && !busy) startListen(); }, 250); return; }
+      window.__emptyRuns = 0; handsfree = false; listening = false; $('mic').classList.remove('on'); orb(''); setStatus('ready');
+      callTxt('Mic bondho holo. Mic-e tap kore abar bolo'); return;
+    }
     listening = false; $('mic').classList.remove('on'); if(avState === 'listening') orb(''); setStatus('ready');
-    const txt = (t || '').trim();
+    const txt = txt0;
     if(v2t){ v2t = false; closeCall(); $('txt').value = txt || ''; $('txt').focus(); return; }
     if(txt){ $('txt').value = ''; callTxt(txt); send(txt); }
     else if(handsfree && !busy) setTimeout(startListen, 400);
@@ -2749,13 +2758,16 @@ function openLiveNow(){
 /* app khulei: video element load hoyar por (ar page visible hole) voice page */
 function bootLive(tries){
   if(!S.openLive) return;
-  /* age voice page khola (chat-er flash na hoy), tarpor intro video ready holei greeting */
+  /* boot-er somoy kalo parda: chat ar grey icon dekha jabe na, video ready holei parda sorbe */
+  if(!$('bootcss')){ const st = document.createElement('style'); st.id = 'bootcss'; st.textContent = 'body.booting::after{content:"";position:fixed;inset:0;background:#0b0814;z-index:99999}'; document.head.appendChild(st); }
+  document.body.classList.add('booting');
   unlockAudio(); handsfree = true; v2t = false; callMuted = false;
   $('handsfree').style.background = 'var(--accent-2)'; $('handsfree').style.color = '#2a0f1a';
   openCall(); callTxt('');
   const go = n => {
     const iv = $('vintro');
     if(((iv && iv.readyState < 2) || document.visibilityState !== 'visible') && n < 25){ setTimeout(() => go(n + 1), 200); return; }
+    document.body.classList.remove('booting');
     greetThenListen();
   };
   go(0);
