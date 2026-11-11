@@ -36,6 +36,9 @@ button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-vis
 @keyframes dot{50%{opacity:1;transform:translateY(-4px)}}
 .look{display:grid;grid-template-columns:1fr 1fr;gap:8px}
 .look select{width:100%}
+.maptile{position:relative;aspect-ratio:1/1;border-radius:16px;overflow:hidden;background:#05030f;border:1px solid rgba(0,242,255,.45);box-shadow:0 0 14px rgba(138,43,226,.55);cursor:pointer;display:flex;align-items:flex-end;justify-content:center;padding:0}
+.maptile video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.maptile span{position:relative;z-index:1;margin:8px;font-size:12px;color:#00f2ff;background:rgba(5,3,15,.7);padding:3px 10px;border-radius:999px}
 .m.sys{box-shadow:none;align-self:center;color:var(--muted);font-size:13.5px;text-align:center}
 .acts{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}
 .acts a{color:var(--mefg);background:var(--accent-2);padding:6px 12px;border-radius:10px;text-decoration:none;font-size:14px}
@@ -601,7 +604,8 @@ html[data-look="rimy"] #cmode.on{border-color:#00f2ff!important;color:#00f2ff!im
     <h2>R.I.M.Y Settings</h2>
     <label>Dekhte kemon (Look)</label>
     <div class="look">
-      <div><label for="skin" style="display:none">Avatar skin</label><select id="skin" style="display:none">
+      <div class="maptile" id="maptile" role="button" tabindex="0" aria-label="Google Map khulo" onclick="openMaps()" onkeydown="if(event.key==='Enter')openMaps()"><video src="rimy-map.mp4" muted loop playsinline autoplay preload="auto"></video><span>Map · Google Map khulbe</span></div>
+      <div style="display:none"><label for="skin" style="display:none">Avatar skin</label><select id="skin" style="display:none">
         <option value="orig">Original (anime)</option>
         <option value="villain">Dark Purple Villain</option>
         <option value="cyber">Pink-Blue Cyber</option>
@@ -696,7 +700,7 @@ html[data-look="rimy"] #cmode.on{border-color:#00f2ff!important;color:#00f2ff!im
       <button id="close" type="button" style="margin-left:auto;background:var(--accent);color:#2a0f1a;border-color:var(--accent)">Save</button>
     </div>
     <div class="note">Key ar chat shudhu ei phone-er browser-e save thake.</div>
-    <div class="note" id="ver">R.I.M.Y Version 1.4.5.1</div>
+    <div class="note" id="ver">R.I.M.Y Version 1.4.5.2</div>
     <div class="note" id="vdbg" style="font-size:11px;opacity:.75;word-break:break-all"></div>
   </div>
 </div>
@@ -1863,6 +1867,7 @@ async function send(text, regen){
   let bubbleImg = null;
   if(pendingImg){ sessImg = pendingImg; bubbleImg = 'data:' + sessImg.mime + ';base64,' + sessImg.data; pendingImg = null; pendingEdit = false; $('qimg').classList.remove('on'); hideImgPrev(); if(!text) text = pt('explain'); text = text + ' [chhobi]'; }
   const bubbleKey = bubbleImg ? await saveImg(bubbleImg) : null;
+  if(!regen && !pendingImg && mapIntent(text)){ addMsg('you', text); const rep = 'Thik ache, Google Map khulchi.'; addMsg('her', rep); speak(rep); openMaps(); return; }
   if(!S.key){ addMsg('sys', ms('shuru')); openSettings(); return; }
   /* "limit koto?" type proshno: Google-er asol limit API theke pawa jay na, tai ami nijer hisab-tai bolbo */
   if(!regen && !pendingImg && text.length < 120 && /(limit|quota)/i.test(text) && /(koto|kotota|kotoi|baki|bakita|ache|kom|remain|current|ekhon|how much|left)/i.test(text)){
@@ -2470,6 +2475,16 @@ window.onNativePhoto = u => {
 };
 /* ---- Native bridge helpers ---- */
 function nativeOk(n){ return !!(window.RimyNative && typeof RimyNative[n] === 'function'); }
+/* Map: tile-e tap ba "map dekho" bole Google Map khola */
+function openMaps(){
+  const u = 'https://www.google.com/maps';
+  try{ if(nativeOk('openMaps')) { RimyNative.openMaps(); return; } }catch(err){}
+  try{ window.open(u, '_blank'); }catch(err){ location.href = u; }
+}
+function mapIntent(t){
+  if(!t || t.length > 90) return false;
+  return /(google\s*map|maps?\b|ম্যাপ|মানচিত্র|map)/i.test(t) && /(dekh|dekhao|dekhaw|khol|kholo|show|open|dekhte|দেখ|খোল|খুল|দেখা)/i.test(t);
+}
 function saveDL(src){
   if(!src) return;
   if(nativeOk('saveImage')){
