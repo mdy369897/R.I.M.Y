@@ -40,9 +40,8 @@ button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-vis
 .lkrow label{margin:0}
 .mapcell{display:flex;flex-direction:column;align-items:center;gap:8px}
 .maplbl{font-size:13px;color:#00f2ff;text-shadow:0 0 8px rgba(0,242,255,.6)}
-.maptile{position:relative;width:min(100%,190px);aspect-ratio:1/1;border-radius:50%;overflow:hidden;cursor:pointer;border:none;padding:0;box-shadow:0 0 18px rgba(138,43,226,.7),0 0 6px rgba(0,242,255,.5);transition:transform .15s}
-.maptile:active{transform:scale(.96)}
-.maptile video{position:absolute;width:153.2%;height:auto;left:-27.66%;top:-26.6%;pointer-events:none}
+.maptile{position:relative;width:min(100%,190px);aspect-ratio:1/1;border-radius:50%;overflow:hidden;background:#05030f;border:none;padding:0;box-shadow:0 0 18px rgba(138,43,226,.7),0 0 6px rgba(0,242,255,.5);touch-action:none}
+.mapgo{font-size:12px;padding:5px 12px;color:#00f2ff;border-color:rgba(0,242,255,.45)}
 .m.sys{box-shadow:none;align-self:center;color:var(--muted);font-size:13.5px;text-align:center}
 .acts{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}
 .acts a{color:var(--mefg);background:var(--accent-2);padding:6px 12px;border-radius:10px;text-decoration:none;font-size:14px}
@@ -608,9 +607,9 @@ html[data-look="rimy"] #cmode.on{border-color:#00f2ff!important;color:#00f2ff!im
 <div id="set">
   <div class="sheet">
     <h2>R.I.M.Y Settings</h2>
-    <div class="lkrow"><label>Dekhte kemon (Look)</label><label>Lekhar akar</label></div>
+    <div class="lkrow"><span></span><label>Lekhar akar</label></div>
     <div class="look">
-      <div class="mapcell"><span class="maplbl">Google Map</span><div class="maptile" id="maptile" role="button" tabindex="0" aria-label="Google Map khulo" onclick="openMaps()" onkeydown="if(event.key==='Enter')openMaps()"><video src="rimy-map.mp4" muted loop playsinline autoplay preload="auto"></video></div></div>
+      <div class="mapcell"><span class="maplbl">Google Map</span><div class="maptile" id="maptile" role="application" aria-label="Map"></div><button id="mapgo" type="button" class="mapgo" onclick="openMaps()">Google Maps khulo</button></div>
       <div style="display:none"><label for="skin" style="display:none">Avatar skin</label><select id="skin" style="display:none">
         <option value="orig">Original (anime)</option>
         <option value="villain">Dark Purple Villain</option>
@@ -706,7 +705,7 @@ html[data-look="rimy"] #cmode.on{border-color:#00f2ff!important;color:#00f2ff!im
       <button id="close" type="button" style="margin-left:auto;background:var(--accent);color:#2a0f1a;border-color:var(--accent)">Save</button>
     </div>
     <div class="note">Key ar chat shudhu ei phone-er browser-e save thake.</div>
-    <div class="note" id="ver">R.I.M.Y Version 1.4.5.3</div>
+    <div class="note" id="ver">R.I.M.Y Version 1.4.5.4</div>
     <div class="note" id="vdbg" style="font-size:11px;opacity:.75;word-break:break-all"></div>
   </div>
 </div>
@@ -929,6 +928,11 @@ function uiLang(){
 function recLang(){ return S.lang === 'auto' ? 'bn-BD' : (S.lang || 'bn-BD'); }
 function selPre(){ const v = ($('lang') && $('lang').value) || S.lang || 'bn-BD'; return v === 'auto' ? uiLang() : v.slice(0, 2); }
 ['bn','hi','ar','ur','en'].forEach(k => { TR[k] = TR[k] || {}; });
+Object.assign(TR.en, {'Tana diye lekhar akar set koro; ekhon ei lekha-ta bar-komte thakbe.':'Drag the slider to set the text size; this sample changes with it.','Nijer chhobi avatar ar wallpaper hishebe set hoyeche.':'Your photo is set as avatar and wallpaper.','Google Maps khulo':'Open Google Maps'});
+Object.assign(TR.bn, {'Tana diye lekhar akar set koro; ekhon ei lekha-ta bar-komte thakbe.':'স্লাইডার টেনে লেখার আকার ঠিক করো; এই নমুনা সেই অনুযায়ী বদলাবে।','Nijer chhobi avatar ar wallpaper hishebe set hoyeche.':'তোমার ছবি অবতার আর ওয়ালপেপার হিসেবে সেট হয়েছে।','Google Maps khulo':'গুগল ম্যাপ খোলো'});
+Object.assign(TR.hi, {'Tana diye lekhar akar set koro; ekhon ei lekha-ta bar-komte thakbe.':'स्लाइडर से अक्षरों का आकार सेट करें; यह नमूना उसी के साथ बदलेगा।','Nijer chhobi avatar ar wallpaper hishebe set hoyeche.':'आपकी तस्वीर अवतार और वॉलपेपर के रूप में सेट हो गई है।','Google Maps khulo':'गूगल मैप खोलें'});
+Object.assign(TR.ar, {'Tana diye lekhar akar set koro; ekhon ei lekha-ta bar-komte thakbe.':'اضبط حجم الخط بالمنزلق؛ سيتغير هذا النص معه.','Nijer chhobi avatar ar wallpaper hishebe set hoyeche.':'تم تعيين صورتك كصورة رمزية وخلفية.','Google Maps khulo':'افتح خرائط جوجل'});
+Object.assign(TR.ur, {'Tana diye lekhar akar set koro; ekhon ei lekha-ta bar-komte thakbe.':'سلائیڈر سے متن کا سائز سیٹ کریں؛ یہ نمونہ اسی کے ساتھ بدلے گا۔','Nijer chhobi avatar ar wallpaper hishebe set hoyeche.':'آپ کی تصویر بطور اوتار اور وال پیپر سیٹ ہو گئی ہے۔','Google Maps khulo':'گوگل میپ کھولیں'});
 Object.assign(TR.bn, {'Chhobi diye prosno':'ছবি দিয়ে প্রশ্ন', 'Quiz dao':'কুইজ দাও', 'Chhobi banao':'ছবি বানাও'});
 Object.assign(TR.hi, {'Chhobi diye prosno':'तस्वीर से सवाल', 'Quiz dao':'क्विज़ दो', 'Chhobi banao':'तस्वीर बनाओ'});
 Object.assign(TR.ar, {'Chhobi diye prosno':'سؤال بصورة', 'Quiz dao':'اختبار سريع', 'Chhobi banao':'أنشئ صورة'});
@@ -2238,7 +2242,7 @@ function pickWall(file){
       c.getContext('2d').drawImage(im, 0, 0, c.width, c.height);
       const u = c.toDataURL('image/jpeg', .72);
       try{ localStorage.setItem('rimy_wall', JSON.stringify(u)); }catch(e){ $('wnote').textContent = 'Chhobi-ta onek boro, save hoy ni. Chhoto chhobi dao.'; return; }
-      S.wall = 'custom'; S.skin = 'custom'; $('wall').value = 'custom'; $('skin').value = 'custom'; persist(); applyLook(); $('wnote').textContent = 'Nijer chhobi avatar ar wallpaper hishebe set hoyeche.';
+      S.wall = 'custom'; S.skin = 'custom'; $('wall').value = 'custom'; $('skin').value = 'custom'; persist(); applyLook(); $('wnote').textContent = tr('Nijer chhobi avatar ar wallpaper hishebe set hoyeche.');
     };
     im.onerror = () => { $('wnote').textContent = 'Ei chhobi khola gelo na.'; };
     im.src = fr.result;
@@ -2248,6 +2252,7 @@ function pickWall(file){
 
 /* ---------- ui ---------- */
 function openSettings(){
+  initMapTile();
   $('key').value = S.key; $('model').value = S.model; $('uname').value = S.name; $('lang').value = S.lang;
   $('search').checked = S.search; $('speak').checked = S.speak;
   renderMem();
@@ -2486,6 +2491,39 @@ function openMaps(){
   const u = 'https://www.google.com/maps';
   try{ if(nativeOk('openMaps')) { RimyNative.openMaps(); return; } }catch(err){}
   try{ window.open(u, '_blank'); }catch(err){ location.href = u; }
+}
+/* Map tile: MapLibre globe, touch diye ghora (rotate) ar zoom. Settings khulle lazy-load hoy */
+let mapInst = null, mapLibLoading = false, mapOk = false, mapFallback = false;
+function loadMapLib(cb){
+  if(window.maplibregl){ cb(); return; }
+  if(mapLibLoading) return; mapLibLoading = true;
+  const css = document.createElement('link'); css.rel = 'stylesheet'; css.href = 'https://unpkg.com/maplibre-gl@5.0.0/dist/maplibre-gl.css'; document.head.appendChild(css);
+  const js = document.createElement('script'); js.src = 'https://unpkg.com/maplibre-gl@5.0.0/dist/maplibre-gl.js';
+  js.onload = () => { mapLibLoading = false; cb(); };
+  js.onerror = () => { mapLibLoading = false; };
+  document.head.appendChild(js);
+}
+function initMapTile(){
+  const el = $('maptile');
+  if(!el) return;
+  if(mapInst){ try{ mapInst.resize(); }catch(e){} return; }
+  loadMapLib(() => {
+    if(mapInst || !el || !window.maplibregl) return;
+    try{
+      mapInst = new maplibregl.Map({
+        container: el,
+        style: 'https://tiles.openfreemap.org/styles/dark',
+        center: [20, 20], zoom: 1.4,
+        attributionControl: false, renderWorldCopies: false,
+        maxPitch: 0, dragRotate: true, touchZoomRotate: true, dragPan: true,
+        projection: { type: 'globe' }
+      });
+      mapInst.on('load', () => { mapOk = true; try{ mapInst.resize(); }catch(e){} });
+      mapInst.on('error', () => {
+        if(!mapOk && !mapFallback){ mapFallback = true; try{ mapInst.setStyle('https://tiles.openfreemap.org/styles/liberty'); }catch(e){} }
+      });
+    }catch(e){ mapInst = null; }
+  });
 }
 function mapIntent(t){
   if(!t || t.length > 90) return false;
