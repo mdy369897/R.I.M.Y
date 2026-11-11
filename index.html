@@ -36,9 +36,13 @@ button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-vis
 @keyframes dot{50%{opacity:1;transform:translateY(-4px)}}
 .look{display:grid;grid-template-columns:1fr 1fr;gap:8px}
 .look select{width:100%}
-.maptile{position:relative;aspect-ratio:1/1;border-radius:16px;overflow:hidden;background:#05030f;border:1px solid rgba(0,242,255,.45);box-shadow:0 0 14px rgba(138,43,226,.55);cursor:pointer;display:flex;align-items:flex-end;justify-content:center;padding:0}
-.maptile video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
-.maptile span{position:relative;z-index:1;margin:8px;font-size:12px;color:#00f2ff;background:rgba(5,3,15,.7);padding:3px 10px;border-radius:999px}
+.lkrow{display:grid;grid-template-columns:1fr 1fr;gap:8px;align-items:end;margin-bottom:6px}
+.lkrow label{margin:0}
+.mapcell{display:flex;flex-direction:column;align-items:center;gap:8px}
+.maplbl{font-size:13px;color:#00f2ff;text-shadow:0 0 8px rgba(0,242,255,.6)}
+.maptile{position:relative;width:min(100%,190px);aspect-ratio:1/1;border-radius:50%;overflow:hidden;cursor:pointer;border:none;padding:0;box-shadow:0 0 18px rgba(138,43,226,.7),0 0 6px rgba(0,242,255,.5);transition:transform .15s}
+.maptile:active{transform:scale(.96)}
+.maptile video{position:absolute;width:153.2%;height:auto;left:-27.66%;top:-26.6%;pointer-events:none}
 .m.sys{box-shadow:none;align-self:center;color:var(--muted);font-size:13.5px;text-align:center}
 .acts{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}
 .acts a{color:var(--mefg);background:var(--accent-2);padding:6px 12px;border-radius:10px;text-decoration:none;font-size:14px}
@@ -488,6 +492,8 @@ html[data-look="rimy"] #cmode.on{border-color:#00f2ff!important;color:#00f2ff!im
 </style>
 </head>
 <body>
+<div id="vsplashwrap" style="position:fixed;inset:0;background:#0b0814;z-index:99999"><video id="vsplash" src="rimy-splash.mp4" muted playsinline preload="auto" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:0;transition:opacity .25s" onloadeddata="this.style.opacity='1'" onerror="try{document.getElementById('vsplashwrap').remove()}catch(e){}"></video></div>
+<script>(function(){ var w = document.getElementById('vsplashwrap'); try{ var o = JSON.parse(localStorage.getItem('rimy_settings') || '{}'); if(!o.openLive && w){ w.remove(); } }catch(e){ if(w) w.remove(); } })();</script>
 <header>
   <div class="orb" id="orb"><canvas id="av" width="72" height="72" aria-hidden="true"></canvas><span class="hdav" id="hdav" aria-hidden="true"></span><div class="vbars" aria-hidden="true"></div></div>
   <div class="title"><b>R.I.M.Y</b><span id="status">ready</span></div>
@@ -602,9 +608,9 @@ html[data-look="rimy"] #cmode.on{border-color:#00f2ff!important;color:#00f2ff!im
 <div id="set">
   <div class="sheet">
     <h2>R.I.M.Y Settings</h2>
-    <label>Dekhte kemon (Look)</label>
+    <div class="lkrow"><label>Dekhte kemon (Look)</label><label>Lekhar akar</label></div>
     <div class="look">
-      <div class="maptile" id="maptile" role="button" tabindex="0" aria-label="Google Map khulo" onclick="openMaps()" onkeydown="if(event.key==='Enter')openMaps()"><video src="rimy-map.mp4" muted loop playsinline autoplay preload="auto"></video><span>Map · Google Map khulbe</span></div>
+      <div class="mapcell"><span class="maplbl">Google Map</span><div class="maptile" id="maptile" role="button" tabindex="0" aria-label="Google Map khulo" onclick="openMaps()" onkeydown="if(event.key==='Enter')openMaps()"><video src="rimy-map.mp4" muted loop playsinline autoplay preload="auto"></video></div></div>
       <div style="display:none"><label for="skin" style="display:none">Avatar skin</label><select id="skin" style="display:none">
         <option value="orig">Original (anime)</option>
         <option value="villain">Dark Purple Villain</option>
@@ -641,7 +647,7 @@ html[data-look="rimy"] #cmode.on{border-color:#00f2ff!important;color:#00f2ff!im
         <option value="#c6f7d8">Pudina</option>
         <option value="#e4d4ff">Beguni</option>
       </select></div>
-      <div><label for="fs" style="margin-top:8px">Lekhar akar</label>
+      <div>
         <div class="fsw"><span class="fsA sm">A</span><div class="fsbox"><span class="fstag" id="fstag">16</span><input id="fs" type="range" min="14" max="22" step="1" value="16" aria-label="Lekhar akar"></div><span class="fsA lg">A</span></div>
         <div class="fssample" id="fssample">Tana diye lekhar akar set koro; ekhon ei lekha-ta bar-komte thakbe.</div>
       </div>
@@ -700,7 +706,7 @@ html[data-look="rimy"] #cmode.on{border-color:#00f2ff!important;color:#00f2ff!im
       <button id="close" type="button" style="margin-left:auto;background:var(--accent);color:#2a0f1a;border-color:var(--accent)">Save</button>
     </div>
     <div class="note">Key ar chat shudhu ei phone-er browser-e save thake.</div>
-    <div class="note" id="ver">R.I.M.Y Version 1.4.5.2</div>
+    <div class="note" id="ver">R.I.M.Y Version 1.4.5.3</div>
     <div class="note" id="vdbg" style="font-size:11px;opacity:.75;word-break:break-all"></div>
   </div>
 </div>
