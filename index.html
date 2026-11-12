@@ -515,6 +515,31 @@ html[data-look="rimy"] #cmode.on{border-color:#00f2ff!important;color:#00f2ff!im
 #camov #camsnap{background:linear-gradient(135deg,#00f2ff,#8a2be2);border:none;font-weight:600}
 #callmic{-webkit-tap-highlight-color:transparent;-webkit-touch-callout:none;user-select:none;-webkit-user-select:none}
 /* v45i: thinking video */
+/* ===== v1.4.5.6: day/night dono mode-e same layout; glass cards; crop screen ===== */
+html[data-look="rimy"] .m{backdrop-filter:blur(16px) saturate(170%);-webkit-backdrop-filter:blur(16px) saturate(170%);border:1px solid rgba(255,255,255,.22);box-shadow:inset 0 1px 0 rgba(255,255,255,.28),0 8px 24px rgba(0,0,0,.16)}
+html[data-look="rimy"] .m.you{background:rgba(138,43,226,.55)!important;color:#fff}
+html[data-look="rimy"] .m.her{background:rgba(255,255,255,.07)!important;color:#EDE9FF}
+html[data-look="rimy"][data-mode="day"] .m.her{background:rgba(255,255,255,.55)!important;color:#1d1536;border-color:rgba(138,43,226,.22)}
+html[data-look="rimy"][data-mode="day"] .m.you{background:rgba(138,43,226,.68)!important}
+html[data-look="rimy"][data-mode="day"] body{background:radial-gradient(90% 40% at 50% 0%,rgba(138,43,226,.16),transparent 70%),radial-gradient(70% 35% at 100% 85%,rgba(0,200,255,.12),transparent 70%),#f5f2fb!important}
+html[data-look="rimy"][data-mode="day"] header{background:rgba(255,255,255,.7)!important;border-bottom-color:rgba(138,43,226,.18)!important}
+html[data-look="rimy"][data-mode="day"] #call{background:radial-gradient(90% 45% at 50% 22%,rgba(138,43,226,.18),transparent 70%),#f5f2fb!important}
+html[data-look="rimy"][data-mode="day"] #callst,html[data-look="rimy"][data-mode="day"] #calltxt{color:#2a1f4d}
+html[data-look="rimy"][data-mode="day"] .dockpill{background:rgba(255,255,255,.75)!important;border-color:rgba(138,43,226,.25)!important}
+html[data-look="rimy"][data-mode="day"] #txt{color:#1d1536}
+html[data-look="rimy"][data-mode="day"] #txt::placeholder{color:#7a6fa6}
+html[data-look="rimy"][data-mode="day"] .bnav{background:rgba(255,255,255,.7)!important;border-color:rgba(138,43,226,.2)!important}
+html[data-look="rimy"][data-mode="day"] .bnav button{color:#6b5f9a}
+html[data-look="rimy"][data-mode="day"] .bnav button.on,html[data-look="rimy"][data-mode="day"] .bnav button.on i{color:#6d28d9}
+html[data-look="rimy"][data-mode="day"] #tbox{background:rgba(255,255,255,.95)!important}
+html[data-look="rimy"][data-mode="day"] #tbox button{color:#2a1f4d!important}
+#cropm{position:fixed;inset:0;z-index:100000;background:rgba(5,3,15,.94);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;padding:16px}
+#cropm[hidden]{display:none}
+.cropnote{font-size:13px;color:#c9c0ea}
+#cropwin{position:relative;width:min(80vw,330px);aspect-ratio:9/19.5;overflow:hidden;border-radius:22px;border:2px solid rgba(0,242,255,.7);box-shadow:0 0 22px rgba(138,43,226,.6);background:#111;touch-action:none;cursor:grab}
+#cropimg{position:absolute;left:0;top:0;transform-origin:0 0;max-width:none;user-select:none;-webkit-user-drag:none;pointer-events:none}
+.cropbtns{display:flex;gap:8px;flex-wrap:wrap;justify-content:center}
+.cropbtns button{min-width:64px}
 </style>
 </head>
 <body>
@@ -536,6 +561,11 @@ html[data-look="rimy"] #cmode.on{border-color:#00f2ff!important;color:#00f2ff!im
     <button id="ivdl" type="button"><b class="ar">&#11015;</b><b class="ck">&#10003;</b> <span>Download</span></button>
     <button id="ivedit" type="button">&#9999;&#65039; <span>Edit</span></button>
   </div>
+</div>
+<div id="cropm" hidden>
+  <div class="cropnote" id="cropnote">Pinch ba +/- diye zoom koro, drag kore sajao.</div>
+  <div id="cropwin"><img id="cropimg" alt=""></div>
+  <div class="cropbtns"><button id="cropzo" type="button">&minus;</button><button id="cropzi" type="button">+</button><button id="cropcancel" type="button">Cancel</button><button id="cropsave" type="button">Save</button></div>
 </div>
 <div id="cfm" hidden>
   <div class="cfmbox"><p id="cfmtxt"></p><div class="cfmbtns"><button id="cfmno" type="button"></button><button id="cfmyes" type="button"></button></div></div>
@@ -733,7 +763,7 @@ html[data-look="rimy"] #cmode.on{border-color:#00f2ff!important;color:#00f2ff!im
       <button id="close" type="button" style="margin-left:auto;background:var(--accent);color:#2a0f1a;border-color:var(--accent)">Save</button>
     </div>
     <div class="note">Key ar chat shudhu ei phone-er browser-e save thake.</div>
-    <div class="note" id="ver">R.I.M.Y Version 1.4.5.5</div>
+    <div class="note" id="ver">R.I.M.Y Version 1.4.5.6</div>
   </div>
 </div>
 
@@ -2247,7 +2277,8 @@ function applyLook(force){
   if(!S.lookRimy){ S.lookRimy = 1; S.theme = 'rimy'; if(S.wall === 'aurora') S.wall = 'none'; persist(); }
   if(!S.lookRimy2){ S.lookRimy2 = 1; S.theme = 'rimy'; persist(); }
   const th = force || S.theme;
-  document.documentElement.dataset.look = th === 'rimy' ? 'rimy' : '';
+  document.documentElement.dataset.look = 'rimy';
+  document.documentElement.dataset.mode = th === 'light' ? 'day' : 'night';
   setCallBg();
   const r = document.documentElement.style, t = THEMES[th] || THEMES.rose;
   for(const k in t) r.setProperty('--' + k, t[k]);
@@ -2259,10 +2290,49 @@ function applyLook(force){
   if(S.skin && S.skin !== 'orig') loadSkin(S.skin);
   const sk = skinWall();
   const w = sk || (WALLS[S.wall] || WALLS.none)(), m = $('msgs');
-  m.style.backgroundImage = (S.theme === 'rimy' ? 'none' : (w[0] || 'none')); m.style.backgroundSize = w[1] || 'auto';
+  m.style.backgroundImage = ((S.theme === 'rimy' && !sk && S.wall !== 'custom') ? 'none' : (w[0] || 'none')); m.style.backgroundSize = w[1] || 'auto';
   m.style.backgroundPosition = (sk || S.wall === 'custom') ? 'center' : '0 0'; m.style.backgroundRepeat = (sk || S.wall === 'custom' || ['aurora','sunset','ocean'].includes(S.wall)) ? 'no-repeat' : 'repeat';
   avTarget = themeCols();
 }
+/* Gallery photo: age crop/zoom screen, tarpor Save */
+let crop = {s: 1, x: 0, y: 0, W: 0, H: 0, fw: 0, fh: 0, pts: new Map(), pd: 0};
+function cropClamp(){ const w = crop.W * crop.s, h = crop.H * crop.s; crop.x = Math.min(0, Math.max(crop.fw - w, crop.x)); crop.y = Math.min(0, Math.max(crop.fh - h, crop.y)); }
+function cropApply(){ cropClamp(); const im = $('cropimg'); im.style.width = crop.W + 'px'; im.style.transform = 'translate(' + crop.x + 'px,' + crop.y + 'px) scale(' + crop.s + ')'; }
+function cropZoom(f, cx, cy){ const minS = Math.max(crop.fw / crop.W, crop.fh / crop.H); const ns = Math.min(6, Math.max(minS, crop.s * f)); const k = ns / crop.s; crop.x = cx - (cx - crop.x) * k; crop.y = cy - (cy - crop.y) * k; crop.s = ns; cropApply(); }
+function cropOpen(dataUrl){
+  const im = $('cropimg');
+  im.onload = () => {
+    const win = $('cropwin'); crop.W = im.naturalWidth; crop.H = im.naturalHeight; crop.fw = win.clientWidth; crop.fh = win.clientHeight;
+    crop.s = Math.max(crop.fw / crop.W, crop.fh / crop.H); crop.x = (crop.fw - crop.W * crop.s) / 2; crop.y = (crop.fh - crop.H * crop.s) / 2; cropApply();
+  };
+  im.src = dataUrl; $('cropm').hidden = false;
+}
+(function cropEvents(){
+  const cw = $('cropwin');
+  cw.addEventListener('pointerdown', e => { cw.setPointerCapture(e.pointerId); crop.pts.set(e.pointerId, {x: e.clientX, y: e.clientY}); if(crop.pts.size === 2){ const [a, b] = [...crop.pts.values()]; crop.pd = Math.hypot(a.x - b.x, a.y - b.y); } });
+  cw.addEventListener('pointermove', e => {
+    if(!crop.pts.has(e.pointerId)) return;
+    const p = crop.pts.get(e.pointerId), dx = e.clientX - p.x, dy = e.clientY - p.y; crop.pts.set(e.pointerId, {x: e.clientX, y: e.clientY});
+    if(crop.pts.size === 1){ crop.x += dx; crop.y += dy; cropApply(); }
+    else if(crop.pts.size === 2){ const [a, b] = [...crop.pts.values()]; const d = Math.hypot(a.x - b.x, a.y - b.y); const r = cw.getBoundingClientRect(); if(crop.pd > 0) cropZoom(d / crop.pd, (a.x + b.x) / 2 - r.left, (a.y + b.y) / 2 - r.top); crop.pd = d; }
+  });
+  const up = e => { crop.pts.delete(e.pointerId); crop.pd = 0; };
+  cw.addEventListener('pointerup', up); cw.addEventListener('pointercancel', up);
+  cw.addEventListener('wheel', e => { e.preventDefault(); const r = cw.getBoundingClientRect(); cropZoom(e.deltaY < 0 ? 1.1 : 1 / 1.1, e.clientX - r.left, e.clientY - r.top); }, {passive: false});
+  $('cropzi').onclick = () => cropZoom(1.25, crop.fw / 2, crop.fh / 2);
+  $('cropzo').onclick = () => cropZoom(1 / 1.25, crop.fw / 2, crop.fh / 2);
+  $('cropcancel').onclick = () => { $('cropm').hidden = true; };
+  $('cropsave').onclick = () => {
+    const im = $('cropimg'), outW = 900, outH = Math.round(900 * crop.fh / crop.fw);
+    const c = document.createElement('canvas'); c.width = outW; c.height = outH;
+    c.getContext('2d').drawImage(im, -crop.x / crop.s, -crop.y / crop.s, crop.fw / crop.s, crop.fh / crop.s, 0, 0, outW, outH);
+    const u = c.toDataURL('image/jpeg', .85);
+    try{ localStorage.setItem('rimy_wall', JSON.stringify(u)); }catch(e){ $('wnote').textContent = tr('Chhobi-ta onek boro, save hoy ni. Chhoto chhobi dao.'); return; }
+    S.wall = 'custom'; S.skin = 'custom'; $('wall').value = 'custom'; $('skin').value = 'custom'; persist(); applyLook();
+    $('wnote').textContent = tr('Nijer chhobi avatar ar wallpaper hishebe set hoyeche.'); $('cropm').hidden = true;
+  };
+})();
+function pickWallFile(file){ if(!file) return; const fr = new FileReader(); fr.onload = () => cropOpen(fr.result); fr.readAsDataURL(file); }
 function pickWall(file){
   if(!file) return;
   const fr = new FileReader();
@@ -2344,7 +2414,7 @@ $('tcol').onchange = () => { S.tcol = $('tcol').value; persist(); applyLook(); }
 $('fs').oninput = () => { const x = fsPos(); if(fsX0 !== null) fsKick(x - fsX0); fsX0 = x; };
 $('fs').onchange = () => { S.fs = parseInt($('fs').value, 10) || 16; persist(); applyLook(); fsX0 = null; };
 $('wallpick').onclick = () => $('wallfile').click();
-$('wallfile').onchange = e => { pickWall(e.target.files[0]); e.target.value = ''; };
+$('wallfile').onchange = e => { pickWallFile(e.target.files[0]); e.target.value = ''; };
 $('wallclr').onclick = () => { try{ localStorage.removeItem('rimy_wall'); }catch(e){} if(S.wall === 'custom') S.wall = 'none'; if(S.skin === 'custom') S.skin = 'orig'; $('wall').value = S.wall; $('skin').value = S.skin || 'orig'; persist(); applyLook(); $('wnote').textContent = 'Nijer chhobi muchhe feleche.'; };
 $('skin').onchange = () => {
   S.skin = $('skin').value;
@@ -2389,6 +2459,15 @@ async function saveImg(src){
 async function getImg(id){
   try{ const db = await idbDb(); return await new Promise((ok, no) => { const q = db.transaction('imgs').objectStore('imgs').get(id); q.onsuccess = () => ok(q.result ? q.result.src : null); q.onerror = () => no(q.error); }); }
   catch(e){ return null; }
+}
+/* Image store theke delete; ferot dey ids */
+async function delImgRec(src){
+  try{
+    const list = await allImgs(); const hits = list.filter(x => x.src === src); if(!hits.length) return [];
+    const db = await idbDb();
+    await new Promise((ok, no) => { const tx = db.transaction('imgs', 'readwrite'); hits.forEach(x => tx.objectStore('imgs').delete(x.id)); tx.oncomplete = ok; tx.onerror = () => no(tx.error); });
+    return hits.map(x => x.id);
+  }catch(e){ return []; }
 }
 async function allImgs(){
   try{ const db = await idbDb(); return await new Promise((ok, no) => { const q = db.transaction('imgs').objectStore('imgs').getAll(); q.onsuccess = () => ok(q.result || []); q.onerror = () => no(q.error); }); }
@@ -2444,12 +2523,17 @@ const ivUp = e => { ivPtrs.delete(e.pointerId); if(ivPtrs.size < 2) ivPinch = nu
 $('ivimg').addEventListener('pointerup', ivUp);
 $('ivimg').addEventListener('pointercancel', ivUp);
 $('ivx').onclick = /* Delete: hinge swing, tarpor chat theke chhobi-ta sorano (storage-e kichu muchhe na) */
-$('ivcancel').onclick = () => {
-  const b = $('ivcancel'); b.classList.add('hinge');
+$('ivcancel').onclick = async () => {
+  const b = $('ivcancel'), src = viewSrc;
+  const yes = await askConfirm(tr('Ei chhobi-ta delete korbo?'), tr('Yes'), tr('No'));
+  if(!yes) return;
+  const ids = await delImgRec(src);
+  b.classList.add('hinge');
   setTimeout(() => {
     b.classList.remove('hinge'); $('imgview').hidden = true;
-    const src = viewSrc;
     document.querySelectorAll('#msgs img.pic').forEach(im => { if(im.src === src) im.remove(); });
+    if(ids.length){ history = history.filter(h => !(h.imgKey && ids.includes(h.imgKey))); LS.set('rimy_history', history.slice(-60)); }
+    if(!$('lib').hidden) openLib('img');
   }, 700);
 };
 /* Download: arrow niche pore check hoye jay */
@@ -2810,6 +2894,8 @@ document.querySelectorAll('.bnav [data-nav]').forEach(b => b.onclick = e => {
   else if(k === 'set'){ openSettings(); }
   $('tbox').classList.remove('open');
 });
+/* Tools tab: tap korle menu open/close, highlight shudhu Tools-e */
+document.querySelectorAll('.bnav [data-nav="tools"]').forEach(b => { b.onclick = e => { e.stopPropagation(); if($('tbox').classList.contains('open')) closeTbox(); else openTbox(); }; });
 document.addEventListener('click', () => closeTbox());
 $('ctype').onclick = () => { closeCall(); $('txt').focus(); };
 /* Voice to text = Rimy's spoken reply shows as text (on/off, remembered) */
