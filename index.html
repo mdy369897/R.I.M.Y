@@ -37,6 +37,33 @@ button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-vis
 .look{display:grid;grid-template-columns:1fr 1fr;gap:8px}
 .look select{width:100%}
 .lkrow{display:grid;grid-template-columns:1fr 1fr;gap:8px;align-items:end;margin-bottom:6px}
+.dnrow{display:flex;align-items:center;justify-content:space-between;margin:6px 0 10px}
+.dnsw{position:relative;width:66px;height:34px;border-radius:999px;border:1px solid rgba(60,40,120,.35);padding:0;overflow:hidden;background:linear-gradient(180deg,#7cc8ff,#d9f1ff);cursor:pointer;flex:0 0 auto;transition:background .6s,border-color .6s}
+.dnsw[data-night="1"]{background:linear-gradient(180deg,#120a2e,#3a1f7a);border-color:rgba(0,242,255,.45)}
+.dnknob{position:absolute;top:3px;left:3px;width:26px;height:26px;border-radius:50%;transition:transform .8s cubic-bezier(.5,0,.2,1)}
+.dnknob i{position:absolute;inset:0;border-radius:50%;transition:opacity .45s}
+.dnknob .sun{background:radial-gradient(circle at 35% 35%,#fff6b0,#ffb703);box-shadow:0 0 10px rgba(255,200,50,.85)}
+.dnknob .moon{background:radial-gradient(circle at 35% 35%,#ffffff,#c9d0ff);box-shadow:0 0 10px rgba(200,210,255,.75);opacity:0;transition-delay:.35s}
+.dnsw[data-night="1"] .dnknob{transform:translateX(32px) rotate(360deg)}
+.dnsw[data-night="1"] .dnknob .sun{opacity:0}
+.dnsw[data-night="1"] .dnknob .moon{opacity:1}
+.dnsw i.cl{position:absolute;width:16px;height:7px;border-radius:8px;background:#fff;left:34px;bottom:6px;transition:transform .8s,opacity .6s}
+.dnsw i.cl2{left:44px;bottom:4px;width:11px;height:6px}
+.dnsw[data-night="1"] i.cl{transform:translateY(18px);opacity:0}
+.dnsw i.st{position:absolute;width:3px;height:3px;border-radius:50%;background:#fff;opacity:0;top:8px;left:38px}
+.dnsw i.st2{top:19px;left:50px;width:2px;height:2px}
+.dnsw[data-night="1"] i.st{animation:twinkle 1.6s ease-in-out infinite}
+.dnsw[data-night="1"] i.st2{animation-delay:.8s}
+@keyframes twinkle{0%,100%{opacity:.2}50%{opacity:1}}
+.hinge{animation:hinge .7s ease;transform-origin:top center}
+@keyframes hinge{0%{transform:perspective(300px) rotateX(0)}35%{transform:perspective(300px) rotateX(-40deg)}70%{transform:perspective(300px) rotateX(10deg)}100%{transform:perspective(300px) rotateX(0)}}
+#ivzoom{display:none!important}
+#ivdl .ck{display:none}
+#ivdl.dldone .ar{animation:dropArr .7s ease-in forwards}
+#ivdl.dldone .ck{display:inline-block;animation:popCk .4s .7s both}
+@keyframes dropArr{0%{transform:translateY(0);opacity:1}100%{transform:translateY(14px);opacity:0}}
+@keyframes popCk{0%{transform:scale(0);opacity:0}70%{transform:scale(1.25);opacity:1}100%{transform:scale(1)}}
+body:has(#tbox.open) #dock,body:has(#tbox.open) #quick{display:none}
 .lkrow label{margin:0}
 .mapcell{display:flex;flex-direction:column;align-items:center;gap:8px}
 .maplbl{font-size:13px;color:#00f2ff;text-shadow:0 0 8px rgba(0,242,255,.6)}
@@ -505,8 +532,8 @@ html[data-look="rimy"] #cmode.on{border-color:#00f2ff!important;color:#00f2ff!im
   <img id="ivimg" alt="chhobi">
   <div id="ivzoom"><button id="izp" type="button" aria-label="Zoom in">+</button><button id="izm" type="button" aria-label="Zoom out">&minus;</button><button id="izr" type="button" aria-label="Reset">1:1</button></div>
   <div id="ivbar">
-    <button id="ivcancel" type="button"><span>Cancel</span></button>
-    <button id="ivdl" type="button">&#11015; <span>Download</span></button>
+    <button id="ivcancel" type="button"><span>Delete</span></button>
+    <button id="ivdl" type="button"><b class="ar">&#11015;</b><b class="ck">&#10003;</b> <span>Download</span></button>
     <button id="ivedit" type="button">&#9999;&#65039; <span>Edit</span></button>
   </div>
 </div>
@@ -522,7 +549,7 @@ html[data-look="rimy"] #cmode.on{border-color:#00f2ff!important;color:#00f2ff!im
     <button id="anclear" type="button"><span class="acl">Clear</span></button>
   </div>
   <div class="ancv"><canvas id="ancan"></canvas></div>
-  <div class="anfoot"><button id="ancancel" type="button"><span class="acn">Cancel</span></button><button id="andone" type="button"><span class="adn">Done</span></button></div>
+  <div class="anfoot"><button id="andone" type="button"><span class="adn">Done</span></button></div>
 </div>
 <div id="lib" hidden>
   <div class="libhead"><b>Library</b><button id="libx" type="button" aria-label="Close">&times;</button></div>
@@ -607,9 +634,10 @@ html[data-look="rimy"] #cmode.on{border-color:#00f2ff!important;color:#00f2ff!im
 <div id="set">
   <div class="sheet">
     <h2>R.I.M.Y Settings</h2>
+    <div class="dnrow"><label style="margin:0">Day / Night</label><button id="dnsw" class="dnsw" type="button" aria-label="Day / Night" data-night="1"><i class="cl"></i><i class="cl cl2"></i><i class="st"></i><i class="st st2"></i><span class="dnknob"><i class="sun"></i><i class="moon"></i></span></button></div>
     <div class="lkrow"><span></span><label>Lekhar akar</label></div>
     <div class="look">
-      <div class="mapcell"><span class="maplbl">Google Map</span><div class="maptile" id="maptile" role="application" aria-label="Map"></div><button id="mapgo" type="button" class="mapgo" onclick="openMaps()">Google Maps khulo</button></div>
+      <div class="mapcell"><div class="maptile" id="maptile" role="application" aria-label="Map"></div><button id="mapgo" type="button" class="mapgo" onclick="openMaps()">Google Maps khulo</button></div>
       <div style="display:none"><label for="skin" style="display:none">Avatar skin</label><select id="skin" style="display:none">
         <option value="orig">Original (anime)</option>
         <option value="villain">Dark Purple Villain</option>
@@ -705,8 +733,7 @@ html[data-look="rimy"] #cmode.on{border-color:#00f2ff!important;color:#00f2ff!im
       <button id="close" type="button" style="margin-left:auto;background:var(--accent);color:#2a0f1a;border-color:var(--accent)">Save</button>
     </div>
     <div class="note">Key ar chat shudhu ei phone-er browser-e save thake.</div>
-    <div class="note" id="ver">R.I.M.Y Version 1.4.5.4</div>
-    <div class="note" id="vdbg" style="font-size:11px;opacity:.75;word-break:break-all"></div>
+    <div class="note" id="ver">R.I.M.Y Version 1.4.5.5</div>
   </div>
 </div>
 
@@ -807,7 +834,7 @@ const TR = {
   'Golar sur (barale meye-r moto mishti hoy)':'Pitch (higher sounds more feminine)',
   'Voice-er list tomar phone-er installed voice theke ashe. Upore je bhasha bachho, sei bhashar voice dekhabe.':'Voices come from your phone and match the language chosen above.',
   'Ja ja mone rekheche':'Things I remember','Chat muchho':'Clear chat','Save':'Save',
-  'Key ar chat shudhu ei phone-er browser-e save thake.':'Key and chat are saved only in this phone\'s browser.',
+  'Key ar chat shudhu ei phone-er browser-e save thake.':'Key and chat are saved in this phone\'s browser.',
   'ready':'ready','shunchhi...':'listening...','bolchhi...':'speaking...','bhabchhi...':'thinking...','Mic chepe kotha bolo':'Tap the mic and speak','Kotha bolo ba likho...':'Ask to R.I.M.Y. Type....','golaa toiri korchhi...':'preparing voice...',
   'ami R.I.M.Y. Tomar ki khobor? Kotha bolo, ami shunchhi.':'I am R.I.M.Y. What is new with you? Tell me, I am listening.'
  },
@@ -928,6 +955,11 @@ function uiLang(){
 function recLang(){ return S.lang === 'auto' ? 'bn-BD' : (S.lang || 'bn-BD'); }
 function selPre(){ const v = ($('lang') && $('lang').value) || S.lang || 'bn-BD'; return v === 'auto' ? uiLang() : v.slice(0, 2); }
 ['bn','hi','ar','ur','en'].forEach(k => { TR[k] = TR[k] || {}; });
+Object.assign(TR.en, {'Highlight karo':'Highlight','Delete':'Delete','Ei bhashay {n}ta voice pawa gelo. Meye-r golar ta na pele phone-er Settings > Text-to-speech e giye aro voice install koro.':'This language has {n} voices. If the female voice is missing, install more voices in phone Settings > Text-to-speech.'});
+Object.assign(TR.bn, {'Delete':'মুছো','Ei bhashay {n}ta voice pawa gelo. Meye-r golar ta na pele phone-er Settings > Text-to-speech e giye aro voice install koro.':'এই ভাষায় {n}টি voice পাওয়া গেলো। মেয়েদের গলা না পেলে phone-এর Settings > Text-to-speech-এ গিয়ে আরও voice install করো।'});
+Object.assign(TR.hi, {'Delete':'हटाएँ','Ei bhashay {n}ta voice pawa gelo. Meye-r golar ta na pele phone-er Settings > Text-to-speech e giye aro voice install koro.':'इस भाषा में {n} आवाज़ें मिलीं। महिला आवाज़ न हो तो फ़ोन की Settings > Text-to-speech में और आवाज़ें इंस्टॉल करें।'});
+Object.assign(TR.ar, {'Delete':'حذف','Ei bhashay {n}ta voice pawa gelo. Meye-r golar ta na pele phone-er Settings > Text-to-speech e giye aro voice install koro.':'تم العثور على {n} أصوات لهذه اللغة. لتثبيت المزيد، اذهب إلى إعدادات الهاتف > تحويل النص إلى كلام.'});
+Object.assign(TR.ur, {'Delete':'حذف کریں','Ei bhashay {n}ta voice pawa gelo. Meye-r golar ta na pele phone-er Settings > Text-to-speech e giye aro voice install koro.':'اس زبان کی {n} آوازیں ملیں۔ مزید آوازیں فون کی Settings > Text-to-speech میں انسٹال کریں۔'});
 Object.assign(TR.en, {'Tana diye lekhar akar set koro; ekhon ei lekha-ta bar-komte thakbe.':'Drag the slider to set the text size; this sample changes with it.','Nijer chhobi avatar ar wallpaper hishebe set hoyeche.':'Your photo is set as avatar and wallpaper.','Google Maps khulo':'Open Google Maps'});
 Object.assign(TR.bn, {'Tana diye lekhar akar set koro; ekhon ei lekha-ta bar-komte thakbe.':'স্লাইডার টেনে লেখার আকার ঠিক করো; এই নমুনা সেই অনুযায়ী বদলাবে।','Nijer chhobi avatar ar wallpaper hishebe set hoyeche.':'তোমার ছবি অবতার আর ওয়ালপেপার হিসেবে সেট হয়েছে।','Google Maps khulo':'গুগল ম্যাপ খোলো'});
 Object.assign(TR.hi, {'Tana diye lekhar akar set koro; ekhon ei lekha-ta bar-komte thakbe.':'स्लाइडर से अक्षरों का आकार सेट करें; यह नमूना उसी के साथ बदलेगा।','Nijer chhobi avatar ar wallpaper hishebe set hoyeche.':'आपकी तस्वीर अवतार और वॉलपेपर के रूप में सेट हो गई है।','Google Maps khulo':'गूगल मैप खोलें'});
@@ -1717,7 +1749,7 @@ async function askGemini(){
     /* Google Search-er quota na thakle free tool (weather, dam, Wikipedia, news) diye cholbe */
     if(mode === 'search'){
       mode = 'tools';
-      if(!gsqShown){ gsqShown = true; addMsg('sys', ms('gsq')); speakQuiet(ms('gsq')); }
+      if(!gsqShown){ gsqShown = true; }
       ({r, j} = await call());
     }
     /* Tarpor-o quota na thakle halka (lite) model try kori */
@@ -2211,7 +2243,7 @@ const WALLS = {
   custom:() => { const u = LS.get('rimy_wall', ''); return u ? ['linear-gradient(rgba(10,5,14,.42),rgba(10,5,14,.42)),url(' + u + ')', 'cover'] : ['', '']; }
 };
 function applyLook(force){
-  if(S.skin !== 'orig'){ S.skin = 'orig'; persist(); }
+  if(S.skin !== 'orig' && S.skin !== 'custom'){ S.skin = 'orig'; persist(); }
   if(!S.lookRimy){ S.lookRimy = 1; S.theme = 'rimy'; if(S.wall === 'aurora') S.wall = 'none'; persist(); }
   if(!S.lookRimy2){ S.lookRimy2 = 1; S.theme = 'rimy'; persist(); }
   const th = force || S.theme;
@@ -2252,7 +2284,7 @@ function pickWall(file){
 
 /* ---------- ui ---------- */
 function openSettings(){
-  initMapTile();
+  initMapTile(); syncDN();
   $('key').value = S.key; $('model').value = S.model; $('uname').value = S.name; $('lang').value = S.lang;
   $('search').checked = S.search; $('speak').checked = S.speak;
   renderMem();
@@ -2303,6 +2335,9 @@ async function listModels(){
 }
 
 $('gear').onclick = openSettings;
+/* Day / Night switch: sun -> moon, clouds niche, stars jhilmil */
+function syncDN(){ const b = $('dnsw'); if(b) b.dataset.night = S.theme === 'light' ? '0' : '1'; }
+$('dnsw').onclick = () => { S.theme = S.theme === 'light' ? 'rimy' : 'light'; $('theme').value = S.theme; persist(); applyLook(); syncDN(); };
 $('theme').onchange = () => { S.theme = $('theme').value; persist(); applyLook(); };
 $('wall').onchange = () => { S.wall = $('wall').value; if(S.wall === 'custom' && !LS.get('rimy_wall', '')){ $('wnote').textContent = 'Age "Gallery theke chhobi nao" chepe ekta chhobi bachho.'; } persist(); applyLook(); };
 $('tcol').onchange = () => { S.tcol = $('tcol').value; persist(); applyLook(); };
@@ -2408,8 +2443,21 @@ $('ivimg').addEventListener('pointermove', e => {
 const ivUp = e => { ivPtrs.delete(e.pointerId); if(ivPtrs.size < 2) ivPinch = null; };
 $('ivimg').addEventListener('pointerup', ivUp);
 $('ivimg').addEventListener('pointercancel', ivUp);
-$('ivx').onclick = $('ivcancel').onclick = () => { $('imgview').hidden = true; };
-$('ivdl').onclick = () => saveDL(viewSrc);
+$('ivx').onclick = /* Delete: hinge swing, tarpor chat theke chhobi-ta sorano (storage-e kichu muchhe na) */
+$('ivcancel').onclick = () => {
+  const b = $('ivcancel'); b.classList.add('hinge');
+  setTimeout(() => {
+    b.classList.remove('hinge'); $('imgview').hidden = true;
+    const src = viewSrc;
+    document.querySelectorAll('#msgs img.pic').forEach(im => { if(im.src === src) im.remove(); });
+  }, 700);
+};
+/* Download: arrow niche pore check hoye jay */
+$('ivdl').onclick = () => {
+  saveDL(viewSrc);
+  const b = $('ivdl'); b.classList.remove('dldone'); void b.offsetWidth; b.classList.add('dldone');
+  setTimeout(() => b.classList.remove('dldone'), 2200);
+};
 $('ivedit').onclick = () => { $('imgview').hidden = true; $('lib').hidden = true; openAnnot(viewSrc); };
 
 /* ---- In-app confirm (Android WebView-te window.confirm kaj kore na) ---- */
@@ -2589,8 +2637,7 @@ document.querySelectorAll('.ancol').forEach(b => b.onclick = () => {
 });
 $('anundo').onclick = () => { anStrokes.pop(); redrawAn(); };
 $('anclear').onclick = () => { anStrokes = []; redrawAn(); };
-$('anx').onclick = $('ancancel').onclick = () => { $('annot').hidden = true; };
-$('andone').onclick = () => {
+$('anx').onclick = $('andone').onclick = () => {
   const m = /^data:(.*?);base64,(.*)$/.exec($('ancan').toDataURL('image/jpeg', 0.88)); if(!m) return;
   pendingImg = {mime: m[1], data: m[2]}; pendingEdit = false;
   $('annot').hidden = true;
@@ -2692,7 +2739,7 @@ function fillVoices(){
   });
   sel.value = (S.vmap && S.vmap[pre]) || '';
   if(sel.value !== ((S.vmap && S.vmap[pre]) || '')) sel.value = '';
-  $('vnote').textContent = VOICES.length ? ('Ei bhashay ' + (sel.options.length - 1) + 'ta voice pawa gelo. Meye-r golar ta na pele phone-er Settings > Text-to-speech e giye aro voice install koro.') : tr('Voice list ekhono load hoy ni. Settings bondho kore abar kholo.');
+  $('vnote').textContent = VOICES.length ? (tr('Ei bhashay {n}ta voice pawa gelo. Meye-r golar ta na pele phone-er Settings > Text-to-speech e giye aro voice install koro.').split('{n}').join(String(sel.options.length - 1))) : tr('Voice list ekhono load hoy ni. Settings bondho kore abar kholo.');
 }
 function loadVoices(){ if('speechSynthesis' in window){ VOICES = speechSynthesis.getVoices(); fillVoices(); } }
 if('speechSynthesis' in window){ speechSynthesis.onvoiceschanged = loadVoices; loadVoices(); }
