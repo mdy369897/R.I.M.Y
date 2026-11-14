@@ -555,13 +555,27 @@ html[data-wallfs="1"][data-mode="day"] .dockwrap{background:rgba(255,255,255,.55
 html[data-wallfs="1"][data-mode="day"] #call{background:linear-gradient(rgba(245,242,251,.5),rgba(245,242,251,.68)),var(--wallimg,none) center/cover no-repeat #f5f2fb!important}
 
 /* Hologram globe (v1.4.5.8) */
-.maptile{isolation:isolate;background:radial-gradient(circle at 50% 42%,#0c2b3c 0%,#041119 58%,#02060c 100%);box-shadow:0 0 22px rgba(0,242,255,.45),0 0 60px rgba(0,242,255,.16),inset 0 0 28px rgba(0,242,255,.22);animation:holoflick 5s infinite}
+.maptile{isolation:isolate;background:radial-gradient(circle at 50% 42%,#0c2b3c 0%,#041119 58%,#02060c 100%);box-shadow:0 0 22px rgba(0,242,255,.45),0 0 60px rgba(0,242,255,.16),inset 0 0 28px rgba(0,242,255,.22);animation:holoflick 5s infinite,hologlitch 6s infinite}
 .maptile canvas{filter:drop-shadow(0 0 6px rgba(0,242,255,.35));opacity:1}
 .maptile::before{content:'';position:absolute;inset:0;z-index:2;border-radius:50%;pointer-events:none;background:linear-gradient(to bottom,transparent,rgba(0,242,255,.14) 50%,transparent) 0 -40%/100% 30% no-repeat,repeating-linear-gradient(to bottom,rgba(0,242,255,.06) 0 1px,transparent 1px 3px);mix-blend-mode:screen;animation:holoscan 7s linear infinite}
 .maptile::after{content:'';position:absolute;inset:0;z-index:3;border-radius:50%;pointer-events:none;background:radial-gradient(circle at 50% 50%,transparent 62%,rgba(0,242,255,.16) 84%,rgba(138,43,226,.40) 100%);mix-blend-mode:screen}
 @keyframes holoflick{0%,100%{opacity:1}46%{opacity:1}47%{opacity:.84}48%{opacity:1}73%{opacity:.93}74%{opacity:1}}
 @keyframes holoscan{0%{background-position:0 -40%,0 0}100%{background-position:0 140%,0 0}}
-@media (prefers-reduced-motion: reduce){.maptile,.maptile::before{animation:none}}
+@media (prefers-reduced-motion: reduce){.maptile,.maptile::before,.maptile canvas,.mapbase{animation:none}}
+/* Hologram projection (v1.4.6.3): globe nichu theke ertha veriye ashe, nichhe projector plate */
+.mapbase{width:72%;height:12px;margin-top:-7px;border-radius:50%;background:radial-gradient(ellipse at center,rgba(0,242,255,.8) 0%,rgba(0,242,255,.25) 42%,transparent 72%);filter:blur(1.5px);animation:mapbasepulse 3s ease-in-out infinite;pointer-events:none}
+@keyframes mapbasepulse{0%,100%{opacity:.7;transform:scaleX(1)}50%{opacity:1;transform:scaleX(1.07)}}
+.maptile canvas{animation:holoin 1.8s cubic-bezier(.2,.7,.2,1) both}
+/* v1.4.6.3: globe jeno screen theke bairer dike utthe ache (3D tilt + float) ar nicher light beam */
+.mapcell{perspective:700px}
+.maptile{animation:holoflick 5s infinite,holofloat 5.5s ease-in-out infinite;transform-origin:50% 100%;will-change:transform}
+@keyframes holofloat{0%,100%{transform:translateZ(0) rotateX(12deg) translateY(0)}50%{transform:translateZ(42px) rotateX(-4deg) translateY(-7px)}}
+.mapbase{position:relative}
+.mapbase::after{content:'';position:absolute;left:12%;right:12%;bottom:5px;height:96px;pointer-events:none;background:linear-gradient(to top,rgba(0,242,255,.34),rgba(0,242,255,.08) 62%,transparent);clip-path:polygon(36% 100%,64% 100%,100% 0,0 0);filter:blur(2px);mix-blend-mode:screen;animation:holobeam 3s ease-in-out infinite}
+@keyframes holobeam{0%,100%{opacity:.5}50%{opacity:1}}
+@media (prefers-reduced-motion: reduce){.maptile{animation:none}.mapbase::after{animation:none}}
+@keyframes holoin{0%{clip-path:inset(100% 0 0 0);opacity:0;transform:scale(.93);filter:brightness(2.4) drop-shadow(0 0 12px #00f2ff)}55%{clip-path:inset(0 0 0 0);opacity:.95;transform:scale(1.01);filter:brightness(1.5) drop-shadow(0 0 10px #00f2ff)}100%{clip-path:inset(0 0 0 0);opacity:1;transform:scale(1);filter:drop-shadow(0 0 6px rgba(0,242,255,.35))}}
+@keyframes hologlitch{0%,89%,100%{transform:translateX(0)}90%{transform:translateX(-2px)}91%{transform:translateX(2px)}92%{transform:translateX(0)}}
 </style>
 </head>
 <body>
@@ -690,7 +704,7 @@ html[data-wallfs="1"][data-mode="day"] #call{background:linear-gradient(rgba(245
     <div class="dnrow"><label style="margin:0">Day / Night</label><button id="dnsw" class="dnsw" type="button" aria-label="Day / Night" data-night="1"><i class="cl"></i><i class="cl cl2"></i><i class="st"></i><i class="st st2"></i><span class="dnknob"><i class="sun"></i><i class="moon"></i></span></button></div>
     <div class="lkrow"><span></span><label>Lekhar akar</label></div>
     <div class="look">
-      <div class="mapcell"><div class="maptile" id="maptile" role="application" aria-label="Map"></div><button id="mapgo" type="button" class="mapgo" onclick="openMaps()">Google Maps khulo</button></div>
+      <div class="mapcell"><div class="maptile" id="maptile" role="application" aria-label="Map"></div><div class="mapbase" aria-hidden="true"></div><button id="mapgo" type="button" class="mapgo" onclick="openMaps()">Google Maps khulo</button></div>
       <div style="display:none"><label for="skin" style="display:none">Avatar skin</label><select id="skin" style="display:none">
         <option value="orig">Original (anime)</option>
         <option value="villain">Dark Purple Villain</option>
@@ -764,8 +778,6 @@ html[data-wallfs="1"][data-mode="day"] #call{background:linear-gradient(rgba(245
     <div class="chk"><input id="openlive" type="checkbox"><label for="openlive" style="margin:0;color:var(--fg)">App khulei direct Live voice page</label></div>
     <div class="chk"><input id="wake" type="checkbox"><label for="wake" style="margin:0;color:var(--fg)">"Hey Rimy" bole jagbe (Android app-e, notification thakbe)</label></div>
     <div class="row"><button id="accbtn" type="button">Screen-e access chalu koro</button></div>
-    <div class="row"><button id="talkbtn" type="button" hidden>Ekbar bolo</button></div>
-    <div class="note" id="talknote" hidden>Ek tap-e shunbe. Quick Settings-e "Bolo R.I.M.Y" tile-o pabe.</div>
     <div class="note">Screen dekhar jonno Settings &gt; Accessibility &gt; R.I.M.Y te on korte hobe. Password field kokhono dekhbo na.</div>
     <label for="ttsvoice">Gemini voice</label>
     <div class="row"><select id="ttsvoice">
@@ -788,7 +800,7 @@ html[data-wallfs="1"][data-mode="day"] #call{background:linear-gradient(rgba(245
       <button id="close" type="button" style="margin-left:auto;background:var(--accent);color:#2a0f1a;border-color:var(--accent)">Save</button>
     </div>
     <div class="note">Key ar chat shudhu ei phone-er browser-e save thake.</div>
-    <div class="note" id="ver">R.I.M.Y Version 1.4.6.1</div>
+    <div class="note" id="ver">R.I.M.Y Version 1.4.6.3</div>
   </div>
 </div>
 
@@ -2692,6 +2704,7 @@ function initMapTile(){
         projection: { type: 'globe' }
       });
       mapInst.on('load', () => { mapOk = true; try{ mapInst.resize(); }catch(e){} });
+      mapInst.on('style.load', () => { try{ mapInst.setFog({ range:[0.8,8], color:'rgba(0,40,60,0.9)', 'high-color':'rgba(0,242,255,0.45)', 'horizon-blend':0.25, 'space-color':'rgba(2,6,12,1)', 'star-intensity':0.35 }); }catch(e){} });
       mapInst.on('error', () => {
         if(!mapOk && !mapFallback){ mapFallback = true; try{ mapInst.setStyle('https://tiles.openfreemap.org/styles/liberty'); }catch(e){} }
       });
@@ -2853,14 +2866,6 @@ $('wake').onchange = () => {
   try{ if(window.RimyNative && RimyNative.setWake) RimyNative.setWake(S.wake); }catch(e){}
 };
 $('accbtn').onclick = () => { try{ RimyNative.openAccess(); }catch(e){ addMsg('sys', ms('appOnly')); } };
-try{ if(nativeOk('talk')){ $('talkbtn').hidden = false; $('talknote').hidden = false; } }catch(e){}
-$('talkbtn').onclick = () => {
-  const b = $('talkbtn');
-  b.disabled = true; b.textContent = tr('Shunchhi... ekbar bolo');
-  addMsg('sys', tr('Shunchhi... ekbar bolo'));
-  try{ RimyNative.talk(); }catch(e){ addMsg('sys', ms('appOnly')); }
-  setTimeout(() => { b.disabled = false; b.textContent = tr('Ekbar bolo'); }, 7000);
-};
 /* Hey Rimy theke khule: Rimy nijei "Ji, bolo" bole shunbe */
 window.onWake = () => {
   unlockAudio();
