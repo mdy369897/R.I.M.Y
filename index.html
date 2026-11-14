@@ -548,18 +548,17 @@ html[data-wallfs="1"] #msgs{background-image:none!important}
 html[data-wallfs="1"] header{background:rgba(18,14,36,.34)!important}
 html[data-wallfs="1"] #mnav,html[data-wallfs="1"] #cnav{background:rgba(18,14,36,.42)!important}
 html[data-wallfs="1"] .dockwrap{background:rgba(22,18,44,.58)!important}
-html[data-wallfs="1"] #call{background:linear-gradient(rgba(10,5,14,.20),rgba(10,5,14,.55))!important}
+html[data-wallfs="1"] #call{background:linear-gradient(rgba(10,5,14,.35),rgba(10,5,14,.6)),var(--wallimg,none) center/cover no-repeat #0b0814!important}
 html[data-wallfs="1"][data-mode="day"] header{background:rgba(255,255,255,.36)!important}
 html[data-wallfs="1"][data-mode="day"] #mnav,html[data-wallfs="1"][data-mode="day"] #cnav{background:rgba(255,255,255,.45)!important}
 html[data-wallfs="1"][data-mode="day"] .dockwrap{background:rgba(255,255,255,.55)!important}
-html[data-wallfs="1"][data-mode="day"] #call{background:linear-gradient(rgba(255,255,255,.12),rgba(245,242,251,.45))!important}
-#wallfull.on{border-color:rgba(0,242,255,.7)}
+html[data-wallfs="1"][data-mode="day"] #call{background:linear-gradient(rgba(245,242,251,.5),rgba(245,242,251,.68)),var(--wallimg,none) center/cover no-repeat #f5f2fb!important}
 
 /* Hologram globe (v1.4.5.8) */
 .maptile{isolation:isolate;background:radial-gradient(circle at 50% 42%,#0c2b3c 0%,#041119 58%,#02060c 100%);box-shadow:0 0 22px rgba(0,242,255,.45),0 0 60px rgba(0,242,255,.16),inset 0 0 28px rgba(0,242,255,.22);animation:holoflick 5s infinite}
-.maptile canvas{filter:grayscale(1) sepia(1) hue-rotate(158deg) saturate(3.2) brightness(1.2) contrast(1.12) drop-shadow(0 0 5px rgba(0,242,255,.5));opacity:.94}
-.maptile::before{content:'';position:absolute;inset:0;z-index:2;border-radius:50%;pointer-events:none;background:linear-gradient(to bottom,transparent,rgba(0,242,255,.30) 50%,transparent) 0 -40%/100% 30% no-repeat,repeating-linear-gradient(to bottom,rgba(0,242,255,.12) 0 1px,transparent 1px 3px);mix-blend-mode:screen;animation:holoscan 7s linear infinite}
-.maptile::after{content:'';position:absolute;inset:0;z-index:3;border-radius:50%;pointer-events:none;background:radial-gradient(circle at 50% 50%,transparent 58%,rgba(0,242,255,.20) 78%,rgba(138,43,226,.60) 100%);mix-blend-mode:screen}
+.maptile canvas{filter:drop-shadow(0 0 6px rgba(0,242,255,.35));opacity:1}
+.maptile::before{content:'';position:absolute;inset:0;z-index:2;border-radius:50%;pointer-events:none;background:linear-gradient(to bottom,transparent,rgba(0,242,255,.14) 50%,transparent) 0 -40%/100% 30% no-repeat,repeating-linear-gradient(to bottom,rgba(0,242,255,.06) 0 1px,transparent 1px 3px);mix-blend-mode:screen;animation:holoscan 7s linear infinite}
+.maptile::after{content:'';position:absolute;inset:0;z-index:3;border-radius:50%;pointer-events:none;background:radial-gradient(circle at 50% 50%,transparent 62%,rgba(0,242,255,.16) 84%,rgba(138,43,226,.40) 100%);mix-blend-mode:screen}
 @keyframes holoflick{0%,100%{opacity:1}46%{opacity:1}47%{opacity:.84}48%{opacity:1}73%{opacity:.93}74%{opacity:1}}
 @keyframes holoscan{0%{background-position:0 -40%,0 0}100%{background-position:0 140%,0 0}}
 @media (prefers-reduced-motion: reduce){.maptile,.maptile::before{animation:none}}
@@ -734,7 +733,6 @@ html[data-wallfs="1"][data-mode="day"] #call{background:linear-gradient(rgba(255
       </div>
     </div>
     <div class="row" style="margin-top:8px"><button id="wallpick" type="button">Gallery theke chhobi nao</button><button id="wallclr" type="button">Muchho</button></div>
-    <div class="row" style="margin-top:6px"><button id="wallfull" type="button" aria-pressed="true">Full screen: Chalu</button></div>
     <input id="wallfile" type="file" accept="image/*" style="display:none">
     <input id="imgfile" type="file" accept="image/*" style="display:none">
     <input id="camfile" type="file" accept="image/*" capture="environment" style="display:none">
@@ -788,7 +786,7 @@ html[data-wallfs="1"][data-mode="day"] #call{background:linear-gradient(rgba(255
       <button id="close" type="button" style="margin-left:auto;background:var(--accent);color:#2a0f1a;border-color:var(--accent)">Save</button>
     </div>
     <div class="note">Key ar chat shudhu ei phone-er browser-e save thake.</div>
-    <div class="note" id="ver">R.I.M.Y Version 1.4.5.8</div>
+    <div class="note" id="ver">R.I.M.Y Version 1.4.5.9</div>
   </div>
 </div>
 
@@ -813,7 +811,7 @@ async function autoPickModel(lite, opts){
   const ver = n => { const m = n.match(/(\d+)(?:\.(\d+))?/); return m ? parseFloat(m[1] + '.' + (m[2] || '0')) : 0; };
   flash.sort((a, b) => ver(b) - ver(a));
   const pick = flash[0] || names.find(n => /flash/i.test(n)) || names[0];
-  if(!pick) throw new Error('Tomar key-te kono model pawa jay ni.');
+  if(!pick) throw new Error(tr('Tomar key-te kono model pawa jay ni.'));
   if(!opts.temp){ S.model = pick; persist(); }
   return pick;
 }
@@ -1110,7 +1108,17 @@ function ms(id, vars){
 const ORIG_TXT = new WeakMap();
 function applyI18n(){
   const L = uiLang(), d = TR[L] || {};
-  try{ syncWallFull(); }catch(e){}
+  try{ if(nativeOk('setLang')) RimyNative.setLang(L); }catch(e){}
+  document.querySelectorAll('[aria-label],[title],[placeholder],[alt]').forEach(el => {
+    ['aria-label','title','placeholder','alt'].forEach(a => {
+      if(!el.hasAttribute(a)) return;
+      const cur = el.getAttribute(a);
+      if(el['_o_' + a] === undefined || cur !== el['_t_' + a]) el['_o_' + a] = cur;
+      const t = d[el['_o_' + a]] || el['_o_' + a];
+      el['_t_' + a] = t;
+      if(cur !== t) el.setAttribute(a, t);
+    });
+  });
   document.querySelectorAll('.m.sys[data-msid]').forEach(el => { const v = el.dataset.vars ? JSON.parse(el.dataset.vars) : null; el.textContent = ms(el.dataset.msid, v); });
   document.querySelectorAll('[data-tr]').forEach(el => { el.textContent = (el.dataset.name ? el.dataset.name + ', ' : '') + tr(el.dataset.tr); });
   lastMsId = null; lastMsVars = null;
@@ -1214,7 +1222,7 @@ function setCallBg(){
   applyAv(src, F.w, F.h, F);
 }
 window.addEventListener('resize', () => { if(callOpen) setCallBg(); });
-function openCall(){ if(callOpen) return; callOpen = true; sizeBig(); $('call').classList.add('open'); applyLook('rimy'); setNav('home'); callState(); }
+function openCall(){ if(callOpen) return; callOpen = true; sizeBig(); $('call').classList.add('open'); applyLook(); setNav('home'); callState(); }
 function closeCall(){ callOpen = false; callMuted = false; handsfree = false; $('handsfree').style.background = ''; $('handsfree').style.color = ''; document.body.classList.remove('callchat'); stopIntro(); try{ $('vtalk').pause(); $('vlisten').pause(); }catch(e){} $('call').classList.remove('open'); applyLook(); setNav('chat'); /* background wake-er por abar "Hey Rimy" shunte shuru korbe */ try{ if(window.RimyNative && RimyNative.wakeIdle) RimyNative.wakeIdle(); }catch(e){} }
 var lastCallTxt = '';
 function callTxt(t){ lastCallTxt = t || ''; renderCallTxt(); }
@@ -1568,11 +1576,11 @@ function addBar(d, text){
   const bar = document.createElement('div'); bar.className = 'bar';
   const mk = (k, label, fn, cls) => { const b = document.createElement('button'); b.type = 'button'; b.title = label; b.setAttribute('aria-label', label); if(cls) b.className = cls; b.innerHTML = '<svg viewBox="0 0 24 24">' + IC[k] + '</svg>'; b.onclick = () => fn(b); bar.appendChild(b); return b; };
   mk('copy', 'Copy', b => { flashBtn(b); copyText(text).then(() => setStatus('copy hoyeche')).catch(() => setStatus('copy hoy ni')); });
-  mk('share', 'Share', b => { flashBtn(b); if(navigator.share){ navigator.share({text}).catch(() => {}); } else { copyText(text).then(() => setStatus('copy hoyeche (share nei)')); } });
+  mk('share', 'Share', b => { flashBtn(b); if(navigator.share){ navigator.share({text}).catch(() => {}); } else { copyText(text).then(() => setStatus(tr('copy hoyeche (share nei)'))); } });
   mk('speak', 'Shuno', b => { flashBtn(b, 6000); unlockAudio(); stopAudio(); if('speechSynthesis' in window) speechSynthesis.cancel(); speak(text); });
-  const lk = mk('like', 'Bhalo laglo', b => { const on = !b.classList.contains('on'); b.classList.toggle('on', on); dk.classList.remove('on'); saveFeedback(text, on ? 'like' : ''); });
-  const dk = mk('dislike', 'Bhalo lage ni', b => { const on = !b.classList.contains('on'); b.classList.toggle('on', on); lk.classList.remove('on'); saveFeedback(text, on ? 'dislike' : ''); });
-  mk('redo', 'Abar uttor dao', () => { if(busy) return; const last = history[history.length - 1], u = history[history.length - 2]; if(!last || last.role !== 'model' || !u || u.role !== 'user') return; history.pop(); d.remove(); send(u.text, true); }, 'rg');
+  const lk = mk('like', tr('Bhalo laglo'), b => { const on = !b.classList.contains('on'); b.classList.toggle('on', on); dk.classList.remove('on'); saveFeedback(text, on ? 'like' : ''); });
+  const dk = mk('dislike', tr('Bhalo lage ni'), b => { const on = !b.classList.contains('on'); b.classList.toggle('on', on); lk.classList.remove('on'); saveFeedback(text, on ? 'dislike' : ''); });
+  mk('redo', tr('Abar uttor dao'), () => { if(busy) return; const last = history[history.length - 1], u = history[history.length - 2]; if(!last || last.role !== 'model' || !u || u.role !== 'user') return; history.pop(); d.remove(); send(u.text, true); }, 'rg');
   d.appendChild(bar);
 }
 
@@ -1590,7 +1598,7 @@ function renderRich(d, text){
     const lab = document.createElement('span'); lab.textContent = 'Prompt / code';
     const cp = document.createElement('button'); cp.type = 'button'; cp.textContent = 'Copy';
     cp.onclick = () => copyText(code).then(() => setStatus('copy hoyeche')).catch(() => setStatus('copy hoy ni'));
-    const ex = document.createElement('button'); ex.type = 'button'; ex.textContent = 'Dekho / Choto';
+    const ex = document.createElement('button'); ex.type = 'button'; ex.textContent = tr('Dekho / Choto');
     ex.onclick = () => box.classList.toggle('open');
     h.append(lab, cp, ex);
     const pre = document.createElement('pre'); pre.textContent = code;
@@ -1626,7 +1634,7 @@ function addMsg(role, text, extra, target){
   if(role === 'sys' && lastMsId){ const id = lastMsId, vv = lastMsVars; if(text === ms(id, vv)){ d.dataset.msid = id; if(vv) d.dataset.vars = JSON.stringify(vv); } lastMsId = null; lastMsVars = null; }
   if(role === 'her' && /^(?:```|~~~)/m.test(text)) renderRich(d, text); else d.textContent = text;
   if(extra && (extra.img || extra.imgKey)){
-    const im = document.createElement('img'); im.alt = 'chhobi'; im.className = 'pic';
+    const im = document.createElement('img'); im.alt = tr('chhobi'); im.className = 'pic';
     if(extra.img) im.src = extra.img;
     else getImg(extra.imgKey).then(s => { if(s) im.src = s; else im.remove(); });
     im.onclick = () => openViewer(im.src);
@@ -1705,12 +1713,12 @@ const TOOLS = {
       const t = await r.text();
       try{ arts = (JSON.parse(t).articles || []).map(x => ({title:x.title, source:x.domain, date:x.seendate, url:x.url})); }
       catch(e){ why.push('GDELT: HTTP ' + r.status + ' ' + t.slice(0, 40)); }
-      if(!arts.length && !why.length) why.push('GDELT: kono article nai');
+      if(!arts.length && !why.length) why.push(tr('GDELT: kono article nai'));
     }catch(e){ why.push('GDELT: ' + e.message); }
     const alts = [['Google News (rss2json)', newsViaRss2json], ['Google News (proxy)', newsViaProxy], ['Open news feeds', newsViaFeeds]];
     for(const [name, fn] of alts){
       if(arts.length) break;
-      try{ arts = await fn(q, a.lang); if(!arts.length) why.push(name + ': kono article nai'); }
+      try{ arts = await fn(q, a.lang); if(!arts.length) why.push(name + tr(': kono article nai')); }
       catch(e){ why.push(name + ': ' + e.message); }
     }
     if(!arts.length) return {error:'could not get news right now, ask again in a few seconds', debug:why.join(' | ')};
@@ -1753,7 +1761,7 @@ const TOOLS = {
   async read_screen(){
     if(!window.RimyNative || !RimyNative.readScreen) return {error:'Screen dekha shudhu R.I.M.Y Android app-e cholbe.'};
     const t = RimyNative.readScreen();
-    if(t === 'NOT_ENABLED') return {error:'Screen-reading on kora nai. Settings-e "Screen-e access chalu koro" chapo, tarpor Accessibility-te R.I.M.Y on koro.'};
+    if(t === 'NOT_ENABLED') return {error:tr('Screen-reading on kora nai. Settings-e "Screen-e access chalu koro" chapo, tarpor Accessibility-te R.I.M.Y on koro.')};
     if(t === 'EMPTY') return {screen_text:'', note:'Screen-e kono lekha paoa jay ni.'};
     return {screen_text: t};
   },
@@ -1799,7 +1807,7 @@ async function askGemini(){
   if(!r.ok && (r.status === 404 || /not found|no longer available|not supported|new users/i.test((j.error && j.error.message) || ''))){
     const old = model;
     const picked = await autoPickModel();
-    if(picked !== old){ model = picked; addMsg('sys', 'Model "' + old + '" pawa jay ni. "' + picked + '" use korchhi.'); ({r, j} = await call()); }
+    if(picked !== old){ model = picked; addMsg('sys', tr('Model "{a}" pawa jay ni. "{b}" use korchhi.').replace('{a}', old).replace('{b}', picked)); ({r, j} = await call()); }
   }
   if(!r.ok && r.status === 429){
     /* Google Search-er quota na thakle free tool (weather, dam, Wikipedia, news) diye cholbe */
@@ -1848,7 +1856,7 @@ async function askGemini(){
     }
   }
   for(let step = 0; step < 6; step++){
-    if(!r.ok){ throw new Error(busy() ? 'Gemini-te ekhon onek chap, onno user-ra beshi use korche. Ek minute por abar try koro.' : ((j.error && j.error.message) || ('HTTP ' + r.status))); }
+    if(!r.ok){ throw new Error(busy() ? tr('Gemini-te ekhon onek chap, onno user-ra beshi use korche. Ek minute por abar try koro.') : ((j.error && j.error.message) || ('HTTP ' + r.status))); }
     const c = j.candidates && j.candidates[0];
     const parts = (c && c.content && c.content.parts) || [];
     const calls = parts.filter(p => p.functionCall);
@@ -1856,7 +1864,7 @@ async function askGemini(){
       const text = parts.map(p => p.text || '').join('');
       const chunks = (c && c.groundingMetadata && c.groundingMetadata.groundingChunks) || [];
       chunks.filter(x => x.web).forEach(x => sources.push(x.web));
-      if(!text) throw new Error('Kono uttor ashe ni. Abar try koro.');
+      if(!text) throw new Error(tr('Kono uttor ashe ni. Abar try koro.'));
       return {text, sources};
     }
     contents.push({role:'model', parts});
@@ -1877,7 +1885,7 @@ async function askGemini(){
     contents.push({role:'user', parts:resp});
     ({r, j} = await callSafe());
   }
-  throw new Error('Tool onek bar chalano hoyeche. Abar try koro.');
+  throw new Error(tr('Tool onek bar chalano hoyeche. Abar try koro.'));
 }
 
 function parseTags(raw){
@@ -1924,7 +1932,7 @@ function readImgFile(f){
         c.getContext('2d').drawImage(im, 0, 0, c.width, c.height);
         ok({mime:'image/jpeg', data:c.toDataURL('image/jpeg', 0.85).split(',')[1]});
       };
-      im.onerror = () => no(new Error('chhobi-ta pora jachchhe na'));
+      im.onerror = () => no(new Error(tr('chhobi-ta pora jachchhe na')));
       im.src = fr.result;
     };
     fr.onerror = () => no(new Error('file-ta pora jachchhe na'));
@@ -1942,7 +1950,7 @@ async function genImage(prompt, inImg){
   if(!r.ok) throw new Error((j.error && j.error.message) || ('HTTP ' + r.status));
   const parts = (j.candidates && j.candidates[0] && j.candidates[0].content && j.candidates[0].content.parts) || [];
   const p = parts.find(x => x.inlineData && x.inlineData.data);
-  if(!p) throw new Error('chhobi ashe ni (quota ba safety filter)');
+  if(!p) throw new Error(tr('chhobi ashe ni (quota ba safety filter)'));
   return 'data:' + (p.inlineData.mimeType || 'image/png') + ';base64,' + p.inlineData.data;
 }
 const IMG_NOTE = '(chhobi)';
@@ -1965,7 +1973,7 @@ async function send(text, regen){
   let bubbleImg = null;
   if(pendingImg){ sessImg = pendingImg; bubbleImg = 'data:' + sessImg.mime + ';base64,' + sessImg.data; pendingImg = null; pendingEdit = false; $('qimg').classList.remove('on'); hideImgPrev(); if(!text) text = pt('explain'); text = text + ' [chhobi]'; }
   const bubbleKey = bubbleImg ? await saveImg(bubbleImg) : null;
-  if(!regen && !pendingImg && mapIntent(text)){ addMsg('you', text); const rep = 'Thik ache, Google Map khulchi.'; addMsg('her', rep); speak(rep); openMaps(); return; }
+  if(!regen && !pendingImg && mapIntent(text)){ addMsg('you', text); const rep = tr('Thik ache, Google Map khulchi.'); addMsg('her', rep); speak(rep); openMaps(); return; }
   if(!S.key){ addMsg('sys', ms('shuru')); openSettings(); return; }
   /* "limit koto?" type proshno: Google-er asol limit API theke pawa jay na, tai ami nijer hisab-tai bolbo */
   if(!regen && !pendingImg && text.length < 120 && /(limit|quota)/i.test(text) && /(koto|kotota|kotoi|baki|bakita|ache|kom|remain|current|ekhon|how much|left)/i.test(text)){
@@ -1974,8 +1982,8 @@ async function send(text, regen){
     const n = LS.get('rimy_cnt_' + day, 0) || 0;
     const cap = S.dcap || 0;
     const reply = cap > 0
-      ? 'Aj ei phone theke ' + n + 'ti Gemini request gechhe. Tomar Settings-e set kora daily limit: ' + cap + '. Google-er asol bakita limit ami API theke dekhte parina; Google AI Studio-te dekhe nao.'
-      : 'Aj ei phone theke ' + n + 'ti Gemini request gechhe. Google-er asol bakita limit ami API theke dekhte parina. Asol hisab Google AI Studio-te dekho.';
+      ? tr('Aj ei phone theke {n}ti Gemini request gechhe. Tomar Settings-e set kora daily limit: {cap}. Google-er asol bakita limit ami API theke dekhte parina; Google AI Studio-te dekhe nao.').replace('{n}', n).replace('{cap}', cap)
+      : tr('Aj ei phone theke {n}ti Gemini request gechhe. Google-er asol bakita limit ami API theke dekhte parina. Asol hisab Google AI Studio-te dekho.').replace('{n}', n);
     addMsg('her', reply, {nobar: true}); speakQuiet(reply);
     return;
   }
@@ -2040,7 +2048,7 @@ async function pickTtsModel(){
   const ver = n => { const m = n.match(/(\d+)(?:\.(\d+))?/); return m ? parseFloat(m[1] + '.' + (m[2] || '0')) : 0; };
   const list = (j.models || []).map(m => m.name.replace('models/', '')).filter(n => /tts/i.test(n));
   list.sort((a, b) => (/flash/i.test(b) - /flash/i.test(a)) || (ver(b) - ver(a)));
-  if(!list.length) throw new Error('Tomar key-te Gemini voice model nei');
+  if(!list.length) throw new Error(tr('Tomar key-te Gemini voice model nei'));
   S.ttsModel = list[0]; persist();
   return S.ttsModel;
 }
@@ -2111,7 +2119,7 @@ async function geminiSpeak(text, voice){
   if(!r.ok){ if(r.status === 404){ S.ttsModel = ''; persist(); } const e = new Error((j.error && j.error.message) || ('HTTP ' + r.status)); e.status = r.status; throw e; }
   const parts = (j.candidates && j.candidates[0] && j.candidates[0].content && j.candidates[0].content.parts) || [];
   const part = parts.find(x => x.inlineData && x.inlineData.data);
-  if(!part) throw new Error('Gemini voice ashe ni');
+  if(!part) throw new Error(tr('Gemini voice ashe ni'));
   const rate = parseInt(((part.inlineData.mimeType || '').match(/rate=(\d+)/) || [])[1], 10) || 24000;
   orb('speaking'); setStatus('bolchhi...');
   await playPcm(part.inlineData.data, rate);
@@ -2218,7 +2226,7 @@ function nativeListen(){
       window.__emptyRuns = (window.__emptyRuns | 0) + 1;
       if(window.__emptyRuns < 4){ listening = false; setTimeout(() => { if(callOpen && !busy) startListen(); }, 250); return; }
       window.__emptyRuns = 0; handsfree = false; listening = false; $('mic').classList.remove('on'); orb(''); setStatus('ready');
-      callTxt('Mic bondho holo. Mic-e tap kore abar bolo'); return;
+      callTxt(tr('Mic bondho holo. Mic-e tap kore abar bolo')); return;
     }
     listening = false; $('mic').classList.remove('on'); if(avState === 'listening') orb(''); setStatus('ready');
     const txt = txt0;
@@ -2229,8 +2237,8 @@ function nativeListen(){
   };
   /* native mic-e somossha hole karon dekhao (jate bujha jay kon bhasha/kon somossha) */
   window.onNativeErr = code => {
-    const why = {2:'Internet lagbe (voice recognition-er jonno)', 3:'Mic-e audio somossha', 5:'Voice app-e somossha', 6:'Kono kotha shona jay ni', 7:'Kotha bujhte parlam na, abar bolo', 8:'Voice recognizer byosto ache, ektu pore abar bolo', 9:'Mic permission nei', 12:'Ei bhasha-r voice recognition phone-e nei (Google app-e offline bhasha download koro)', 13:'Ei bhasha-r voice recognition phone-e nei (Google app-e offline bhasha download koro)'}[code] || 'Oggat somossha';
-    addMsg('sys', 'Mic: ' + why + ' (code ' + code + ')');
+    const why = {2:tr('Internet lagbe (voice recognition-er jonno)'), 3:tr('Mic-e audio somossha'), 5:tr('Voice app-e somossha'), 6:tr('Kono kotha shona jay ni'), 7:tr('Kotha bujhte parlam na, abar bolo'), 8:tr('Voice recognizer byosto ache, ektu pore abar bolo'), 9:tr('Mic permission nei'), 12:tr('Ei bhasha-r voice recognition phone-e nei (Google app-e offline bhasha download koro)'), 13:tr('Ei bhasha-r voice recognition phone-e nei (Google app-e offline bhasha download koro)')}[code] || 'Oggat somossha';
+    addMsg('sys', tr('Mic: ') + why + ' (code ' + code + ')');
   };
   try{ RimyNative.listen(recLang(), S.lang === 'auto'); }catch(e){ window.onNativeSpeech(''); }
 }
@@ -2244,7 +2252,7 @@ function startListen(){
   rec = new SR();
   rec.lang = recLang(); rec.interimResults = true; rec.continuous = true;
   heard = '';
-  rec.onstart = () => { listening = true; $('mic').classList.add('on'); orb('listening'); setStatus('shunchhi... (kotha thamle ektu pore uttor dibo)'); };
+  rec.onstart = () => { listening = true; $('mic').classList.add('on'); orb('listening'); setStatus(tr('shunchhi... (kotha thamle ektu pore uttor dibo)')); };
   rec.onresult = e => {
     heard = buildHeard(e.results);
     $('txt').value = (pending + ' ' + heard).trim(); callTxt($('txt').value);
@@ -2298,8 +2306,7 @@ const WALLS = {
   waves:() => [svgUrl(120, 36, '<path d="M0 18 Q15 4 30 18 T60 18 T90 18 T120 18" fill="none" stroke="rgba(255,255,255,.12)" stroke-width="2"/>'), '120px 36px'],
   custom:() => { const u = LS.get('rimy_wall', ''); return u ? ['linear-gradient(rgba(10,5,14,.42),rgba(10,5,14,.42)),url(' + u + ')', 'cover'] : ['', '']; }
 };
-function wallFullOn(){ try{ return S.wall === 'custom' && S.wallFull !== false && !!LS.get('rimy_wall', ''); }catch(e){ return false; } }
-function syncWallFull(){ const b = $('wallfull'); if(!b) return; const on = S.wallFull !== false; b.textContent = tr(on ? 'Full screen: Chalu' : 'Full screen: Bondho'); b.setAttribute('aria-pressed', on ? 'true' : 'false'); b.classList.toggle('on', on); }
+function wallFullOn(){ try{ return S.wall === 'custom' && !!LS.get('rimy_wall', ''); }catch(e){ return false; } }
 function applyLook(force){
   if(S.skin !== 'orig'){ S.skin = 'orig'; persist(); }
   if(!S.lookRimy){ S.lookRimy = 1; S.theme = 'rimy'; if(S.wall === 'aurora') S.wall = 'none'; persist(); }
@@ -2322,7 +2329,7 @@ function applyLook(force){
   const wf = wallFullOn(), wfEl = $('wallfs'); document.documentElement.dataset.wallfs = wf ? '1' : '0';
   if(wfEl) wfEl.style.backgroundImage = wf ? 'url(' + LS.get('rimy_wall', '') + ')' : 'none';
   if(wf) m.style.backgroundImage = 'none';
-  syncWallFull();
+  document.documentElement.style.setProperty('--wallimg', wf && wfEl ? 'url("' + LS.get('rimy_wall', '') + '")' : 'none');
   m.style.backgroundPosition = (sk || S.wall === 'custom') ? 'center' : '0 0'; m.style.backgroundRepeat = (sk || S.wall === 'custom' || ['aurora','sunset','ocean'].includes(S.wall)) ? 'no-repeat' : 'repeat';
   avTarget = themeCols();
 }
@@ -2375,10 +2382,10 @@ function pickWall(file){
       c.width = Math.round(im.width * k); c.height = Math.round(im.height * k);
       c.getContext('2d').drawImage(im, 0, 0, c.width, c.height);
       const u = c.toDataURL('image/jpeg', .72);
-      try{ localStorage.setItem('rimy_wall', JSON.stringify(u)); }catch(e){ $('wnote').textContent = 'Chhobi-ta onek boro, save hoy ni. Chhoto chhobi dao.'; return; }
+      try{ localStorage.setItem('rimy_wall', JSON.stringify(u)); }catch(e){ $('wnote').textContent = tr('Chhobi-ta onek boro, save hoy ni. Chhoto chhobi dao.'); return; }
       S.wall = 'custom'; S.wallFull = true; $('wall').value = 'custom'; persist(); applyLook(); $('wnote').textContent = tr('Nijer chhobi wallpaper hishebe set hoyeche.');
     };
-    im.onerror = () => { $('wnote').textContent = 'Ei chhobi khola gelo na.'; };
+    im.onerror = () => { $('wnote').textContent = tr('Ei chhobi khola gelo na.'); };
     im.src = fr.result;
   };
   fr.readAsDataURL(file);
@@ -2423,7 +2430,7 @@ function saveSettings(){
 }
 async function listModels(){
   const key = $('key').value.trim();
-  if(!key){ $('mnote').textContent = 'Age API key ta upore dao.'; return; }
+  if(!key){ $('mnote').textContent = tr('Age API key ta upore dao.'); return; }
   $('mnote').textContent = 'Dekhchhi...';
   try{
     const r = await fetch('https://generativelanguage.googleapis.com/v1beta/models?pageSize=100&key=' + encodeURIComponent(key));
@@ -2432,8 +2439,8 @@ async function listModels(){
     const names = (j.models || []).filter(m => (m.supportedGenerationMethods || []).includes('generateContent')).map(m => m.name.replace('models/', ''));
     const dl = $('models'); dl.textContent = '';
     names.forEach(n => { const o = document.createElement('option'); o.value = n; dl.appendChild(o); });
-    $('mnote').textContent = names.length + 'ta model pawa gelo. Model box-e chape dhoro, list ashbe. (flash dhoroner ta nao.)';
-  }catch(e){ $('mnote').textContent = 'Hoy ni: ' + e.message; }
+    $('mnote').textContent = tr('{n}ta model pawa gelo. Model box-e chape dhoro, list ashbe. (flash dhoroner ta nao.)').replace('{n}', names.length);
+  }catch(e){ $('mnote').textContent = tr('Hoy ni: ') + e.message; }
 }
 
 $('gear').onclick = openSettings;
@@ -2446,9 +2453,8 @@ $('tcol').onchange = () => { S.tcol = $('tcol').value; persist(); applyLook(); }
 $('fs').oninput = () => { const x = fsPos(); if(fsX0 !== null) fsKick(x - fsX0); fsX0 = x; };
 $('fs').onchange = () => { S.fs = parseInt($('fs').value, 10) || 16; persist(); applyLook(); fsX0 = null; };
 $('wallpick').onclick = () => $('wallfile').click();
-$('wallfull').onclick = () => { S.wallFull = S.wallFull === false; persist(); applyLook(); };
 $('wallfile').onchange = e => { pickWallFile(e.target.files[0]); e.target.value = ''; };
-$('wallclr').onclick = () => { try{ localStorage.removeItem('rimy_wall'); }catch(e){} if(S.wall === 'custom') S.wall = 'none'; if(S.skin === 'custom') S.skin = 'orig'; $('wall').value = S.wall; $('skin').value = S.skin || 'orig'; persist(); applyLook(); $('wnote').textContent = 'Nijer chhobi muchhe feleche.'; };
+$('wallclr').onclick = () => { try{ localStorage.removeItem('rimy_wall'); }catch(e){} if(S.wall === 'custom') S.wall = 'none'; if(S.skin === 'custom') S.skin = 'orig'; $('wall').value = S.wall; $('skin').value = S.skin || 'orig'; persist(); applyLook(); $('wnote').textContent = tr('Nijer chhobi muchhe feleche.'); };
 $('skin').onchange = () => {
   S.skin = $('skin').value;
   if(S.skin !== 'orig') loadSkin(S.skin);
@@ -2637,7 +2643,7 @@ async function libImgs(body){
   const list = (await allImgs()).sort((x, y) => y.at - x.at);
   if(!list.length){ libNote(body, tr('Ekhono kono chhobi nei.')); return; }
   const grid = document.createElement('div'); grid.className = 'libgrid';
-  list.forEach(x => { const im = document.createElement('img'); im.src = x.src; im.alt = 'chhobi'; im.onclick = () => openViewer(x.src); grid.appendChild(im); });
+  list.forEach(x => { const im = document.createElement('img'); im.src = x.src; im.alt = tr('chhobi'); im.onclick = () => openViewer(x.src); grid.appendChild(im); });
   body.appendChild(grid);
 }
 $('pmlib').onclick = e => { e.stopPropagation(); $('pmenu').classList.remove('open'); openLib('chat'); };
@@ -2677,7 +2683,7 @@ function initMapTile(){
     try{
       mapInst = new maplibregl.Map({
         container: el,
-        style: 'https://tiles.openfreemap.org/styles/dark',
+        style: 'https://tiles.openfreemap.org/styles/bright',
         center: [20, 20], zoom: 1.4,
         attributionControl: false, renderWorldCopies: false,
         maxPitch: 0, dragRotate: true, touchZoomRotate: true, dragPan: true,
@@ -2792,6 +2798,10 @@ const TR_NEW = {
   ur:{'Camera diye chhobi':'کیمرے سے تصویر','Library':'لائبریری','Chat':'چیٹ','Chhobi':'تصاویر','Dekho':'دیکھیں','Phire ano':'واپس لاؤ','Band koro':'بند کرو','Ekhon-er chat':'موجودہ چیٹ','Ekhono kono chat nei.':'ابھی کوئی چیٹ نہیں۔','Ekhono kono chhobi nei.':'ابھی کوئی تصویر نہیں۔','Cancel':'منسوخ','Download':'ڈاؤن لوڈ','Edit':'ایڈٹ'}
 };
 for(const L in TR_NEW) Object.assign(TR[L], TR_NEW[L]);
+/* UI strings: Banglish-mukto (en/hi/ar/ur). Age thaka translation-er upor overwrite kore na. */
+const TR_UI = {"Model \"{a}\" pawa jay ni. \"{b}\" use korchhi.": {"en": "Model \"{a}\" not found. Using \"{b}\".", "hi": "मॉडल \"{a}\" नहीं मिला। \"{b}\" इस्तेमाल कर रही हूँ।", "ar": "لم يتم العثور على النموذج \"{a}\". سأستخدم \"{b}\".", "ur": "ماڈل \"{a}\" نہیں ملا۔ \"{b}\" استعمال کر رہی ہوں۔"}, "{n}ta model pawa gelo. Model box-e chape dhoro, list ashbe. (flash dhoroner ta nao.)": {"en": "{n} models found. Tap the model box to see the list. (Pick a non-flash one.)", "hi": "{n} मॉडल मिले। मॉडल बॉक्स दबाओ, सूची आएगी। (फ़्लैश वाला न लें।)", "ar": "تم العثور على {n} نموذجًا. اضغط خانة النموذج لتظهر القائمة. (اختر نموذجًا غير flash.)", "ur": "{n} ماڈل ملے۔ ماڈل باکس پر ٹیپ کریں، فہرست آ جائے گی۔ (flash والا نہ لیں۔)"}, "Hoy ni: ": {"en": "Failed: ", "hi": "विफल: ", "ar": "فشل: ", "ur": "ناکام: "}, "Din-e Gemini request-er limit (tomar nijer hishab, 0 = bondho)": {"en": "Daily Gemini request limit (your own count, 0 = off)", "hi": "रोज़ Gemini request की सीमा (आपका अपना हिसाब, 0 = बंद)", "ar": "حد طلبات Gemini اليومي (حسابك الخاص، 0 = إيقاف)", "ur": "روزانہ Gemini درخواست کی حد (آپ کا اپنا حساب، 0 = بند)"}, "Ei bhasha-r voice recognition phone-e nei (Google app-e offline bhasha download koro)": {"en": "Voice recognition for this language is not on the phone (download the offline language in the Google app)", "hi": "इस भाषा की voice recognition फ़ोन में नहीं है (Google app में offline भाषा डाउनलोड करो)", "ar": "التعرف على الصوت لهذه اللغة غير موجود على الهاتف (حمّل اللغة دون اتصال من تطبيق Google)", "ur": "اس زبان کی voice recognition فون میں نہیں ہے (Google app میں آف لائن زبان ڈاؤن لوڈ کریں)"}, "Tomar key-te Gemini voice model nei": {"en": "Your key has no Gemini voice model.", "hi": "आपकी key में Gemini voice model नहीं है।", "ar": "مفتاحك لا يحتوي على نموذج صوت Gemini.", "ur": "آپ کی key میں Gemini voice model نہیں ہے۔"}, "Tomar key-te kono model pawa jay ni.": {"en": "No model found for your key.", "hi": "आपकी key के लिए कोई मॉडल नहीं मिला।", "ar": "لم يتم العثور على أي نموذج لمفتاحك.", "ur": "آپ کی key کے لیے کوئی ماڈل نہیں ملا۔"}, "Gemini voice ashe ni": {"en": "Gemini voice did not come.", "hi": "Gemini voice नहीं आई।", "ar": "لم يصل صوت Gemini.", "ur": "Gemini voice نہیں آئی۔"}, "Gemini voice hoy ni: ": {"en": "Gemini voice failed: ", "hi": "Gemini voice विफल: ", "ar": "فشل صوت Gemini: ", "ur": "Gemini voice ناکام: "}, "Gemini voice kaj korche. Pochhondo hole Save chapo.": {"en": "Gemini voice is working. If you like it, press Save.", "hi": "Gemini voice काम कर रही है। पसंद आए तो Save दबाओ।", "ar": "صوت Gemini يعمل. إذا أعجبك فاضغط حفظ.", "ur": "Gemini voice کام کر رہی ہے۔ پسند ہو تو Save دبائیں۔"}, "Gemini-te ekhon onek chap, onno user-ra beshi use korche. Ek minute por abar try koro.": {"en": "Gemini is very busy right now because many users are using it. Try again in a minute.", "hi": "Gemini अभी बहुत व्यस्त है, दूसरे users ज़्यादा इस्तेमाल कर रहे हैं। एक मिनट बाद फिर कोशिश करो।", "ar": "خدمة Gemini مشغولة جدًا الآن بسبب كثرة المستخدمين. حاول مرة أخرى بعد دقيقة.", "ur": "Gemini اس وقت بہت مصروف ہے، دوسرے users زیادہ استعمال کر رہے ہیں۔ ایک منٹ بعد دوبارہ کوشش کریں۔"}, "Aj ei phone theke {n}ti Gemini request gechhe. Tomar Settings-e set kora daily limit: {cap}. Google-er asol bakita limit ami API theke dekhte parina; Google AI Studio-te dekhe nao.": {"en": "Today this phone made {n} Gemini requests. Daily limit set in your Settings: {cap}. I cannot see Google's real remaining limit through the API; check Google AI Studio.", "hi": "आज इस फ़ोन से {n} Gemini requests गईं। Settings में सेट की गई daily limit: {cap}। Google की असली बची हुई limit मैं API से नहीं देख सकती; Google AI Studio में देखो।", "ar": "أرسل هذا الهاتف {n} طلبات Gemini اليوم. الحد اليومي في الإعدادات: {cap}. لا أستطيع رؤية الحد المتبقي الحقيقي من Google عبر الـ API؛ راجعه في Google AI Studio.", "ur": "آج اس فون سے {n} Gemini requests گئیں۔ Settings میں سیٹ روزانہ حد: {cap}۔ Google کی اصل باقی حد میں API سے نہیں دیکھ سکتی؛ Google AI Studio میں دیکھیں۔"}, "Aj ei phone theke {n}ti Gemini request gechhe. Google-er asol bakita limit ami API theke dekhte parina. Asol hisab Google AI Studio-te dekho.": {"en": "Today this phone made {n} Gemini requests. I cannot see Google's real remaining limit through the API. Check the real count in Google AI Studio.", "hi": "आज इस फ़ोन से {n} Gemini requests गईं। Google की असली बची हुई limit मैं API से नहीं देख सकती। असली हिसाब Google AI Studio में देखो।", "ar": "أرسل هذا الهاتف {n} طلبات Gemini اليوم. لا أستطيع رؤية الحد المتبقي الحقيقي من Google عبر الـ API. راجع العدد الحقيقي في Google AI Studio.", "ur": "آج اس فون سے {n} Gemini requests گئیں۔ Google کی اصل باقی حد میں API سے نہیں دیکھ سکتی۔ اصل حساب Google AI Studio میں دیکھیں۔"}, "Thik ache, Google Map khulchi.": {"en": "OK, opening Google Maps.", "hi": "ठीक है, Google Map खोल रही हूँ।", "ar": "حسنًا، أفتح خرائط Google.", "ur": "ٹھیک ہے، Google Map کھول رہی ہوں۔"}, "Bhalo laglo": {"en": "Liked it", "hi": "अच्छा लगा", "ar": "أعجبني", "ur": "اچھا لگا"}, "Bhalo lage ni": {"en": "Didn't like it", "hi": "अच्छा नहीं लगा", "ar": "لم يعجبني", "ur": "اچھا نہیں لگا"}, "Abar uttor dao": {"en": "Answer again", "hi": "फिर से जवाब दो", "ar": "أجب مرة أخرى", "ur": "دوبارہ جواب دو"}, "Tool onek bar chalano hoyeche. Abar try koro.": {"en": "The tool was used too many times. Try again.", "hi": "Tool बहुत बार चलाया गया। फिर कोशिश करो।", "ar": "تم استخدام الأداة مرات كثيرة. حاول مرة أخرى.", "ur": "Tool بہت بار چلایا گیا۔ دوبارہ کوشش کریں۔"}, "Kono uttor ashe ni. Abar try koro.": {"en": "No answer came. Try again.", "hi": "कोई जवाब नहीं आया। फिर कोशिश करो।", "ar": "لم يصل أي رد. حاول مرة أخرى.", "ur": "کوئی جواب نہیں آیا۔ دوبارہ کوشش کریں۔"}, "Kotha bujhte parlam na, abar bolo": {"en": "I couldn't understand, please say it again", "hi": "बात समझ नहीं आई, फिर से बोलो", "ar": "لم أفهم، قل ذلك مرة أخرى", "ur": "بات سمجھ نہیں آئی، دوبارہ بولو"}, "Kono kotha shona jay ni": {"en": "Couldn't hear anything", "hi": "कुछ सुनाई नहीं दिया", "ar": "لم أسمع أي كلام", "ur": "کچھ سنائی نہیں دیا"}, "Internet lagbe (voice recognition-er jonno)": {"en": "Internet needed (for voice recognition)", "hi": "Internet चाहिए (voice recognition के लिए)", "ar": "يلزم الإنترنت (للتعرف على الصوت)", "ur": "Internet درکار ہے (voice recognition کے لیے)"}, "Mic-e audio somossha": {"en": "Microphone audio problem", "hi": "Mic के audio में समस्या", "ar": "مشكلة في صوت الميكروفون", "ur": "Mic کی آواز میں مسئلہ"}, "Voice app-e somossha": {"en": "Problem in the voice app", "hi": "Voice app में समस्या", "ar": "مشكلة في تطبيق الصوت", "ur": "Voice app میں مسئلہ"}, "Voice recognizer byosto ache, ektu pore abar bolo": {"en": "Voice recognizer is busy, say it again in a moment", "hi": "Voice recognizer व्यस्त है, थोड़ी देर बाद फिर बोलो", "ar": "جهاز التعرف على الصوت مشغول، قل ذلك بعد قليل", "ur": "Voice recognizer مصروف ہے، تھوڑی دیر بعد دوبارہ بولو"}, "Mic permission nei": {"en": "No mic permission", "hi": "Mic की अनुमति नहीं है", "ar": "لا يوجد إذن للميكروفون", "ur": "Mic کی اجازت نہیں ہے"}, "Mic bondho holo. Mic-e tap kore abar bolo": {"en": "Mic stopped. Tap the mic and speak again.", "hi": "Mic बंद हो गया। Mic दबाकर फिर बोलो।", "ar": "توقف الميكروفون. اضغط على الميكروفون وتكلم مرة أخرى.", "ur": "Mic بند ہو گیا۔ Mic دبا کر دوبارہ بولو۔"}, "Mic: ": {"en": "Mic: ", "hi": "Mic: ", "ar": "الميكروفون: ", "ur": "Mic: "}, "shunchhi... (kotha thamle ektu pore uttor dibo)": {"en": "listening... (I'll answer a moment after you stop)", "hi": "सुन रही हूँ... (बात खत्म होने पर थोड़ी देर में जवाब दूँगी)", "ar": "أستمع... (سأجيب بعد لحظة من توقفك)", "ur": "سن رہی ہوں... (بات ختم ہونے پر تھوڑی دیر میں جواب دوں گی)"}, "Ji, bolo": {"en": "Yes, go on", "hi": "जी, बोलो", "ar": "نعم، تفضل", "ur": "جی، بولو"}, "Kaj": {"en": "Task", "hi": "काम", "ar": "مهمة", "ur": "کام"}, "Kaj ki?": {"en": "What is the task?", "hi": "काम क्या है?", "ar": "ما المهمة؟", "ur": "کام کیا ہے؟"}, "Ekhono kono kaj nei.": {"en": "No tasks yet.", "hi": "अभी कोई काम नहीं है।", "ar": "لا توجد مهام بعد.", "ur": "ابھی کوئی کام نہیں ہے۔"}, "30 min pore janiye dao": {"en": "Remind me in 30 min", "hi": "30 मिनट बाद बताओ", "ar": "ذكّرني بعد 30 دقيقة", "ur": "30 منٹ بعد یاد دلاؤ"}, "Ei din-e kichu nei.": {"en": "Nothing today.", "hi": "आज कुछ नहीं है।", "ar": "لا شيء اليوم.", "ur": "آج کچھ نہیں ہے۔"}, "Ekhono kono note nei.": {"en": "No notes yet.", "hi": "अभी कोई नोट नहीं है।", "ar": "لا توجد ملاحظات بعد.", "ur": "ابھی کوئی نوٹ نہیں ہے۔"}, "Dekho / Choto": {"en": "Show full / short", "hi": "पूरा / छोटा", "ar": "كامل / مختصر", "ur": "مکمل / مختصر"}, "Chhobi tulo": {"en": "Take photo", "hi": "फ़ोटो लो", "ar": "التقط صورة", "ur": "تصویر کھینچیں"}, "Bondho": {"en": "Close", "hi": "बंद करें", "ar": "إغلاق", "ur": "بند کریں"}, "Ei chhobi-ta delete korbo?": {"en": "Delete this image?", "hi": "यह तस्वीर हटाऊँ?", "ar": "حذف هذه الصورة؟", "ur": "یہ تصویر حذف کروں؟"}, "Ei chhobi khola gelo na.": {"en": "This image could not be opened.", "hi": "यह तस्वीर खुल नहीं पाई।", "ar": "تعذر فتح هذه الصورة.", "ur": "یہ تصویر نہیں کھل سکی۔"}, "chhobi-ta pora jachchhe na": {"en": "Cannot read the image", "hi": "तस्वीर पढ़ी नहीं जा रही", "ar": "لا يمكن قراءة الصورة", "ur": "تصویر پڑھی نہیں جا رہی"}, "chhobi ashe ni (quota ba safety filter)": {"en": "Image did not come (quota or safety filter)", "hi": "तस्वीर नहीं आई (quota या safety filter)", "ar": "لم تصل الصورة (الحصة أو مرشّح الأمان)", "ur": "تصویر نہیں آئی (quota یا safety filter)"}, "Chhobi-ta onek boro, save hoy ni. Chhoto chhobi dao.": {"en": "The image is too big to save. Please use a smaller image.", "hi": "तस्वीर बहुत बड़ी है, सेव नहीं हुई। छोटी तस्वीर दो।", "ar": "الصورة كبيرة جدًا ولم تُحفظ. استخدم صورة أصغر.", "ur": "تصویر بہت بڑی ہے، محفوظ نہیں ہوئی۔ چھوٹی تصویر دو۔"}, "Nijer chhobi muchhe feleche.": {"en": "Your photo has been removed.", "hi": "आपकी तस्वीर हटा दी गई है।", "ar": "تمت إزالة صورتك.", "ur": "آپ کی تصویر حذف کر دی گئی ہے۔"}, "Pinch ba +/- diye zoom koro, drag kore sajao.": {"en": "Pinch or use +/- to zoom, drag to arrange.", "hi": "Pinch या +/- से zoom करो, drag करके सजाओ।", "ar": "اضغط بإصبعين أو استخدم +/- للتكبير، واسحب للترتيب.", "ur": "Pinch یا +/- سے zoom کریں، drag کر کے ترتیب دیں۔"}, "Voice bondho/chalu": {"en": "Voice on/off", "hi": "आवाज़ चालू/बंद", "ar": "تشغيل/إيقاف الصوت", "ur": "آواز آن/آف"}, "copy hoyeche (share nei)": {"en": "Copied (sharing not available)", "hi": "कॉपी हो गया (share उपलब्ध नहीं)", "ar": "تم النسخ (المشاركة غير متاحة)", "ur": "کاپی ہو گیا (share دستیاب نہیں)"}, "chhobi": {"en": "image", "hi": "तस्वीर", "ar": "صورة", "ur": "تصویر"}, "Screen dekhar jonno Settings > Accessibility > R.I.M.Y te on korte hobe. Password field kokhono dekhbo na.": {"en": "To read the screen, turn on R.I.M.Y in Settings > Accessibility. I never read password fields.", "hi": "स्क्रीन देखने के लिए Settings > Accessibility > R.I.M.Y चालू करना होगा। Password field मैं कभी नहीं देखूँगी।", "ar": "لقراءة الشاشة، فعّل R.I.M.Y من Settings > Accessibility. لن أقرأ حقول كلمات المرور أبدًا.", "ur": "اسکرین دیکھنے کے لیے Settings > Accessibility > R.I.M.Y آن کرنا ہوگا۔ Password field میں کبھی نہیں دیکھوں گی۔"}, "Screen-reading on kora nai. Settings-e \"Screen-e access chalu koro\" chapo, tarpor Accessibility-te R.I.M.Y on koro.": {"en": "Screen reading is off. In Settings tap \"Turn on screen access\", then turn R.I.M.Y on in Accessibility.", "hi": "Screen पढ़ना बंद है। Settings में \"Turn on screen access\" दबाओ, फिर Accessibility में R.I.M.Y चालू करो।", "ar": "قراءة الشاشة متوقفة. في الإعدادات اضغط \"تشغيل الوصول إلى الشاشة\"، ثم فعّل R.I.M.Y في إمكانية الوصول.", "ur": "Screen reading بند ہے۔ Settings میں \"Turn on screen access\" دبائیں، پھر Accessibility میں R.I.M.Y آن کریں۔"}, "GDELT: kono article nai": {"en": "GDELT: no article found", "hi": "GDELT: कोई article नहीं मिला", "ar": "GDELT: لم يُعثر على مقال", "ur": "GDELT: کوئی article نہیں ملا"}, ": kono article nai": {"en": ": no article found", "hi": ": कोई article नहीं मिला", "ar": ": لم يُعثر على مقال", "ur": ": کوئی article نہیں ملا"}, "App khulei direct Live voice page": {"en": "Open the app straight to the Live voice page", "hi": "ऐप खुलते ही सीधे Live voice page", "ar": "افتح التطبيق مباشرة على صفحة الصوت المباشر", "ur": "ایپ کھلتے ہی سیدھا Live voice page"}, "Age API key ta upore dao.": {"en": "Put the API key above first.", "hi": "पहले ऊपर API key डालो।", "ar": "ضع مفتاح API أعلاه أولاً.", "ur": "پہلے اوپر API key ڈالیں۔"}, "Age upore API key dao.": {"en": "Put the API key above first.", "hi": "पहले ऊपर API key डालो।", "ar": "ضع مفتاح API أعلاه أولاً.", "ur": "پہلے اوپر API key ڈالیں۔"}, "Nijer chhobi wallpaper hishebe set hoyeche.": {"en": "Your photo is set as the wallpaper.", "hi": "आपकी तस्वीर वॉलपेपर के रूप में सेट हो गई है।", "ar": "تم تعيين صورتك كخلفية.", "ur": "آپ کی تصویر بطور وال پیپر سیٹ ہو گئی ہے۔"}};
+(function(){ for(const k in TR_UI){ for(const lg of ['en','hi','ar','ur']){ if(TR[lg] && !(k in TR[lg])) TR[lg][k] = TR_UI[k][lg]; } } })();
+
 Object.assign(TR.en, {'Full screen: Chalu':'Full screen: On','Full screen: Bondho':'Full screen: Off','Nijer chhobi wallpaper hishebe set hoyeche.':'Your photo is set as the wallpaper.'});
 Object.assign(TR.bn, {'Full screen: Chalu':'ফুল স্ক্রিন: চালু','Full screen: Bondho':'ফুল স্ক্রিন: বন্ধ','Nijer chhobi wallpaper hishebe set hoyeche.':'তোমার ছবি ওয়ালপেপার হিসেবে সেট হয়েছে।'});
 Object.assign(TR.hi, {'Full screen: Chalu':'फ़ुल स्क्रीन: चालू','Full screen: Bondho':'फ़ुल स्क्रीन: बंद','Nijer chhobi wallpaper hishebe set hoyeche.':'आपकी तस्वीर वॉलपेपर के रूप में सेट हो गई है।'});
@@ -2876,12 +2886,12 @@ $('pmenu').querySelectorAll('button[data-go]').forEach(b => b.onclick = e => { e
 $('ttest').onclick = async () => {
   unlockAudio();
   const key = $('key').value.trim(); if(key) S.key = key;
-  if(!S.key){ $('vnote').textContent = 'Age upore API key dao.'; return; }
+  if(!S.key){ $('vnote').textContent = tr('Age upore API key dao.'); return; }
   $('vnote').textContent = 'Gemini voice toiri hochhe...';
   try{
     await geminiSpeak('হাই, আমি রিমি। তুমি কেমন আছো সোনা?', $('ttsvoice').value);
-    $('vnote').textContent = 'Gemini voice kaj korche. Pochhondo hole Save chapo.';
-  }catch(e){ $('vnote').textContent = 'Gemini voice hoy ni: ' + String(e.message).slice(0, 120); }
+    $('vnote').textContent = tr('Gemini voice kaj korche. Pochhondo hole Save chapo.');
+  }catch(e){ $('vnote').textContent = tr('Gemini voice hoy ni: ') + String(e.message).slice(0, 120); }
 };
 $('vtest').onclick = () => {
   const pre = selPre();
@@ -3072,7 +3082,7 @@ function camTap(){
 function openCamBrowser(){
   if(!(navigator.mediaDevices && navigator.mediaDevices.getUserMedia)){ $('camfile').click(); return; }
   const ov = document.createElement('div'); ov.id = 'camov';
-  ov.innerHTML = '<video id="camv" autoplay playsinline muted></video><div class="camrow"><button id="camx" type="button">Bondho</button><button id="camsnap" type="button">&#9679; Chhobi tulo</button></div>';
+  ov.innerHTML = '<video id="camv" autoplay playsinline muted></video><div class="camrow"><button id="camx" type="button">' + tr('Bondho') + '</button><button id="camsnap" type="button">&#9679; ' + tr('Chhobi tulo') + '</button></div>';
   document.body.appendChild(ov);
   const close = () => { try{ if(camStream) camStream.getTracks().forEach(t => t.stop()); }catch(e){} camStream = null; ov.remove(); };
   ov.querySelector('#camx').onclick = close;
@@ -3253,12 +3263,12 @@ function renderDraw(b){
 
 /* Routine: daily tasks with time and done tick */
 function renderRoutine(b){
-  b.innerHTML = '<div class="tbrow"><input type="time" id="rtt" class="tbin tbtime"><input id="rtx" class="tbin" placeholder="Kaj ki?"><button type="button" class="tbbtn" id="rta">Add</button></div><div class="tbrow"><button type="button" class="tbbtn rt30" id="rt30">30 min pore janiye dao</button></div><div id="rtl"></div>';
+  b.innerHTML = '<div class="tbrow"><input type="time" id="rtt" class="tbin tbtime"><input id="rtx" class="tbin" placeholder="' + tr('Kaj ki?') + '"><button type="button" class="tbbtn" id="rta">Add</button></div><div class="tbrow"><button type="button" class="tbbtn rt30" id="rt30">' + tr('30 min pore janiye dao') + '</button></div><div id="rtl"></div>';
   const list = b.querySelector('#rtl');
   const draw = () => {
     const r = LS.get('rimy_routine', []).slice().sort((a, c) => (a.time || '99:99').localeCompare(c.time || '99:99'));
     list.innerHTML = '';
-    if(!r.length){ list.innerHTML = '<p class="tbmuted">Ekhono kono kaj nei.</p>'; return; }
+    if(!r.length){ list.innerHTML = '<p class="tbmuted">' + tr('Ekhono kono kaj nei.') + '</p>'; return; }
     r.forEach(x => {
       const dn = x.doneOn === tbDate(new Date());
       const d = document.createElement('div'); d.className = 'tbitem' + (dn ? ' done' : '');
@@ -3276,7 +3286,7 @@ function renderRoutine(b){
     LS.set('rimy_routine', r); tx.value = ''; draw();
   };
   b.querySelector('#rt30').onclick = () => {
-    const tx = b.querySelector('#rtx'), t = tx.value.trim() || 'Kaj';
+    const tx = b.querySelector('#rtx'), t = tx.value.trim() || tr('Kaj');
     const at = new Date(Date.now() + 30 * 60000);
     const r = LS.get('rimy_routine', []); r.push({id: Date.now(), time: String(at.getHours()).padStart(2, '0') + ':' + String(at.getMinutes()).padStart(2, '0'), t, once: true});
     LS.set('rimy_routine', r); tx.value = ''; draw();
