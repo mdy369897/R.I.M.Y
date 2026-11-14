@@ -540,9 +540,33 @@ html[data-look="rimy"][data-mode="day"] #tbox button{color:#2a1f4d!important}
 #cropimg{position:absolute;left:0;top:0;transform-origin:0 0;max-width:none;user-select:none;-webkit-user-drag:none;pointer-events:none}
 .cropbtns{display:flex;gap:8px;flex-wrap:wrap;justify-content:center}
 .cropbtns button{min-width:64px}
+
+/* Full-screen wallpaper (v1.4.5.7) */
+#wallfs{position:fixed;inset:0;z-index:-1;display:none;background-color:#0b0814;background-size:cover;background-position:center;background-repeat:no-repeat;pointer-events:none}
+html[data-wallfs="1"] #wallfs{display:block}
+html[data-wallfs="1"] #msgs{background-image:none!important}
+html[data-wallfs="1"] header{background:rgba(18,14,36,.34)!important}
+html[data-wallfs="1"] #mnav,html[data-wallfs="1"] #cnav{background:rgba(18,14,36,.42)!important}
+html[data-wallfs="1"] .dockwrap{background:rgba(22,18,44,.58)!important}
+html[data-wallfs="1"] #call{background:linear-gradient(rgba(10,5,14,.20),rgba(10,5,14,.55))!important}
+html[data-wallfs="1"][data-mode="day"] header{background:rgba(255,255,255,.36)!important}
+html[data-wallfs="1"][data-mode="day"] #mnav,html[data-wallfs="1"][data-mode="day"] #cnav{background:rgba(255,255,255,.45)!important}
+html[data-wallfs="1"][data-mode="day"] .dockwrap{background:rgba(255,255,255,.55)!important}
+html[data-wallfs="1"][data-mode="day"] #call{background:linear-gradient(rgba(255,255,255,.12),rgba(245,242,251,.45))!important}
+#wallfull.on{border-color:rgba(0,242,255,.7)}
+
+/* Hologram globe (v1.4.5.8) */
+.maptile{isolation:isolate;background:radial-gradient(circle at 50% 42%,#0c2b3c 0%,#041119 58%,#02060c 100%);box-shadow:0 0 22px rgba(0,242,255,.45),0 0 60px rgba(0,242,255,.16),inset 0 0 28px rgba(0,242,255,.22);animation:holoflick 5s infinite}
+.maptile canvas{filter:grayscale(1) sepia(1) hue-rotate(158deg) saturate(3.2) brightness(1.2) contrast(1.12) drop-shadow(0 0 5px rgba(0,242,255,.5));opacity:.94}
+.maptile::before{content:'';position:absolute;inset:0;z-index:2;border-radius:50%;pointer-events:none;background:linear-gradient(to bottom,transparent,rgba(0,242,255,.30) 50%,transparent) 0 -40%/100% 30% no-repeat,repeating-linear-gradient(to bottom,rgba(0,242,255,.12) 0 1px,transparent 1px 3px);mix-blend-mode:screen;animation:holoscan 7s linear infinite}
+.maptile::after{content:'';position:absolute;inset:0;z-index:3;border-radius:50%;pointer-events:none;background:radial-gradient(circle at 50% 50%,transparent 58%,rgba(0,242,255,.20) 78%,rgba(138,43,226,.60) 100%);mix-blend-mode:screen}
+@keyframes holoflick{0%,100%{opacity:1}46%{opacity:1}47%{opacity:.84}48%{opacity:1}73%{opacity:.93}74%{opacity:1}}
+@keyframes holoscan{0%{background-position:0 -40%,0 0}100%{background-position:0 140%,0 0}}
+@media (prefers-reduced-motion: reduce){.maptile,.maptile::before{animation:none}}
 </style>
 </head>
 <body>
+<div id="wallfs" aria-hidden="true"></div>
 <div id="vsplashwrap" style="position:fixed;inset:0;background:#0b0814;z-index:99999"><video id="vsplash" src="rimy-splash.mp4" muted playsinline preload="auto" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:0;transition:opacity .25s" onloadeddata="this.style.opacity='1'" onerror="try{document.getElementById('vsplashwrap').remove()}catch(e){}"></video></div>
 <script>(function(){ var w = document.getElementById('vsplashwrap'); try{ var o = JSON.parse(localStorage.getItem('rimy_settings') || '{}'); if(!o.openLive && w){ w.remove(); } }catch(e){ if(w) w.remove(); } })();</script>
 <header>
@@ -710,6 +734,7 @@ html[data-look="rimy"][data-mode="day"] #tbox button{color:#2a1f4d!important}
       </div>
     </div>
     <div class="row" style="margin-top:8px"><button id="wallpick" type="button">Gallery theke chhobi nao</button><button id="wallclr" type="button">Muchho</button></div>
+    <div class="row" style="margin-top:6px"><button id="wallfull" type="button" aria-pressed="true">Full screen: Chalu</button></div>
     <input id="wallfile" type="file" accept="image/*" style="display:none">
     <input id="imgfile" type="file" accept="image/*" style="display:none">
     <input id="camfile" type="file" accept="image/*" capture="environment" style="display:none">
@@ -763,7 +788,7 @@ html[data-look="rimy"][data-mode="day"] #tbox button{color:#2a1f4d!important}
       <button id="close" type="button" style="margin-left:auto;background:var(--accent);color:#2a0f1a;border-color:var(--accent)">Save</button>
     </div>
     <div class="note">Key ar chat shudhu ei phone-er browser-e save thake.</div>
-    <div class="note" id="ver">R.I.M.Y Version 1.4.5.6</div>
+    <div class="note" id="ver">R.I.M.Y Version 1.4.5.8</div>
   </div>
 </div>
 
@@ -1085,6 +1110,7 @@ function ms(id, vars){
 const ORIG_TXT = new WeakMap();
 function applyI18n(){
   const L = uiLang(), d = TR[L] || {};
+  try{ syncWallFull(); }catch(e){}
   document.querySelectorAll('.m.sys[data-msid]').forEach(el => { const v = el.dataset.vars ? JSON.parse(el.dataset.vars) : null; el.textContent = ms(el.dataset.msid, v); });
   document.querySelectorAll('[data-tr]').forEach(el => { el.textContent = (el.dataset.name ? el.dataset.name + ', ' : '') + tr(el.dataset.tr); });
   lastMsId = null; lastMsVars = null;
@@ -2272,8 +2298,10 @@ const WALLS = {
   waves:() => [svgUrl(120, 36, '<path d="M0 18 Q15 4 30 18 T60 18 T90 18 T120 18" fill="none" stroke="rgba(255,255,255,.12)" stroke-width="2"/>'), '120px 36px'],
   custom:() => { const u = LS.get('rimy_wall', ''); return u ? ['linear-gradient(rgba(10,5,14,.42),rgba(10,5,14,.42)),url(' + u + ')', 'cover'] : ['', '']; }
 };
+function wallFullOn(){ try{ return S.wall === 'custom' && S.wallFull !== false && !!LS.get('rimy_wall', ''); }catch(e){ return false; } }
+function syncWallFull(){ const b = $('wallfull'); if(!b) return; const on = S.wallFull !== false; b.textContent = tr(on ? 'Full screen: Chalu' : 'Full screen: Bondho'); b.setAttribute('aria-pressed', on ? 'true' : 'false'); b.classList.toggle('on', on); }
 function applyLook(force){
-  if(S.skin !== 'orig' && S.skin !== 'custom'){ S.skin = 'orig'; persist(); }
+  if(S.skin !== 'orig'){ S.skin = 'orig'; persist(); }
   if(!S.lookRimy){ S.lookRimy = 1; S.theme = 'rimy'; if(S.wall === 'aurora') S.wall = 'none'; persist(); }
   if(!S.lookRimy2){ S.lookRimy2 = 1; S.theme = 'rimy'; persist(); }
   const th = force || S.theme;
@@ -2291,6 +2319,10 @@ function applyLook(force){
   const sk = skinWall();
   const w = sk || (WALLS[S.wall] || WALLS.none)(), m = $('msgs');
   m.style.backgroundImage = ((S.theme === 'rimy' && !sk && S.wall !== 'custom') ? 'none' : (w[0] || 'none')); m.style.backgroundSize = w[1] || 'auto';
+  const wf = wallFullOn(), wfEl = $('wallfs'); document.documentElement.dataset.wallfs = wf ? '1' : '0';
+  if(wfEl) wfEl.style.backgroundImage = wf ? 'url(' + LS.get('rimy_wall', '') + ')' : 'none';
+  if(wf) m.style.backgroundImage = 'none';
+  syncWallFull();
   m.style.backgroundPosition = (sk || S.wall === 'custom') ? 'center' : '0 0'; m.style.backgroundRepeat = (sk || S.wall === 'custom' || ['aurora','sunset','ocean'].includes(S.wall)) ? 'no-repeat' : 'repeat';
   avTarget = themeCols();
 }
@@ -2328,8 +2360,8 @@ function cropOpen(dataUrl){
     c.getContext('2d').drawImage(im, -crop.x / crop.s, -crop.y / crop.s, crop.fw / crop.s, crop.fh / crop.s, 0, 0, outW, outH);
     const u = c.toDataURL('image/jpeg', .85);
     try{ localStorage.setItem('rimy_wall', JSON.stringify(u)); }catch(e){ $('wnote').textContent = tr('Chhobi-ta onek boro, save hoy ni. Chhoto chhobi dao.'); return; }
-    S.wall = 'custom'; S.skin = 'custom'; $('wall').value = 'custom'; $('skin').value = 'custom'; persist(); applyLook();
-    $('wnote').textContent = tr('Nijer chhobi avatar ar wallpaper hishebe set hoyeche.'); $('cropm').hidden = true;
+    S.wall = 'custom'; S.wallFull = true; $('wall').value = 'custom'; persist(); applyLook();
+    $('wnote').textContent = tr('Nijer chhobi wallpaper hishebe set hoyeche.'); $('cropm').hidden = true;
   };
 })();
 function pickWallFile(file){ if(!file) return; const fr = new FileReader(); fr.onload = () => cropOpen(fr.result); fr.readAsDataURL(file); }
@@ -2344,7 +2376,7 @@ function pickWall(file){
       c.getContext('2d').drawImage(im, 0, 0, c.width, c.height);
       const u = c.toDataURL('image/jpeg', .72);
       try{ localStorage.setItem('rimy_wall', JSON.stringify(u)); }catch(e){ $('wnote').textContent = 'Chhobi-ta onek boro, save hoy ni. Chhoto chhobi dao.'; return; }
-      S.wall = 'custom'; S.skin = 'custom'; $('wall').value = 'custom'; $('skin').value = 'custom'; persist(); applyLook(); $('wnote').textContent = tr('Nijer chhobi avatar ar wallpaper hishebe set hoyeche.');
+      S.wall = 'custom'; S.wallFull = true; $('wall').value = 'custom'; persist(); applyLook(); $('wnote').textContent = tr('Nijer chhobi wallpaper hishebe set hoyeche.');
     };
     im.onerror = () => { $('wnote').textContent = 'Ei chhobi khola gelo na.'; };
     im.src = fr.result;
@@ -2414,6 +2446,7 @@ $('tcol').onchange = () => { S.tcol = $('tcol').value; persist(); applyLook(); }
 $('fs').oninput = () => { const x = fsPos(); if(fsX0 !== null) fsKick(x - fsX0); fsX0 = x; };
 $('fs').onchange = () => { S.fs = parseInt($('fs').value, 10) || 16; persist(); applyLook(); fsX0 = null; };
 $('wallpick').onclick = () => $('wallfile').click();
+$('wallfull').onclick = () => { S.wallFull = S.wallFull === false; persist(); applyLook(); };
 $('wallfile').onchange = e => { pickWallFile(e.target.files[0]); e.target.value = ''; };
 $('wallclr').onclick = () => { try{ localStorage.removeItem('rimy_wall'); }catch(e){} if(S.wall === 'custom') S.wall = 'none'; if(S.skin === 'custom') S.skin = 'orig'; $('wall').value = S.wall; $('skin').value = S.skin || 'orig'; persist(); applyLook(); $('wnote').textContent = 'Nijer chhobi muchhe feleche.'; };
 $('skin').onchange = () => {
@@ -2759,6 +2792,11 @@ const TR_NEW = {
   ur:{'Camera diye chhobi':'کیمرے سے تصویر','Library':'لائبریری','Chat':'چیٹ','Chhobi':'تصاویر','Dekho':'دیکھیں','Phire ano':'واپس لاؤ','Band koro':'بند کرو','Ekhon-er chat':'موجودہ چیٹ','Ekhono kono chat nei.':'ابھی کوئی چیٹ نہیں۔','Ekhono kono chhobi nei.':'ابھی کوئی تصویر نہیں۔','Cancel':'منسوخ','Download':'ڈاؤن لوڈ','Edit':'ایڈٹ'}
 };
 for(const L in TR_NEW) Object.assign(TR[L], TR_NEW[L]);
+Object.assign(TR.en, {'Full screen: Chalu':'Full screen: On','Full screen: Bondho':'Full screen: Off','Nijer chhobi wallpaper hishebe set hoyeche.':'Your photo is set as the wallpaper.'});
+Object.assign(TR.bn, {'Full screen: Chalu':'ফুল স্ক্রিন: চালু','Full screen: Bondho':'ফুল স্ক্রিন: বন্ধ','Nijer chhobi wallpaper hishebe set hoyeche.':'তোমার ছবি ওয়ালপেপার হিসেবে সেট হয়েছে।'});
+Object.assign(TR.hi, {'Full screen: Chalu':'फ़ुल स्क्रीन: चालू','Full screen: Bondho':'फ़ुल स्क्रीन: बंद','Nijer chhobi wallpaper hishebe set hoyeche.':'आपकी तस्वीर वॉलपेपर के रूप में सेट हो गई है।'});
+Object.assign(TR.ar, {'Full screen: Chalu':'ملء الشاشة: مفعّل','Full screen: Bondho':'ملء الشاشة: متوقف','Nijer chhobi wallpaper hishebe set hoyeche.':'تم تعيين صورتك كخلفية.'});
+Object.assign(TR.ur, {'Full screen: Chalu':'فل اسکرین: آن','Full screen: Bondho':'فل اسکرین: آف','Nijer chhobi wallpaper hishebe set hoyeche.':'آپ کی تصویر بطور وال پیپر سیٹ ہو گئی ہے۔'});
 Object.assign(TR.bn, {'Highlight karo':'Highlight করো', 'Clear':'মুছো', 'Done':'হয়েছে', 'Cancel':'বাতিল', 'Download':'ডাউনলোড'});
 Object.assign(TR.hi, {'Highlight karo':'हाइलाइट करो', 'Clear':'साफ़ करो', 'Done':'हो गया', 'Cancel':'रद्द करो'});
 Object.assign(TR.ar, {'Highlight karo':'تعليم', 'Clear':'مسح', 'Done':'تم', 'Cancel':'إلغاء'});
