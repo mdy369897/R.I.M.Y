@@ -800,7 +800,7 @@ html[data-wallfs="1"][data-mode="day"] #call{background:linear-gradient(rgba(245
       <button id="close" type="button" style="margin-left:auto;background:var(--accent);color:#2a0f1a;border-color:var(--accent)">Save</button>
     </div>
     <div class="note">Key ar chat shudhu ei phone-er browser-e save thake.</div>
-    <div class="note" id="ver">R.I.M.Y Version 1.4.6.6</div>
+    <div class="note" id="ver">R.I.M.Y Version 1.4.6.7</div>
   </div>
 </div>
 
@@ -1926,7 +1926,26 @@ function runDos(list){
     runOne(d);
   }
 }
+/* Chat theke "tools", "camera" ityadi bole, eta phone-er app na, app-er bhitorer kaj (UI) */
+const UI_ALIASES = {
+  camera: ['camera','ক্যামেরা','कैमरा','كاميرا','کیمرہ','کیمرا'],
+  gallery: ['gallery','photos','photo','গ্যালারি','ছবি','गैलरी','معرض','گیلری'],
+  settings: ['settings','setting','সেটিং','সেটিংস','सेटिंग','الإعدادات','سیٹنگ'],
+  live: ['live','লাইভ','लाइव','مباشر','لائیو'],
+  chat: ['chat','চ্যাট','चैट','محادثة','چیٹ'],
+  history: ['history','ইতিহাস','इतिहास','السجل','تاریخ'],
+  tools: ['tools','tool','টুলস','টুল','टूल','أدوات','ٹولز']
+};
+function uiFor(app){
+  const s = String(app || '').toLowerCase().trim();
+  for(const k in UI_ALIASES){ if(UI_ALIASES[k].includes(s)) return k; }
+  return null;
+}
 function runOne(d){
+  if(d && d.do === 'open'){
+    const u = uiFor(d.app);
+    if(u){ try{ window.rimyUi(u); }catch(e){} return; }
+  }
   if(!window.RimyNative){ addMsg('sys', ms('phoneApp', {do: d.do})); return; }
   let r = 'error';
   try{ r = RimyNative.doAction(JSON.stringify(d)); }catch(e){}
